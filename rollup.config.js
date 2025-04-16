@@ -29,7 +29,7 @@ export default [
 	{
 		input: "src/native/injector.ts",
 		output: {
-			file: "dist/native/injector.js",
+			file: "dist/injector.js",
 			format: "cjs",
 			sourcemap: true,
 		},
@@ -39,7 +39,7 @@ export default [
 	{
 		input: "src/native/preload.ts",
 		output: {
-			file: "dist/native/preload.js",
+			file: "dist/preload.js",
 			format: "cjs",
 			sourcemap: true,
 		},
