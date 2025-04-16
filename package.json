@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "format": "prettier -wc ./src",
-    "watch": "rimraf ./dist && tsx ./esbuild.config.ts"
+    "watch": "rimraf ./dist && tsx ./esbuild.config.ts --watch",
+    "build": "rimraf ./dist && tsx ./esbuild.config.ts"
   },
   "license": "MS-Pl",
   "type": "module",
