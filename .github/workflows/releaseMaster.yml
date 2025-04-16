@@ -13,7 +13,7 @@ jobs:
   uses: ./.github/workflows/build.yml
 
  Release:
-  name: Draft latest release on GitHub
+  name: Release latest on GitHub
   needs: Build
   runs-on: ubuntu-latest
 
@@ -24,7 +24,7 @@ jobs:
       name: luna-artifacts
       path: ./dist/
 
-   - name: Publish latest draft release on GitHub
+   - name: Publish latest release on GitHub
      uses: marvinpinto/action-automatic-releases@latest
      with:
       repo_token: ${{ secrets.GITHUB_TOKEN }}

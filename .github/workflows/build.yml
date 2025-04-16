@@ -29,10 +29,10 @@ jobs:
      run: pnpm run build
 
    - name: Zip Build Output
-     run: zip -r ./artifacts/luna.zip ./dist
+     run: zip -r ./luna.zip ./dist
 
    - name: Upload Build Artifact
      uses: actions/upload-artifact@v4
      with:
       name: luna-artifacts
-      path: ./artifacts/luna.zip
+      path: ./luna.zip
