@@ -1,6 +1,4 @@
-import { actions, intercept } from "../window.luna";
-
-import { loaded } from "../safeLoad";
+import { actions, intercept } from "..";
 
 export class Page {
 	private static readonly pages: Record<string, Page> = {};
@@ -13,25 +11,23 @@ export class Page {
 	private constructor(public readonly name: string) {}
 
 	static {
-		loaded.then(() =>
-			intercept<{ search: string }>("router/NAVIGATED", (payload) => {
-				const pageName = payload.search.slice(1);
-				// payload.search = `?name`
-				if (pageName in this.pages) {
-					const page = this.pages[pageName];
-					// Queue a intercept to trigger on navigating away to remove the page
-					intercept("router/NAVIGATED", () => page.root.remove(), true);
-					setTimeout(() => {
-						const notFound = document.querySelector<HTMLElement>(`[class^="_pageNotFoundError_"]`);
-						if (notFound) {
-							notFound.style.display = "none";
-							page.root.remove(); // Ensure root isnt already on page
-							notFound.insertAdjacentElement("afterend", page.root);
-						}
-					});
-				}
-			}),
-		);
+		intercept<{ search: string }>("router/NAVIGATED", (payload) => {
+			const pageName = payload.search.slice(1);
+			// payload.search = `?name`
+			if (pageName in this.pages) {
+				const page = this.pages[pageName];
+				// Queue a intercept to trigger on navigating away to remove the page
+				intercept("router/NAVIGATED", () => page.root.remove(), true);
+				setTimeout(() => {
+					const notFound = document.querySelector<HTMLElement>(`[class^="_pageNotFoundError_"]`);
+					if (notFound) {
+						notFound.style.display = "none";
+						page.root.remove(); // Ensure root isnt already on page
+						notFound.insertAdjacentElement("afterend", page.root);
+					}
+				});
+			}
+		});
 	}
 
 	open() {

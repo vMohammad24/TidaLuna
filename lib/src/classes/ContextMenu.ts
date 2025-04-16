@@ -1,9 +1,7 @@
 import { observe, registerEmitter, type AddReceiver } from "@inrixia/helpers";
+import { type OActionPayloads } from "..";
 import { intercept } from "../intercept";
-import { type OActionPayloads } from "../window.luna";
 import { llTrace } from "./Tracer";
-
-import { loaded } from "../safeLoad";
 
 type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };
 export class ContextMenu {
@@ -24,12 +22,10 @@ export class ContextMenu {
 	}
 
 	public static onOpen: AddReceiver<{ event: OActionPayloads["contextMenu/OPEN"]; contextMenu: ExtendedElem }> = registerEmitter((onOpen) =>
-		loaded.then(() =>
-			intercept("contextMenu/OPEN", async (event) => {
-				const contextMenu = await ContextMenu.getContextMenu();
-				if (contextMenu === null) return;
-				onOpen({ event, contextMenu }, llTrace.err.withContext("ContextMenu.onOpen", event.type, contextMenu));
-			}),
-		),
+		intercept("contextMenu/OPEN", async (event) => {
+			const contextMenu = await ContextMenu.getContextMenu();
+			if (contextMenu === null) return;
+			onOpen({ event, contextMenu }, llTrace.err.withContext("ContextMenu.onOpen", event.type, contextMenu));
+		}),
 	);
 }

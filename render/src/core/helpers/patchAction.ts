@@ -1,13 +1,10 @@
 // @ts-expect-error Idk why TS thinks this module doesnt exist
 import { after } from "spitroast";
 
-import { actions, interceptors, store } from "@luna/lib";
-import { lTrace } from "../index.js";
-
-import type { ActionType } from "@luna/lib";
+import { actions, interceptors, store } from "../window.core.js";
 
 const patchAction = (_Obj: { _: Function }) => {
-	after("_", _Obj, ([type]: [type: ActionType], buildAction) => {
+	after("_", _Obj, ([type], buildAction) => {
 		if (actions[type] !== undefined) return;
 
 		// Just assume all buildAction's are promises for the sake of safety
@@ -23,7 +20,7 @@ const patchAction = (_Obj: { _: Function }) => {
 						try {
 							if (interceptor(...args) === true) shouldDispatch = false;
 						} catch (err) {
-							lTrace.err.withContext("Failed to run interceptor!")(err);
+							console.error("[Luna.core]", "Failed to run interceptor!", err);
 						}
 					}
 				}
@@ -33,4 +30,10 @@ const patchAction = (_Obj: { _: Function }) => {
 	});
 	return _Obj;
 };
+
+declare global {
+	interface Window {
+		patchAction: typeof patchAction;
+	}
+}
 window.patchAction = patchAction;

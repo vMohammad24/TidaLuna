@@ -7,7 +7,7 @@ const buildConfigs: BuildOptions[] = [
 		entryPoints: ["render/src/index.ts"],
 		outfile: "dist/luna.js",
 		bundle: true,
-		format: "iife",
+		format: "esm",
 		sourcemap: true,
 		minify: true,
 	},

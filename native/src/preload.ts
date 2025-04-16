@@ -1,16 +1,20 @@
 import { contextBridge, ipcRenderer, webFrame } from "electron";
 
 // Allow render side to execute invoke
-contextBridge.exposeInMainWorld("LunaNative", {
+contextBridge.exposeInMainWorld("lunaNative", {
 	invoke: ipcRenderer.invoke,
 });
 
-// Load Luna bundle code
-ipcRenderer.invoke("__Luna.loadBundle").then((bundle) => {
-	webFrame.executeJavaScript(bundle, true, (_, error) =>
-		error ? console.error("__Luna.loadBundle", "Failed!", error) : console.log("__Luna.loadBundle", "Loaded!"),
-	);
-});
+const loadLunaFile = async (fileName: string) => {
+	await webFrame.executeJavaScript(`(async () => { await import("lu://luna/${fileName}"); })()`, true).catch((err) => {
+		console.error(`${fileName} failed to load!`, err);
+		throw err;
+	});
+	console.log(`${fileName} loaded!`);
+};
 
-// Load original tidal code
+// require() the original Tidal preload script
 ipcRenderer.invoke("__Luna.originalPreload").then(require);
+
+// Load the luna.js renderer code
+loadLunaFile("luna.js");

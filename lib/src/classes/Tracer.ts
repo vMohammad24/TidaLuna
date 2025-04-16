@@ -1,7 +1,7 @@
 import type { Signal, VoidLike } from "@inrixia/helpers";
 import { Severity } from "neptune-types/tidal";
 
-import type { ActionType } from "../actionTypes";
+import type { ActionType } from "../intercept.actionTypes";
 import { actions } from "../window.luna";
 
 type LoggerFunc = (...data: any[]) => VoidLike;

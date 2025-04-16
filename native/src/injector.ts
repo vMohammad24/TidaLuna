@@ -2,43 +2,37 @@ import electron from "electron";
 import Module from "module";
 
 import { readFile } from "fs/promises";
+import mime from "mime";
 
 import path from "path";
 
 // #region Bundle
-const localBundle = process.env.TIDALUNA_DIST_PATH;
+const bundleDir = process.env.TIDALUNA_DIST_PATH ?? __dirname;
 
-// File paths
-const preloadPath = path.join(localBundle ?? __dirname, "preload.js");
-const bundlePath = path.join(localBundle ?? __dirname, "luna.js");
-
-const loadLunaBundle = async (): Promise<string> => {
-	const [js, map] = await Promise.all([readFile(bundlePath, "utf8"), readFile(`${bundlePath}.map`, "utf8")]);
-	const base64Map = Buffer.from(map).toString("base64");
-	return `${js}\n//# sourceMappingURL=data:application/json;base64,${base64Map}`;
-};
-
-// Safe handler to ensure no duplicates
+// Safe ipcHandler to ensure no duplicates
 const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) => {
 	electron.ipcMain.removeAllListeners(channel);
 	electron.ipcMain.handle(channel, listener);
 };
-
-// Prefetch luna js for when preload requests it
-const lunaBundle = loadLunaBundle();
-ipcHandle("__Luna.loadBundle", () => lunaBundle);
 // #endregion
 
 // Allow debugging from remote origins (e.g., Chrome DevTools over localhost)
 // Requires starting client with --remote-debugging-port=9222
 electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:9222");
 
-// #region CSP/Script Prep
-(async () => {
-	// Ensure app is ready
-	await electron.app.whenReady();
+// Prep lu://luna protocol files (see ./preload.ts)
+const prepResponse = async (filePath: string) => new Response(await readFile(filePath), { headers: { "Content-Type": mime.getType(filePath) } });
+const lunaUrls = {
+	"lu://luna/luna.js": prepResponse(path.join(bundleDir, "luna.js")),
+	"lu://luna/luna.js.map": prepResponse(path.join(bundleDir, "luna.js.map")),
+};
 
-	// Bypass CSP
+// #region CSP/Script Prep
+// Ensure app is ready
+electron.app.whenReady().then(async () => {
+	// Handle requests for lu:// protocol (used to import() luna.js bundle from file)
+	electron.protocol.handle("lu", (request) => lunaUrls[request.url] ?? new Response(null, { status: 404 }));
+	// Bypass CSP & Mark meta scripts for quartz injection
 	electron.protocol.handle("https", async (req) => {
 		const url = new URL(req.url);
 		if (url.pathname === "/" || url.pathname == "/index.html") {
@@ -48,7 +42,7 @@ electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:
 				/(<meta http-equiv="Content-Security-Policy")|(<script type="module" crossorigin src="(.*?)">)/g,
 				(match, cspMatch, scriptMatch, src) => {
 					if (cspMatch) {
-						// Allow injecting our own scripts
+						// Remove CSP
 						return `<meta name="LunaWuzHere"`;
 					} else if (scriptMatch) {
 						// Mark module scripts for quartz injection
@@ -60,6 +54,7 @@ electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:
 			);
 			return new Response(body, res);
 		}
+		// All other requests passthrough
 		return electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
 	});
 
@@ -67,13 +62,13 @@ electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:
 	electron.session.defaultSession.clearStorageData({
 		storages: ["cachestorage"],
 	});
-})();
+});
 
 // #region LunaNative handling
 ipcHandle("__Luna.eval", (ev, code) => eval(code));
 // #endregion
 
-// #region Override electron.BrowserWindow
+// #region Override electron.BrowserWindow to allow setting custom options
 const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 	construct(target, args) {
 		const options = args[0];
@@ -86,13 +81,13 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 		// tidal-hifi does not set the title, rely on dev tools instead.
 		const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
 		if (isTidalWindow) {
-			// Store original preload and add a handle to fetch it later
+			// Store original preload and add a handle to fetch it later (see ./preload.ts)
 			const origialPreload = options.webPreferences?.preload;
 			ipcHandle("__Luna.originalPreload", () => origialPreload);
 
 			// Replace the preload instead of using setPreloads because of some differences in internal behaviour.
 			// Set preload script to Luna's
-			options.webPreferences.preload = preloadPath;
+			options.webPreferences.preload = path.join(bundleDir, "preload.js");
 
 			// TODO: Find why sandboxing has to be disabled
 			options.webPreferences.sandbox = false;

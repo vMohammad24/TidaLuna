@@ -1,5 +1,8 @@
 {
 	"devDependencies": {
 		"electron": "^35.1.5"
+	},
+	"dependencies": {
+		"mime": "^4.0.7"
 	}
 }

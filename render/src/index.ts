@@ -1,9 +1,11 @@
+// Always expose internals first
+import "./core/exposeTidalInternals.js";
+
+// Ensure window.luna is set to @luna/lib
 import * as luna from "@luna/lib";
 window.luna = luna;
 
-import "./handleExfiltrations.js";
-import "./settings.js";
-
+// Default luna tracer used for core logging
 export const lTrace = luna.Tracer("[Luna]");
 
 // Restore the console
@@ -30,11 +32,8 @@ Object.defineProperty = function (...args) {
 Object.freeze = (arg) => arg;
 
 declare global {
-	interface Window {
-		luna: typeof luna;
-		patchAction: unknown;
-	}
-	const LunaNative: {
+	// Define lunaNative exports (see native/preload.ts)
+	const lunaNative: {
 		invoke: (channel: string, ...args: any[]) => Promise<any>;
 	};
 }
