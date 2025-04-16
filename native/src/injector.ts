@@ -12,7 +12,11 @@ const localBundle = process.env.TIDALUNA_DIST_PATH;
 const preloadPath = path.join(localBundle ?? __dirname, "preload.js");
 const bundlePath = path.join(localBundle ?? __dirname, "luna.js");
 
-const loadLunaBundle = (): Promise<string> => readFile(bundlePath, "utf8");
+const loadLunaBundle = async (): Promise<string> => {
+	const [js, map] = await Promise.all([readFile(bundlePath, "utf8"), readFile(`${bundlePath}.map`, "utf8")]);
+	const base64Map = Buffer.from(map).toString("base64");
+	return `${js}\n//# sourceMappingURL=data:application/json;base64,${base64Map}`;
+};
 
 // Safe handler to ensure no duplicates
 const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) => {
