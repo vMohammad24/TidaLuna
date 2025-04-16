@@ -1,9 +1,9 @@
 import type { UnknownRecord } from "@inrixia/helpers";
 
-import luna from "../window.luna";
+import { moduleCache } from "./window.luna";
 
-export default <T>(propertyName: string, propertyType: string): T | undefined =>
-	recursiveSearch<T>(luna.moduleCache, propertyName, propertyType);
+export const findModuleProperty = <T>(propertyName: string, propertyType: string): T | undefined =>
+	recursiveSearch<T>(moduleCache, propertyName, propertyType);
 
 const recursiveSearch = <T>(obj: UnknownRecord, propertyName: string, propertyType: string, seen = new Set<UnknownRecord>()): T | undefined => {
 	if (seen.has(obj)) return;

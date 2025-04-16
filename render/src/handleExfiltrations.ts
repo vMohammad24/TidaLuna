@@ -1,17 +1,21 @@
+import { moduleCache, store } from "@luna/lib";
 import quartz, { type QuartzPlugin } from "@uwu/quartz";
+import type { Store } from "redux";
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
-import wObj from "./window.luna.js";
+
+// Ensure patchAction is loaded on window!
+import "./helpers/patchAction.js";
 
 const fetchText = (path) => fetch(path).then((res) => res.text());
 
 const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);
-	if (wObj.moduleCache[path]) return wObj.moduleCache[path];
+	if (moduleCache[path]) return moduleCache[path];
 
 	const data = await fetchText(path);
 
-	wObj.moduleCache[path] = await quartz(data, config, path);
-	return wObj.moduleCache[path];
+	moduleCache[path] = await quartz(data, config, path);
+	return moduleCache[path];
 };
 
 /**
@@ -72,7 +76,7 @@ setTimeout(() => {
 
 		// Fetch, transform execute and store the module in moduleCache
 		// Hijack the Redux store & inject interceptors
-		wObj.moduleCache[scriptPath] = await quartz(
+		moduleCache[scriptPath] = await quartz(
 			scriptContent,
 			{
 				plugins: [
@@ -94,7 +98,7 @@ setTimeout(() => {
 
 								code =
 									code.slice(0, prepareActionIdx - 9) +
-									`const ${prepareActionName} = luna.patchAction({ _: ${funcPrefix}${prepareActionName} })._;` +
+									`const ${prepareActionName} = patchAction({ _: ${funcPrefix}${prepareActionName} })._;` +
 									code.slice(prepareActionIdx - 9);
 							}
 
@@ -111,10 +115,10 @@ setTimeout(() => {
 			scriptPath,
 		);
 
-		for (const module of Object.values(wObj.moduleCache)) {
+		for (const module of Object.values(moduleCache)) {
 			const { hijackedGetStore } = module;
 			if (!hijackedGetStore) continue;
-			wObj.store = hijackedGetStore();
+			Object.assign(store as Store, hijackedGetStore());
 			break;
 		}
 	});

@@ -7,7 +7,9 @@ contextBridge.exposeInMainWorld("LunaNative", {
 
 // Load Luna bundle code
 ipcRenderer.invoke("__Luna.loadBundle").then((bundle) => {
-	webFrame.executeJavaScript(bundle, true, (...res) => console.log("__Luna.loadBundle", ...res));
+	webFrame.executeJavaScript(bundle, true, (_, error) =>
+		error ? console.error("__Luna.loadBundle", "Failed!", error) : console.log("__Luna.loadBundle", "Loaded!"),
+	);
 });
 
 // Load original tidal code

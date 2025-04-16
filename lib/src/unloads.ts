@@ -1,11 +1,12 @@
-export type Unload = {
-	(): Promise<unknown> | unknown;
-	source?: string;
-};
+import type { Unload } from "@inrixia/helpers";
 
-export const unloadSet = async (unloads?: Set<Unload>): Promise<void> => {
+export interface LunaUnload extends Unload {
+	source?: string;
+}
+
+export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 	if (unloads === undefined || unloads.size === 0) return;
-	const toUnload: Unload[] = [];
+	const toUnload: LunaUnload[] = [];
 	for (const unload of unloads) toUnload.push(unload);
 
 	// Clear unloads after called to ensure their never called again

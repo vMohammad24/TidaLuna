@@ -1,5 +1,8 @@
 import "./handleExfiltrations.js";
-import "./window.luna.js";
+
+import * as luna from "@luna/lib";
+
+export const lTrace = luna.Tracer("[Luna]");
 
 // Restore the console
 for (let key in console) {
@@ -23,3 +26,14 @@ Object.defineProperty = function (...args) {
 	} catch {}
 };
 Object.freeze = (arg) => arg;
+
+declare global {
+	interface Window {
+		luna: typeof luna;
+		patchAction: unknown;
+	}
+	const LunaNative: {
+		invoke: (channel: string, ...args: any[]) => Promise<any>;
+	};
+}
+window.luna = luna;
