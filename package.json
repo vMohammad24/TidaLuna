@@ -11,10 +11,9 @@
   "license": "MS-Pl",
   "type": "module",
   "devDependencies": {
-    "@inrixia/helpers": "^3.8.0",
+    "@inrixia/helpers": "^3.9.0",
     "@types/node": "^22.14.1",
     "esbuild": "^0.25.2",
-    "neptune-types": "^1.0.1",
     "prettier": "^3.5.3",
     "redux": "^5.0.1",
     "rimraf": "^6.0.1",

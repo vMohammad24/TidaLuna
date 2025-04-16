@@ -9,17 +9,14 @@ importers:
   .:
     devDependencies:
       '@inrixia/helpers':
-        specifier: ^3.8.0
-        version: 3.8.0
+        specifier: ^3.9.0
+        version: 3.9.0
       '@types/node':
         specifier: ^22.14.1
         version: 22.14.1
       esbuild:
         specifier: ^0.25.2
         version: 0.25.2
-      neptune-types:
-        specifier: ^1.0.1
-        version: 1.0.1
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
@@ -36,7 +33,11 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  lib: {}
+  lib:
+    devDependencies:
+      neptune-types:
+        specifier: ^1.0.1
+        version: 1.0.1
 
   native:
     devDependencies:
@@ -47,7 +48,7 @@ importers:
   render:
     dependencies:
       '@luna/lib':
-        specifier: link:../lib
+        specifier: link:..\lib
         version: link:../lib
       '@uwu/quartz':
         specifier: ^1.5.3
@@ -59,9 +60,6 @@ importers:
         specifier: ^2.1.6
         version: 2.1.6
     devDependencies:
-      neptune-types:
-        specifier: ^1.0.1
-        version: 1.0.1
       redux:
         specifier: ^5.0.1
         version: 5.0.1
@@ -226,8 +224,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inrixia/helpers@3.8.0':
-    resolution: {integrity: sha512-/tToY9XE8dVgSKiV1qxuxbytKryVBv/WCLhinSGd9pP8mHs822deWEYi4Vvl1FJN5wvMHOH4DM+VsDUJev0Lfg==}
+  '@inrixia/helpers@3.9.0':
+    resolution: {integrity: sha512-qE8VPJbWuOcQEM5yQ7jE41QdNIWPrcOTu+TPUPcjsgJtysyr4eP8l8fl65YyQMKTs/6GI6Xum7TZMvSX+C5HbQ==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -790,7 +788,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.2':
     optional: true
 
-  '@inrixia/helpers@3.8.0': {}
+  '@inrixia/helpers@3.9.0': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:

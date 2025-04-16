@@ -1,4 +1,4 @@
-import { moduleCache, store } from "@luna/lib";
+import { loaded, moduleCache, store } from "@luna/lib";
 import quartz, { type QuartzPlugin } from "@uwu/quartz";
 import type { Store } from "redux";
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
@@ -67,9 +67,9 @@ function findPrepareActionNameAndIdx(bundleCode) {
 	return null;
 }
 
-setTimeout(() => {
-	// Use .forEach to execute in parallell using async
-	document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`).forEach(async (script) => {
+setTimeout(async () => {
+	// Theres usually only 1 script on page that needs injecting so dw about blocking for loop
+	for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`)) {
 		const scriptPath = new URL(script.src).pathname;
 
 		const scriptContent = await fetchText(scriptPath);
@@ -121,5 +121,6 @@ setTimeout(() => {
 			Object.assign(store as Store, hijackedGetStore());
 			break;
 		}
-	});
+	}
+	loaded.res();
 });

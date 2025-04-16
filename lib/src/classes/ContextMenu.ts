@@ -1,6 +1,9 @@
 import { observe, registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { intercept } from "../intercept";
+import { type OActionPayloads } from "../window.luna";
 import { llTrace } from "./Tracer";
+
+import { loaded } from "../safeLoad";
 
 type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };
 export class ContextMenu {
@@ -20,9 +23,8 @@ export class ContextMenu {
 		return contextMenu;
 	}
 
-	public static onOpen: AddReceiver<{ event: unknown; contextMenu: ExtendedElem }> = registerEmitter((onOpen) =>
-		// setTimeout to get around intial window.luna loading, icky
-		setTimeout(() =>
+	public static onOpen: AddReceiver<{ event: OActionPayloads["contextMenu/OPEN"]; contextMenu: ExtendedElem }> = registerEmitter((onOpen) =>
+		loaded.then(() =>
 			intercept("contextMenu/OPEN", async (event) => {
 				const contextMenu = await ContextMenu.getContextMenu();
 				if (contextMenu === null) return;

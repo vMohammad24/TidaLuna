@@ -1,4 +1,7 @@
 {
 	"name": "@luna/lib",
-	"exports": "./src/window.luna.ts"
+	"exports": "./src/window.luna.ts",
+	"devDependencies": {
+		"neptune-types": "^1.0.1"
+	}
 }

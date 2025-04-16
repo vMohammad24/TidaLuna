@@ -1,6 +1,8 @@
-import "./handleExfiltrations.js";
-
 import * as luna from "@luna/lib";
+window.luna = luna;
+
+import "./handleExfiltrations.js";
+import "./settings.js";
 
 export const lTrace = luna.Tracer("[Luna]");
 
@@ -36,4 +38,3 @@ declare global {
 		invoke: (channel: string, ...args: any[]) => Promise<any>;
 	};
 }
-window.luna = luna;
