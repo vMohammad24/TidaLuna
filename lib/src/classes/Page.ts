@@ -35,7 +35,7 @@ export class Page {
 	}
 
 	open() {
-		return actions["router/PUSH"]({
+		actions["router/PUSH"]({
 			pathname: "/not-found",
 			search: this.name,
 			replace: true,

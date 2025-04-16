@@ -5,6 +5,9 @@ settingsPage.root.innerHTML = "HelloWorld";
 
 ContextMenu.onOpen(({ event, contextMenu }) => {
 	if (event.type === "USER_PROFILE") {
-		contextMenu.addButton("Luna Settings", () => settingsPage.open());
+		contextMenu.addButton("Luna Settings", (e) => {
+			e.preventDefault();
+			settingsPage.open();
+		});
 	}
 });
