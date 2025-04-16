@@ -28,7 +28,10 @@ export function intercept<P extends unknown, T extends ActionType>(type: T, cb: 
 			}
 		: cb;
 	// Wrap removing the callback from the interceptors in a unload function and return it
-	const unIntercept = () => interceptors[type].delete(intercept);
+	const unIntercept = () => {
+		interceptors[type].delete(intercept);
+		if (interceptors[type].size === 0) delete interceptors[type];
+	};
 	interceptors[type].add(intercept);
 	return unIntercept;
 }

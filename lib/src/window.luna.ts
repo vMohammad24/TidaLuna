@@ -10,7 +10,7 @@ export type LunaActions = {
 
 export type { ActionTypes as OActionPayloads } from "neptune-types/tidal";
 export type LunaInterceptors = {
-	[K in ActionType]: Set<InterceptCallback<unknown>>;
+	[K in ActionType]?: Set<InterceptCallback<unknown>>;
 };
 
 export type { LunaUnload } from "./unloads";
@@ -20,6 +20,7 @@ export const actions = <LunaActions>{};
 export const interceptors = <LunaInterceptors>{};
 export const store = <Store>{};
 
+export { actionTypes, type ActionType } from "./actionTypes";
 export { ContextMenu } from "./classes/ContextMenu";
 export { Tracer } from "./classes/Tracer";
 export { findModuleProperty } from "./findModuleProperty";
