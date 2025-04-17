@@ -44,6 +44,9 @@ importers:
       neptune-types:
         specifier: ^1.0.1
         version: 1.0.1
+      redux:
+        specifier: ^5.0.1
+        version: 5.0.1
 
   native:
     dependencies:
@@ -66,6 +69,9 @@ importers:
       idb-keyval:
         specifier: ^6.2.1
         version: 6.2.1
+      oby:
+        specifier: ^15.1.2
+        version: 15.1.2
       spitroast:
         specifier: ^2.1.6
         version: 2.1.6
@@ -543,6 +549,9 @@ packages:
 
   oby@14.3.5:
     resolution: {integrity: sha512-0RgL6n1qmxdkUgvXFnmG/J+Lv8HWjwnWmULtu/omMxRUV9KhD/8x3sL7DmanUvEOi5wX4xTbef1sKe5NzqGm7g==}
+
+  oby@15.1.2:
+    resolution: {integrity: sha512-6QD9iEoPzV+pMDdcg3RtFWhgDX8pS5hZouVHvgXGDy3Q9RxFfnI3CYv9i62keeuX+qk6iN2z5E9FD3q3OckZ6A==}
 
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
@@ -1163,6 +1172,8 @@ snapshots:
     optional: true
 
   oby@14.3.5: {}
+
+  oby@15.1.2: {}
 
   once@1.4.0:
     dependencies:

@@ -7,7 +7,7 @@ import { findPrepareActionNameAndIdx } from "./helpers/findPrepareActionNameAndI
 import { findStoreFunctionName } from "./helpers/findStoreFunctionName.js";
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
-import { actions, moduleCache, store } from "./window.core.js";
+import { actions, moduleCache, redux } from "./window.core.js";
 
 const fetchText = (path) => fetch(path).then((res) => res.text());
 
@@ -71,7 +71,7 @@ for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="
 	for (const module of Object.values(moduleCache)) {
 		const { hijackedGetStore } = <any>module;
 		if (!hijackedGetStore) continue;
-		Object.assign(store, hijackedGetStore());
+		Object.assign(redux, hijackedGetStore());
 		break;
 	}
 }

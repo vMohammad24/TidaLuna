@@ -1,14 +1,14 @@
 // @ts-expect-error Idk why TS thinks this module doesnt exist
 import { after } from "spitroast";
 
-import { actions, interceptors, store } from "../window.core.js";
+import { actions, interceptors, redux } from "../window.core.js";
 
 const patchAction = (_Obj: { _: Function }) => {
 	after("_", _Obj, ([type], buildAction) => {
 		if (actions[type] !== undefined) return;
 
 		// Just assume all buildAction's are promises for the sake of safety
-		actions[type] = async (...args) => store.dispatch(await buildAction(...args));
+		actions[type] = async (...args) => redux.dispatch(await buildAction(...args));
 
 		return new Proxy(buildAction, {
 			// Intercept all original calls to buildAction
