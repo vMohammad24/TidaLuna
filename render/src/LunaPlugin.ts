@@ -120,16 +120,32 @@ export class LunaPlugin {
 		return this._enabled._;
 	}
 
+	// #region Exports
 	private readonly _exports?: ModuleExports;
 	private get exports() {
 		return this._exports;
 	}
 	private set exports(exports: ModuleExports | undefined) {
+		if (this._unloads.size !== 0) {
+			// If we always unload on load then we should never be here
+			lTrace.msg.warn(`Plugin ${this.name} is trying to set exports but unloads are not empty! Please report this to the Luna devs.`);
+			// This is a safety check to ensure we dont leak unloads
+			// If there is somehow leftover unloads we need to add them to the new exports.unloads if it exists
+			if (exports?.unloads !== undefined) {
+				for (const unload of this._unloads) exports.unloads.add(unload);
+				this._unloads.clear();
+			}
+		}
 		// Cast to set, _exports is readonly to avoid accidental internal modification
 		(<ModuleExports | undefined>this._exports) = exports;
 		// Ensure Settings signal is triggered on exports changing
 		this.Settings._ = exports?.Settings;
 	}
+	private readonly _unloads: Set<LunaUnload> = new Set();
+	private get unloads() {
+		return this._exports?.unloads ?? this._unloads;
+	}
+	// #endregion
 
 	// #region Store Values
 	private get code() {
@@ -232,21 +248,20 @@ export class LunaPlugin {
 			// Ensure loadError is cleared
 			this.loadError._ = undefined;
 
-			this.exports.unloads ??= new Set<LunaUnload>();
-			const { unloads, onUnload, errSignal } = this.exports;
+			const { onUnload, errSignal } = this.exports;
 
-			if (onUnload) {
+			if (onUnload !== undefined) {
 				onUnload.source = "onUnload";
-				unloads?.add(onUnload);
+				this.unloads.add(onUnload);
 			}
 			if (errSignal !== undefined) {
 				const unloadErrSignal: LunaUnload = errSignal.onValue((next) => (this.loadError._ = next));
 				unloadErrSignal.source = "errSignal";
-				unloads?.add(unloadErrSignal);
+				this.unloads.add(unloadErrSignal);
 			}
 
 			// Prefix all unload sources with plugin name
-			for (const unload of unloads) {
+			for (const unload of this.unloads) {
 				unload.source = this.name + (unload.source ? `.${unload.source}` : "");
 			}
 		} catch (err) {
