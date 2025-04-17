@@ -35,3 +35,7 @@ declare global {
 		invoke: (channel: string, ...args: any[]) => Promise<any>;
 	};
 }
+
+import { LunaPlugin } from "./LunaPlugin.js";
+// Load lib
+LunaPlugin.fromUri("https://luna/luna.lib", { enabled: true });
