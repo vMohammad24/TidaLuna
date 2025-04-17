@@ -13,7 +13,7 @@ export type LunaInterceptors = {
 	[K in ActionType]?: Set<InterceptCallback<unknown>>;
 };
 
-if ((window.luna?.modulelCache ?? window.luna?.actions ?? window.luna?.interceptors ?? window.luna?.store) === undefined) {
+if ((window.luna?.moduleCache ?? window.luna?.actions ?? window.luna?.interceptors ?? window.luna?.redux) === undefined) {
 	// If you are here check whats going on in render/src/core
 	throw new Error("Luna core has not initalized core exports! Check window.luna for missing values");
 }
@@ -23,10 +23,3 @@ export const moduleCache: Record<string, any> = window.luna.moduleCache;
 export const actions: LunaActions = window.luna.actions;
 export const interceptors: LunaInterceptors = window.luna.interceptors;
 export const redux: Store = window.luna.redux;
-
-declare global {
-	interface Window {
-		// Shouldnt be touching window.luna outside of here and window.core anwyay
-		luna: any;
-	}
-}
