@@ -18,7 +18,7 @@ export const writeBundlePlugin = (pluginPackage?: AnyRecord): Plugin => ({
 				// Not a plugin, carry on
 				if (!pluginPackage?.name) await writeFile(outputFile.path, outputFile.contents);
 				else {
-					const code = Buffer.from(outputFile.contents).toString("utf8").replaceAll("@luna/lib", `lu://luna/luna.lib.js?${outputFile.hash}`);
+					const code = Buffer.from(outputFile.contents).toString("utf8").replaceAll("@luna/lib", "https://luna/luna.lib.js");
 
 					await writeFile(outputFile.path, code);
 

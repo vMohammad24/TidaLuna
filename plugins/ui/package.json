@@ -1,0 +1,7 @@
+{
+	"name": "@luna/ui",
+	"exports": "./src/index.ts",
+	"dependencies": {
+		"@luna/lib": "link:..\\lib"
+	}
+}

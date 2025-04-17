@@ -1,5 +1,5 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
-import { Promize, Semaphore, setDefaults, Signal } from "@inrixia/helpers";
+import { Semaphore, setDefaults, Signal, type MaybePromise } from "@inrixia/helpers";
 import { storage } from "./core/storage.js";
 import { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
 import { lTrace } from "./index.js";
@@ -82,8 +82,6 @@ export class LunaPlugin {
 			if ((this._store.liveReload = next)) this.startReloadLoop();
 			else this.stopReloadLoop();
 		});
-
-		if (this.enabled) this.enable();
 	}
 	// #endregion
 
@@ -108,7 +106,6 @@ export class LunaPlugin {
 	// #endregion
 
 	// #region Signals
-	public readonly loaded: Promize<void> = new Promize();
 	public readonly loading: Signal<boolean> = new Signal(false);
 	public readonly fetching: Signal<boolean> = new Signal(false);
 	public readonly loadError: Signal<string> = new Signal(undefined);
@@ -166,7 +163,7 @@ export class LunaPlugin {
 	}
 	// #endregion
 
-	// #region dis/enable, re/unload
+	// #region load/unload
 	/**
 	 * Are you sure you didnt mean disable() or reload()?
 	 * This will unload the plugin without disabling it!
@@ -174,13 +171,21 @@ export class LunaPlugin {
 	private async unload(): Promise<void> {
 		try {
 			this.loading._ = true;
-			this.loaded.reset();
 			await unloadSet(this.exports?.unloads);
 		} finally {
 			this.exports = undefined;
 			this.loading._ = false;
 		}
 	}
+	/**
+	 * Load the plugin if it is enabled
+	 */
+	public load(): MaybePromise<void> {
+		if (this.enabled) return this.enable();
+	}
+	// #endregion
+
+	// #region enable/disable
 	public async enable() {
 		await this.loadExports();
 		this._enabled._ = true;
@@ -258,8 +263,6 @@ export class LunaPlugin {
 			for (const unload of this.unloads) {
 				unload.source = this.name + (unload.source ? `.${unload.source}` : "");
 			}
-
-			this.loaded.res();
 		} catch (err) {
 			// Set loadError for anyone listening
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
@@ -267,8 +270,6 @@ export class LunaPlugin {
 			lTrace.msg.err.withContext(`Failed to load plugin ${this.name}`)(err);
 			// Ensure we arnt partially loaded
 			await this.unload();
-			// Reject anyone waiting on load
-			this.loaded.rej(err);
 			// For sanity throw the error just to be safe
 			throw err;
 		} finally {

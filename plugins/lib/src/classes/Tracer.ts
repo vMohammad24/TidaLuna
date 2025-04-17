@@ -109,5 +109,4 @@ export const Tracer = (source: string, errSignal?: Signal<string | undefined>) =
 		},
 	};
 };
-window.luna.Tracer = Tracer;
 export const llTrace = Tracer("[Luna.lib]");

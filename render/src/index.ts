@@ -38,6 +38,8 @@ declare global {
 
 import { LunaPlugin } from "./LunaPlugin.js";
 // Load lib & wait for it to be ready
-await LunaPlugin.fromUri("https://luna/luna.lib", { enabled: true }).loaded;
-// // Load ui
-// LunaPlugin.fromUri("https://luna/luna.ui");
+await LunaPlugin.fromUri("https://luna/luna.lib", { enabled: true }).load();
+console.log("[Luna] Lib loaded!");
+// Load ui
+await LunaPlugin.fromUri("https://luna/luna.ui", { enabled: true }).load();
+console.log("[Luna] UI loaded!");
