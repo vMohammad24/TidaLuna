@@ -1,6 +1,7 @@
-import { observe, registerEmitter, type AddReceiver } from "@inrixia/helpers";
+import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { type OActionPayloads } from "../exports";
 import { intercept } from "../intercept";
+import { observe } from "../observable";
 import { llTrace } from "./Tracer";
 
 type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };

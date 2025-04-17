@@ -65,7 +65,23 @@ electron.app.whenReady().then(async () => {
 });
 
 // #region LunaNative handling
-ipcHandle("__Luna.eval", (ev, code) => eval(code));
+// Call to register native module
+ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
+	// Load module
+	const exports = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
+	const channel = `__${name}`;
+	// Register handler for calling module exports
+	electron.ipcMain.removeHandler(channel);
+	electron.ipcMain.handle(channel, async (_, exportName, ...args) => {
+		try {
+			return await exports[exportName](...args);
+		} catch (err) {
+			// Set cause to identify native module
+			err.cause = `[Luna.native].${name}.${exportName}`;
+			throw err;
+		}
+	});
+});
 // #endregion
 
 // #region Override electron.BrowserWindow to allow setting custom options

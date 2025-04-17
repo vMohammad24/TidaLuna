@@ -5,18 +5,16 @@
   "main": "src/index.js",
   "scripts": {
     "format": "prettier -wc ./src",
-    "watch": "rimraf ./dist && tsx ./esbuild.config.ts --watch",
-    "build": "rimraf ./dist && tsx ./esbuild.config.ts"
+    "watch": "tsx ./esbuild.config.ts --watch",
+    "build": "tsx ./esbuild.config.ts"
   },
   "license": "MS-Pl",
   "type": "module",
   "devDependencies": {
-    "@inrixia/helpers": "^3.13.0",
+    "@inrixia/helpers": "^3.13.1",
+    "@luna/build": "link:build",
     "@types/node": "^22.14.1",
-    "esbuild": "^0.25.2",
     "prettier": "^3.5.3",
-    "redux": "^5.0.1",
-    "rimraf": "^6.0.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }

@@ -1,0 +1,10 @@
+{
+	"name": "@luna/build",
+	"exports": "./index.ts",
+	"type": "module",
+	"dependencies": {
+		"clean-css": "^5.3.3",
+		"esbuild": "^0.25.2",
+		"html-minifier-terser": "^7.2.0"
+	}
+}

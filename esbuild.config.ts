@@ -1,50 +1,45 @@
-import { context, build as esbuildBuild, type BuildOptions } from "esbuild";
-import { writeFileSync } from "fs";
-import { dirname, join } from "path";
+import { build, context, pluginBuildOptions, type BuildOptions } from "@luna/build";
+import { mkdir, writeFile } from "fs/promises";
+import { basename, dirname, join } from "path";
 
 const buildConfigs: BuildOptions[] = [
 	{
-		entryPoints: ["render/src/index.ts"],
-		outfile: "dist/luna.js",
-		bundle: true,
-		format: "esm",
-		sourcemap: true,
-		minify: true,
-	},
-	{
-		entryPoints: ["native/src/injector.ts"],
+		entryPoints: ["native/injector.ts"],
 		outfile: "dist/injector.js",
-		bundle: true,
 		format: "cjs",
 		platform: "node",
-		sourcemap: true,
-		minify: true,
 		external: ["electron", "module"],
 		plugins: [
 			{
 				name: "write-package-json",
 				setup(build) {
-					build.onEnd(() => {
-						writeFileSync(join(dirname("dist/injector.js"), "package.json"), JSON.stringify({ main: "injector.js" }));
+					build.onEnd(async ({ outputFiles }) => {
+						const outDir = dirname(outputFiles[1].path);
+						await mkdir(outDir, { recursive: true });
+						await writeFile(join(outDir, "package.json"), JSON.stringify({ main: basename(outputFiles[1].path) }));
 					});
 				},
 			},
 		],
 	},
 	{
-		entryPoints: ["native/src/preload.ts"],
+		entryPoints: ["native/preload.ts"],
 		outfile: "dist/preload.js",
-		bundle: true,
 		platform: "node",
 		format: "cjs",
-		sourcemap: true,
-		minify: true,
 		external: ["electron"],
 	},
+	{
+		entryPoints: ["render/src/index.ts"],
+		outfile: "dist/luna.js",
+		platform: "browser",
+		format: "esm",
+	},
+	await pluginBuildOptions("./plugins/lib"),
 ];
 
 const buildAll = async () => {
-	for (const opts of buildConfigs) await esbuildBuild(opts);
+	for (const opts of buildConfigs) await build(opts);
 };
 
 const watchAll = async () => {
