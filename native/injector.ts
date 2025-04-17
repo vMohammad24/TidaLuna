@@ -1,7 +1,7 @@
 import electron from "electron";
 import Module from "module";
 
-import { readFile } from "fs/promises";
+import { readdir, readFile } from "fs/promises";
 import mime from "mime";
 
 import path from "path";
@@ -20,22 +20,22 @@ const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) =>
 // Requires starting client with --remote-debugging-port=9222
 electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:9222");
 
-// Prep lu://luna protocol files (see ./preload.ts)
-const prepResponse = async (filePath: string) => new Response(await readFile(filePath), { headers: { "Content-Type": mime.getType(filePath) } });
-const lunaUrls = {
-	"lu://luna/luna.js": prepResponse(path.join(bundleDir, "luna.js")),
-	"lu://luna/luna.js.map": prepResponse(path.join(bundleDir, "luna.js.map")),
-};
-
+// Preload bundle files for https://luna/
+const bundleFiles: Record<string, [Buffer, ResponseInit]> = {};
+readdir(bundleDir).then((files) => {
+	files.forEach(async (file) => {
+		bundleFiles[`https://luna/${file}`] = [await readFile(path.join(bundleDir, file)), { headers: { "Content-Type": mime.getType(file) } }];
+	});
+});
 // #region CSP/Script Prep
 // Ensure app is ready
 electron.app.whenReady().then(async () => {
-	// Handle requests for lu:// protocol (used to import() luna.js bundle from file)
-	electron.protocol.handle("lu", (request) => lunaUrls[request.url] ?? new Response(null, { status: 404 }));
-	// Bypass CSP & Mark meta scripts for quartz injection
 	electron.protocol.handle("https", async (req) => {
-		const url = new URL(req.url);
-		if (url.pathname === "/" || url.pathname == "/index.html") {
+		// Espose bundle files under https://luna/
+		if (bundleFiles[req.url]) return new Response(...bundleFiles[req.url]);
+
+		// Bypass CSP & Mark meta scripts for quartz injection
+		if (req.url === "https://desktop.tidal.com/") {
 			const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
 			let body = await res.text();
 			body = body.replace(

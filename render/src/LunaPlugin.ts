@@ -178,6 +178,7 @@ export class LunaPlugin {
 		await this.enable();
 	}
 
+	// #region Fetch & Load
 	/**
 	 * Returns true if code changed
 	 */
@@ -261,6 +262,7 @@ export class LunaPlugin {
 			this.loading._ = false;
 		}
 	}
+	// #endregion
 }
 // Expose to @luna/lib
 (<typeof LunaPlugin>window.luna.LunaPlugin) = LunaPlugin;

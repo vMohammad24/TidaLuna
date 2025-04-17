@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld("lunaNative", {
 });
 
 const loadLunaFile = async (fileName: string) => {
-	await webFrame.executeJavaScript(`(async () => { await import("lu://luna/${fileName}"); })()`, true).catch((err) => {
+	await webFrame.executeJavaScript(`(async () => { await import("https://luna/${fileName}"); })()`, true).catch((err) => {
 		console.error(`[Luna.preload] ${fileName} failed to load!`, err);
 		throw err;
 	});
