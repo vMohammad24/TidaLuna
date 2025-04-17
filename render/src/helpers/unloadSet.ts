@@ -1,8 +1,5 @@
-import type { Unload } from "@inrixia/helpers";
-
-export interface LunaUnload extends Unload {
-	source?: string;
-}
+import type { LunaUnload } from "@luna/lib";
+export type { LunaUnload } from "@luna/lib";
 
 export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 	if (unloads === undefined || unloads.size === 0) return;

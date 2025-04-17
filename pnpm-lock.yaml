@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@inrixia/helpers':
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.13.0
+        version: 3.13.0
       '@types/node':
         specifier: ^22.14.1
         version: 22.14.1
@@ -230,8 +230,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inrixia/helpers@3.9.0':
-    resolution: {integrity: sha512-qE8VPJbWuOcQEM5yQ7jE41QdNIWPrcOTu+TPUPcjsgJtysyr4eP8l8fl65YyQMKTs/6GI6Xum7TZMvSX+C5HbQ==}
+  '@inrixia/helpers@3.13.0':
+    resolution: {integrity: sha512-CL8fb0F90Dqo5KoZimku/PcPwbTxDqpd72D8CcikPVPexrRukO3syBhh+6ROMNCL8w/bufvlJ/T1Q9DsFOK2Og==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -810,7 +810,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.2':
     optional: true
 
-  '@inrixia/helpers@3.9.0': {}
+  '@inrixia/helpers@3.13.0': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:

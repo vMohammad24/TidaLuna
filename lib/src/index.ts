@@ -1,10 +1,9 @@
 export * from "./window.luna";
 
-import { type MaybePromise, type VoidLike } from "@inrixia/helpers";
+import type { MaybePromise, VoidFn, VoidLike } from "@inrixia/helpers";
+
 import type { ActionType } from "./intercept.actionTypes";
 import type { InterceptCallback } from "./intercept.js";
-
-export type { LunaUnload } from "./helpers/unloadSet";
 
 export { findModuleByProperty, findModuleProperty } from "./helpers/findModule";
 export { actionTypes, type ActionType } from "./intercept.actionTypes";
@@ -25,3 +24,6 @@ export type { ActionTypes as OActionPayloads } from "neptune-types/tidal";
 export type LunaInterceptors = {
 	[K in ActionType]?: Set<InterceptCallback<unknown>>;
 };
+export interface LunaUnload extends VoidFn {
+	source?: string;
+}
