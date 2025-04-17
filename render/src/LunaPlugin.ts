@@ -4,6 +4,7 @@ import { quartz } from "@neptune";
 
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, setDefaults, Signal } from "@inrixia/helpers";
+import { storage } from "@luna/lib";
 import { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
 import { lTrace } from "./index.js";
 
@@ -39,10 +40,17 @@ export type LunaPluginInfo = {
 	devDependencies?: string[];
 };
 
-// TODO: Wrap in idbkvooby
-const pluginStore: Record<string, LunaPluginStorage> = {};
-
 export class LunaPlugin {
+	static {
+		// Ensure all plugins are unloaded on beforeunload
+		addEventListener("beforeunload", () => {
+			for (const plugin of Object.values(LunaPlugin.plugins)) {
+				plugin.unload().catch(lTrace.msg.err.withContext(`Failed to unload plugin ${plugin.name}`));
+			}
+		});
+	}
+
+	public static readonly pluginStore = (storage["__plugins"] ??= {});
 	public static readonly plugins: Record<string, LunaPlugin> = {};
 	public static fromUri(uri: string, defaults: Partial<LunaPluginConfig> = {}) {
 		defaults.enabled ??= false;
@@ -56,7 +64,7 @@ export class LunaPlugin {
 		defaults: LunaPluginConfig,
 	) {
 		// Apply defaults and/or create store
-		this._store = setDefaults<LunaPluginConfig>((pluginStore[this.url] ??= defaults), defaults);
+		this._store = setDefaults<LunaPluginConfig>((LunaPlugin.pluginStore[this.url] ??= defaults), defaults);
 
 		// Enabled has to be setup first because liveReload below accesses it
 		this._enabled = new Signal(this._store.enabled);
@@ -136,6 +144,10 @@ export class LunaPlugin {
 	}
 	// #endregion
 
+	/**
+	 * Are you sure you didnt mean disable() or reload()?
+	 * This will unload the plugin without disabling it!
+	 */
 	private async unload(): Promise<void> {
 		try {
 			this.loading._ = true;

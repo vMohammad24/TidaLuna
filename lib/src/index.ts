@@ -11,6 +11,7 @@ export { Page } from "./classes/Page";
 export { StyleTag } from "./classes/StyleTag";
 export { Tracer } from "./classes/Tracer";
 export { React, ReactDom } from "./react/react";
+export { storage } from "./storage";
 
 export interface LunaUnload extends VoidFn {
 	source?: string;

@@ -18,11 +18,11 @@ if ((window.luna?.modulelCache ?? window.luna?.actions ?? window.luna?.intercept
 	throw new Error("Luna core has not initalized core exports! Check window.luna for missing values");
 }
 
-// These are all initalized in @luna/core
+// See render/core/window.core.ts
 export const moduleCache: Record<string, any> = window.luna.moduleCache;
-export const actions = <LunaActions>window.luna.actions;
-export const interceptors = <LunaInterceptors>window.luna.interceptors;
-export const redux = <Store>window.luna.redux;
+export const actions: LunaActions = window.luna.actions;
+export const interceptors: LunaInterceptors = window.luna.interceptors;
+export const redux: Store = window.luna.redux;
 
 declare global {
 	interface Window {

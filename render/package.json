@@ -3,7 +3,6 @@
 	"dependencies": {
 		"@luna/lib": "link:..\\lib",
 		"@uwu/quartz": "^1.5.3",
-		"idb-keyval": "^6.2.1",
 		"spitroast": "^2.1.6"
 	}
 }
