@@ -25,7 +25,7 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		outdir: "./dist",
 		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.js")],
 		...opts,
-		external: [...(opts?.external ?? []), "@neptune", "@plugin", "electron"],
+		external: [...(opts?.external ?? []), "@luna/lib", "electron"],
 		plugins: [...(opts?.plugins ?? []), fileUrlPlugin, lunaNativePlugin, writeBundlePlugin(pluginPackage)],
 	};
 };
@@ -35,11 +35,13 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
  */
 const makeBuildOpts = (opts: BuildOptions) => {
 	try {
+		const plugins = opts?.plugins ?? [];
+		const hasWriteBundle = plugins.some((p) => p?.name === writeBundlePlugin().name);
 		return <BuildOptions>{
 			...defaultBuildOptions,
 			...opts,
 			write: false,
-			plugins: [...(opts?.plugins ?? []), writeBundlePlugin()],
+			plugins: hasWriteBundle ? plugins : [...plugins, writeBundlePlugin()],
 		};
 	} catch (err) {
 		console.error(opts, err);
