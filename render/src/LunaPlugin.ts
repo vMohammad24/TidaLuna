@@ -38,6 +38,7 @@ export type LunaPluginInfo = {
 	devDependencies?: string[];
 };
 export class LunaPlugin {
+	// #region Static
 	static {
 		// Ensure all plugins are unloaded on beforeunload
 		addEventListener("beforeunload", () => {
@@ -60,7 +61,9 @@ export class LunaPlugin {
 
 		return (this.plugins[uri] ??= new this(uri, <LunaPluginConfig>defaults));
 	}
+	// #endregion
 
+	// #region constructor
 	private constructor(
 		public readonly url: string,
 		defaults: LunaPluginConfig,
@@ -86,9 +89,9 @@ export class LunaPlugin {
 
 		if (this.enabled) this.enable();
 	}
+	// #endregion
 
-	private readonly _store: LunaPluginStorage;
-
+	// #region reloadLoop
 	private _reloadTimeout?: NodeJS.Timeout;
 	private startReloadLoop() {
 		if (this._reloadTimeout) return;
@@ -106,7 +109,9 @@ export class LunaPlugin {
 		clearTimeout(this._reloadTimeout);
 		this._reloadTimeout = undefined;
 	}
+	// #endregion
 
+	// #region Signals
 	public readonly loading: Signal<boolean> = new Signal(false);
 	public readonly fetching: Signal<boolean> = new Signal(false);
 	public readonly loadError: Signal<string> = new Signal(undefined);
@@ -119,8 +124,9 @@ export class LunaPlugin {
 	public get enabled() {
 		return this._enabled._;
 	}
+	// #endregion
 
-	// #region Exports
+	// #region _exports
 	private readonly _exports?: ModuleExports;
 	private get exports() {
 		return this._exports;
@@ -147,7 +153,8 @@ export class LunaPlugin {
 	}
 	// #endregion
 
-	// #region Store Values
+	// #region _store
+	private readonly _store: LunaPluginStorage;
 	private get code() {
 		return this._store.code;
 	}
@@ -162,6 +169,7 @@ export class LunaPlugin {
 	}
 	// #endregion
 
+	// #region dis/enable, re/unload
 	/**
 	 * Are you sure you didnt mean disable() or reload()?
 	 * This will unload the plugin without disabling it!
@@ -175,7 +183,6 @@ export class LunaPlugin {
 			this.loading._ = false;
 		}
 	}
-
 	public async enable() {
 		await this.loadExports(true);
 		this._enabled._ = true;
@@ -193,8 +200,9 @@ export class LunaPlugin {
 		await this.disable();
 		await this.enable();
 	}
+	// #endregion
 
-	// #region Fetch & Load
+	// #region Fetch
 	/**
 	 * Returns true if code changed
 	 */
@@ -214,7 +222,9 @@ export class LunaPlugin {
 		}
 		return false;
 	}
+	// #endregion
 
+	// #region Load
 	private readonly loadSemaphore: Semaphore = new Semaphore(1);
 	private async loadExports(force: boolean = false): Promise<void> {
 		// Ensure we cant start loading midway through loading
