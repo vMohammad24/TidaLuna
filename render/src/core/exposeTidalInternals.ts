@@ -9,15 +9,18 @@ import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
 import { actions, moduleCache, redux } from "./window.core.js";
 
-const fetchText = (path) => fetch(path).then((res) => res.text());
+const fetchCode = async (path) => {
+	const res = await fetch(path);
+	return `${await res.text()}\n//# sourceURL=${path}`;
+};
 
 const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);
 	if (moduleCache[path]) return moduleCache[path];
 
-	const data = await fetchText(path);
+	const code = await fetchCode(path);
 
-	moduleCache[path] = await quartz(data, config, path);
+	moduleCache[path] = await quartz(code, config, path);
 	return moduleCache[path];
 };
 
@@ -25,7 +28,7 @@ const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, 
 for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`)) {
 	const scriptPath = new URL(script.src).pathname;
 
-	const scriptContent = await fetchText(scriptPath);
+	const scriptContent = await fetchCode(scriptPath);
 
 	// Fetch, transform execute and store the module in moduleCache
 	// Hijack the Redux store & inject interceptors
