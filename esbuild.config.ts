@@ -36,15 +36,11 @@ const buildConfigs: BuildOptions[] = [
 		format: "esm",
 	},
 	await pluginBuildOptions("./plugins/lib"),
+	await pluginBuildOptions("./plugins/ui"),
 ];
 
-const buildAll = async () => {
-	for (const opts of buildConfigs) await build(opts);
-};
-
-const watchAll = async () => {
-	for (const opts of buildConfigs) (await context(opts)).watch();
-};
+const buildAll = () => buildConfigs.map(build);
+const watchAll = () => buildConfigs.map(async (opts) => (await context(opts)).watch());
 
 if (process.argv.includes("--watch")) watchAll();
 else buildAll();

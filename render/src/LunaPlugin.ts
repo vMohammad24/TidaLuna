@@ -1,5 +1,3 @@
-import quartz from "@uwu/quartz";
-
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Promize, Semaphore, setDefaults, Signal } from "@inrixia/helpers";
 import { storage } from "./core/storage.js";
@@ -209,10 +207,9 @@ export class LunaPlugin {
 	private async fetchNewInfo(): Promise<boolean> {
 		try {
 			this.fetching._ = true;
-			const newInfo = await fetch(`${this.url}.json`).then((res) => res.json() as Promise<LunaPluginInfo>);
+			const newInfo: LunaPluginInfo = await fetch(`${this.url}.json`).then((res) => res.json());
 			if (this.hash !== newInfo.hash) {
-				// TODO: validate code hash matches hash
-				this.code = await fetch(`${this.url}.js`).then((res) => res.text());
+				this.code = `${await fetch(`${this.url}.js`).then((res) => res.text())}\n//# sourceURL=${this.url}.js`;
 				this._store.info = newInfo;
 				return true;
 			}
@@ -240,17 +237,7 @@ export class LunaPlugin {
 			// Ensure we unload if previously loaded
 			await this.unload();
 
-			this.exports = await quartz(this.code, {
-				plugins: [
-					{
-						resolve({ name }) {
-							if (name.startsWith("@luna/lib")) {
-								return `window.luna`;
-							}
-						},
-					},
-				],
-			});
+			this.exports = await import(URL.createObjectURL(new Blob([this.code], { type: "text/javascript" })));
 
 			// Ensure loadError is cleared
 			this.loadError._ = undefined;

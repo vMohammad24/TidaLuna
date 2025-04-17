@@ -24,16 +24,37 @@ electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:
 const bundleFiles: Record<string, [Buffer, ResponseInit]> = {};
 readdir(bundleDir).then((files) => {
 	files.forEach(async (file) => {
-		bundleFiles[`https://luna/${file}`] = [await readFile(path.join(bundleDir, file)), { headers: { "Content-Type": mime.getType(file) } }];
+		const filePath = path.join(bundleDir, file);
+		let content = await readFile(filePath);
+
+		// If JS file, check for .map and append if exists
+		if (file.endsWith(".js")) {
+			const mapPath = filePath + ".map";
+			try {
+				// Append base64 encoded source map to the end of the file
+				const base64Map = Buffer.from(await readFile(mapPath, "utf8")).toString("base64");
+				const sourceMapComment = `\n//# sourceMappingURL=data:application/json;base64,${base64Map}`;
+				content = Buffer.concat([content, Buffer.from(sourceMapComment, "utf8")]);
+			} catch {
+				// .map file does not exist, do nothing
+			}
+		}
+		bundleFiles[`luna/${file}`] = [content, { headers: { "Content-Type": mime.getType(file) } }];
 	});
 });
+
+ipcHandle("__Luna.renderJs", () => {
+	const code = bundleFiles["luna/luna.js"][0].toString("utf8");
+	const sourceMap = btoa(bundleFiles["luna/luna.js.map"][0].toString("utf8"));
+	return `${code}\n//# sourceURL=https://luna/luna.js\n//# sourceMappingURL=data:application/json;base64,${sourceMap}`;
+});
+
 // #region CSP/Script Prep
 // Ensure app is ready
 electron.app.whenReady().then(async () => {
 	electron.protocol.handle("https", async (req) => {
-		// Espose bundle files under https://luna/
-		if (bundleFiles[req.url]) return new Response(...bundleFiles[req.url]);
-
+		const bundleResp = bundleFiles[req.url.slice(8)];
+		if (bundleResp) return new Response(...bundleResp);
 		// Bypass CSP & Mark meta scripts for quartz injection
 		if (req.url === "https://desktop.tidal.com/") {
 			const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
@@ -57,7 +78,6 @@ electron.app.whenReady().then(async () => {
 		// All other requests passthrough
 		return electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
 	});
-
 	// Force service worker to fetch resources by clearing it's cache.
 	electron.session.defaultSession.clearStorageData({
 		storages: ["cachestorage"],
@@ -71,8 +91,7 @@ ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
 	const exports = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
 	const channel = `__${name}`;
 	// Register handler for calling module exports
-	electron.ipcMain.removeHandler(channel);
-	electron.ipcMain.handle(channel, async (_, exportName, ...args) => {
+	ipcHandle(channel, async (_, exportName, ...args) => {
 		try {
 			return await exports[exportName](...args);
 		} catch (err) {

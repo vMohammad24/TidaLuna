@@ -16,13 +16,14 @@ export const defaultBuildOptions: BuildOptions = {
 
 export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions) => {
 	const pluginPackage = await readFile(path.join(pluginPath, "package.json"), "utf8").then(JSON.parse);
+	// Sanitize pluginPackage.name, remove @, replace / with .
+	const safeName = pluginPackage.name.replace(/@/g, "").replace(/\//g, ".");
 	return <BuildOptions>{
 		...defaultBuildOptions,
-		sourcemap: false,
 		write: false,
 		platform: "browser",
 		format: "esm",
-		outdir: "./dist",
+		outfile: `./dist/${safeName}.js`,
 		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.js")],
 		...opts,
 		external: [...(opts?.external ?? []), "@luna/lib", "electron"],

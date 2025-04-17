@@ -1,7 +1,8 @@
 import type { AnyRecord } from "@inrixia/helpers";
 import type { Plugin } from "esbuild";
+
 import { mkdir, writeFile } from "fs/promises";
-import { basename, dirname, join } from "path";
+import { basename, dirname } from "path";
 
 export const writeBundlePlugin = (pluginPackage?: AnyRecord): Plugin => ({
 	name: "writeBundlePlugin",
@@ -14,26 +15,25 @@ export const writeBundlePlugin = (pluginPackage?: AnyRecord): Plugin => ({
 				const outDir = dirname(outputFile.path);
 				await mkdir(outDir, { recursive: true });
 
-				if (pluginPackage?.name) {
-					// Swap outputFile.path filename with pluginPackage.name retaining extension
-					const fileExt = outputFile.path.slice(outputFile.path.lastIndexOf("."));
-					// Sanitize pluginPackage.name, remove @, replace / with .
-					const safeName = pluginPackage.name.replace(/@/g, "").replace(/\//g, ".");
-					outputFile.path = join(outDir, `${safeName}${fileExt}`);
-				}
+				// Not a plugin, carry on
+				if (!pluginPackage?.name) await writeFile(outputFile.path, outputFile.contents);
+				else {
+					const code = Buffer.from(outputFile.contents).toString("utf8").replaceAll("@luna/lib", `lu://luna/luna.lib.js?${outputFile.hash}`);
 
-				await writeFile(outputFile.path, outputFile.contents);
+					await writeFile(outputFile.path, code);
 
-				if (!writePackageJson) {
-					await writeFile(
-						outputFile.path.replace(/\.js$/, ".json"),
-						JSON.stringify({
-							...pluginPackage,
-							hash: outputFile.hash,
-						}),
-					);
-					// Only write the package.json once
-					writePackageJson = true;
+					if (!writePackageJson && outputFile.path.endsWith(".js")) {
+						await writeFile(
+							outputFile.path.replace(/\.js$/, ".json"),
+							JSON.stringify({
+								...pluginPackage,
+								// This is no longer accurate after mapping imports
+								hash: outputFile.hash,
+							}),
+						);
+						// Only write the package.json once
+						writePackageJson = true;
+					}
 				}
 
 				const fileSizeInBytes = outputFile.contents.byteLength;
