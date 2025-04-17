@@ -1,18 +1,10 @@
-export * from "./window.luna";
+export * from "./exports";
+import * as luna from "./exports";
+window.luna = luna;
 
-import type { VoidFn } from "@inrixia/helpers";
-
-export { findModuleByProperty, findModuleProperty } from "./helpers/findModule";
-export { actionTypes, type ActionType } from "./intercept.actionTypes";
-export { intercept } from "./intercept.js";
-
-export { ContextMenu } from "./classes/ContextMenu";
-export { Page } from "./classes/Page";
-export { StyleTag } from "./classes/StyleTag";
-export { Tracer } from "./classes/Tracer";
-export { React, ReactDom } from "./react/react";
-export { storage } from "./storage";
-
-export interface LunaUnload extends VoidFn {
-	source?: string;
+declare global {
+	interface Window {
+		// Shouldnt be touching window.luna outside of here and window.core anwyay
+		luna: typeof luna;
+	}
 }

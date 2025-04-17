@@ -1,12 +1,10 @@
-import type { default as Quartz } from "@uwu/quartz";
-// @ts-expect-error This exists types arent updated
-import { quartz } from "@neptune";
+import quartz from "@uwu/quartz";
 
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, setDefaults, Signal } from "@inrixia/helpers";
-import { storage } from "@luna/lib";
+import { storage } from "./core/storage.js";
+import { logErr } from "./helpers/logErr.js";
 import { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
-import { lTrace } from "./index.js";
 
 type ModuleExports = {
 	unloads?: Set<LunaUnload>;
@@ -45,7 +43,12 @@ export class LunaPlugin {
 		// Ensure all plugins are unloaded on beforeunload
 		addEventListener("beforeunload", () => {
 			for (const plugin of Object.values(LunaPlugin.plugins)) {
-				plugin.unload().catch(lTrace.msg.err.withContext(`Failed to unload plugin ${plugin.name}`));
+				plugin.unload().catch((err) => {
+					const errMsg = `[LUNA] Failed to unload plugin ${plugin.name}! Please report this to the Luna devs. ${err?.message}`;
+					// Use alert here over logErr as Tidal may be partially unloaded
+					alert(errMsg);
+					console.error(errMsg, err);
+				});
 			}
 		});
 	}
@@ -214,7 +217,7 @@ export class LunaPlugin {
 			// Ensure we unload if previously loaded
 			await this.unload();
 
-			this.exports = await (quartz as typeof Quartz)(this.code, {
+			this.exports = await quartz(this.code, {
 				plugins: [
 					{
 						resolve({ name }) {
@@ -247,8 +250,10 @@ export class LunaPlugin {
 				unload.source = this.name + (unload.source ? `.${unload.source}` : "");
 			}
 		} catch (err) {
+			// Alerting users can be handled downstream by listening to loadError
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
-			lTrace.msg.err.withContext(`Failed to load plugin ${this.name}`)(err);
+			// Log it to console anyway
+			logErr(`Failed to load plugin ${this.name}`, err);
 			await this.unload();
 			// For sanity throw the error just to be safe
 			throw err;

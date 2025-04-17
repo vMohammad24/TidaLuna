@@ -1,8 +1,5 @@
 import type { Signal, VoidLike } from "@inrixia/helpers";
-import { Severity } from "neptune-types/tidal";
-
-import type { ActionType } from "../intercept.actionTypes";
-import { actions } from "../window.luna";
+import { actions } from "../window.luna.js";
 
 type LoggerFunc = (...data: any[]) => VoidLike;
 
@@ -42,7 +39,7 @@ type Messenger = {
  * // Log to console and display a tidal alert message
  * await someFunc().catch(trace.msg.err.withContext("someFunc had a error").throw);
  */
-export const Tracer = (source: string, errSignal?: Signal<string | undefined>) => {
+export const Tracer = (window.luna.Tracer = (source: string, errSignal?: Signal<string | undefined>) => {
 	const createLogger = <T extends LoggerFunc>(logger: T): Logger<T> => {
 		const _logger = (...data: Parameters<T>) => logger(source, ...data);
 		_logger.withContext = (...context: Parameters<T>) => {
@@ -75,7 +72,11 @@ export const Tracer = (source: string, errSignal?: Signal<string | undefined>) =
 	);
 	const debug = createLogger(console.debug);
 
-	const createMessager = (logger: Logger, messager: ActionType, severity: Severity): Messenger => {
+	const createMessager = (
+		logger: Logger,
+		messager: "message/MESSAGE_INFO" | "message/MESSAGE_WARN" | "message/MESSAGE_ERROR",
+		severity: "DEBUG" | "ERROR" | "INFO" | "WARN",
+	): Messenger => {
 		const _messager = (message: unknown) => {
 			logger(message);
 			actions[messager]?.({ message: `${source} - ${message}`, category: "OTHER", severity });
@@ -107,6 +108,5 @@ export const Tracer = (source: string, errSignal?: Signal<string | undefined>) =
 			err: createMessager(err, "message/MESSAGE_ERROR", "ERROR"),
 		},
 	};
-};
-
+});
 export const llTrace = Tracer("[Luna.lib]");

@@ -1,6 +1,7 @@
+import type { LunaUnload, OActionPayloads } from "./exports";
 import type { ActionType } from "./intercept.actionTypes";
 
-import { type LunaUnload, type OActionPayloads, interceptors } from "@luna/lib";
+import { interceptors } from "./window.luna";
 
 export type InterceptCallback<P extends unknown> = (payload: P, ...args: unknown[]) => true | unknown;
 

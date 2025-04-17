@@ -1,5 +1,5 @@
 import { observe, registerEmitter, type AddReceiver } from "@inrixia/helpers";
-import { type OActionPayloads } from "..";
+import { type OActionPayloads } from "../exports";
 import { intercept } from "../intercept";
 import { llTrace } from "./Tracer";
 

@@ -1,7 +1,10 @@
-import type { MaybePromise, VoidLike } from "@inrixia/helpers";
+import type { AnyRecord, MaybePromise, VoidLike } from "@inrixia/helpers";
 import type { Store } from "redux";
 import type { InterceptCallback } from "./intercept";
 import type { ActionType } from "./intercept.actionTypes";
+
+// This file cannot import anything from lib.
+// Its seperate specifically to avoid cycylic imports!
 
 export type LunaAction<P = unknown> = P extends VoidLike ? () => MaybePromise<VoidLike> : (payload: P) => MaybePromise<VoidLike>;
 export type LunaActions = {
@@ -23,3 +26,6 @@ export const moduleCache: Record<string, any> = window.luna.moduleCache;
 export const actions: LunaActions = window.luna.actions;
 export const interceptors: LunaInterceptors = window.luna.interceptors;
 export const redux: Store = window.luna.redux;
+
+// See render/core/storage.ts
+export const storage: Record<string, AnyRecord> = window.luna.storage;

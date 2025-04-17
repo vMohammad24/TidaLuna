@@ -1,20 +1,6 @@
 // Always expose internals first
 import "./core/exposeTidalInternals.js";
 
-// Set window.luna to @luna/lib
-import * as luna from "@luna/lib";
-window.luna = luna;
-
-declare global {
-	interface Window {
-		// Shouldnt be touching window.luna outside of here and window.core anwyay
-		luna: typeof luna;
-	}
-}
-
-// Default luna tracer used for core logging
-export const lTrace = luna.Tracer("[Luna]");
-
 // Restore the console
 for (let key in console) {
 	const orig = console[key];

@@ -7,10 +7,10 @@ contextBridge.exposeInMainWorld("lunaNative", {
 
 const loadLunaFile = async (fileName: string) => {
 	await webFrame.executeJavaScript(`(async () => { await import("lu://luna/${fileName}"); })()`, true).catch((err) => {
-		console.error(`${fileName} failed to load!`, err);
+		console.error(`[LUNA.preload] ${fileName} failed to load!`, err);
 		throw err;
 	});
-	console.log(`${fileName} loaded!`);
+	console.log(`[LUNA.preload] ${fileName} loaded!`);
 };
 
 // require() the original Tidal preload script

@@ -41,15 +41,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.1.2
         version: 19.1.2(@types/react@19.1.2)
-      idb-keyval:
-        specifier: ^6.2.1
-        version: 6.2.1
       neptune-types:
         specifier: ^1.0.1
         version: 1.0.1
-      oby:
-        specifier: ^15.1.2
-        version: 15.1.2
       redux:
         specifier: ^5.0.1
         version: 5.0.1
@@ -72,6 +66,12 @@ importers:
       '@uwu/quartz':
         specifier: ^1.5.3
         version: 1.5.3
+      idb-keyval:
+        specifier: ^6.2.1
+        version: 6.2.1
+      oby:
+        specifier: ^15.1.2
+        version: 15.1.2
       spitroast:
         specifier: ^2.1.6
         version: 2.1.6

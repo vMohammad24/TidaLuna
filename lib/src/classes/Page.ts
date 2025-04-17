@@ -1,4 +1,5 @@
-import { actions, intercept } from "..";
+import { intercept } from "../intercept";
+import { actions } from "../window.luna";
 
 export class Page {
 	private static readonly pages: Record<string, Page> = {};

@@ -3,6 +3,9 @@ import { after } from "spitroast";
 
 import { actions, interceptors, redux } from "../window.core.js";
 
+// Ick
+import { logErr } from "../../helpers/logErr.js";
+
 const patchAction = (_Obj: { _: Function }) => {
 	after("_", _Obj, ([type], buildAction) => {
 		if (actions[type] !== undefined) return;
@@ -18,9 +21,11 @@ const patchAction = (_Obj: { _: Function }) => {
 				if (interceptor?.size > 0) {
 					for (const interceptor of interceptors[type]) {
 						try {
-							if (interceptor(...args) === true) shouldDispatch = false;
+							const result = interceptor(...args);
+							if (result === true) shouldDispatch = false;
+							else if (result instanceof Promise) result.catch((err) => logErr.msg("Failed to run interceptor!", type, err));
 						} catch (err) {
-							console.error("[Luna.core]", "Failed to run interceptor!", err);
+							logErr.msg("Failed to run interceptor!", type, err);
 						}
 					}
 				}
