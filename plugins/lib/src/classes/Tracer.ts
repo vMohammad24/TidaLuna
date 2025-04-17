@@ -39,7 +39,7 @@ type Messenger = {
  * // Log to console and display a tidal alert message
  * await someFunc().catch(trace.msg.err.withContext("someFunc had a error").throw);
  */
-export const Tracer = (window.luna.Tracer = (source: string, errSignal?: Signal<string | undefined>) => {
+export const Tracer = (source: string, errSignal?: Signal<string | undefined>) => {
 	const createLogger = <T extends LoggerFunc>(logger: T): Logger<T> => {
 		const _logger = (...data: Parameters<T>) => logger(source, ...data);
 		_logger.withContext = (...context: Parameters<T>) => {
@@ -108,5 +108,6 @@ export const Tracer = (window.luna.Tracer = (source: string, errSignal?: Signal<
 			err: createMessager(err, "message/MESSAGE_ERROR", "ERROR"),
 		},
 	};
-});
+};
+window.luna.Tracer = Tracer;
 export const llTrace = Tracer("[Luna.lib]");

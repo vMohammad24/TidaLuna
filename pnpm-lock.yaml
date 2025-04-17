@@ -58,11 +58,26 @@ importers:
         specifier: ^35.1.5
         version: 35.1.5
 
+  plugins/lib:
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.2
+        version: 19.1.2
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.2)
+      neptune-types:
+        specifier: ^1.0.1
+        version: 1.0.1
+      redux:
+        specifier: ^5.0.1
+        version: 5.0.1
+
   render:
     dependencies:
       '@luna/lib':
-        specifier: link:..\lib
-        version: link:../lib
+        specifier: link:..\plugins\lib
+        version: link:../plugins/lib
       '@uwu/quartz':
         specifier: ^1.5.3
         version: 1.5.3

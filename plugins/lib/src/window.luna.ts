@@ -3,6 +3,9 @@ import type { Store } from "redux";
 import type { InterceptCallback } from "./intercept";
 import type { ActionType } from "./intercept.actionTypes";
 
+// Ick import types from core
+import type * as LP from "../../../render/src/LunaPlugin";
+
 // This file cannot import anything from lib.
 // Its seperate specifically to avoid cycylic imports!
 
@@ -29,3 +32,6 @@ export const redux: Store = window.luna.redux;
 
 // See render/core/storage.ts
 export const storage: Record<string, AnyRecord> = window.luna.storage;
+
+// See render/LunaPlugin.ts
+export const LunaPlugin: typeof LP.LunaPlugin = window.luna.LunaPlugin;

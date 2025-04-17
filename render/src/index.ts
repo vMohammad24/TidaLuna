@@ -1,6 +1,11 @@
 // Always expose internals first
 import "./core/exposeTidalInternals.js";
 
+// Rip out of lib for use, horrible I know but I want my Tracer
+// and this avoid triggering lib loading (we want it in a plugin to hotReload)
+import { Tracer } from "../../plugins/lib/src/classes/Tracer.js";
+export const lTrace = Tracer("[Luna]");
+
 // Restore the console
 for (let key in console) {
 	const orig = console[key];

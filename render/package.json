@@ -1,10 +1,10 @@
 {
 	"type": "module",
 	"dependencies": {
-		"@luna/lib": "link:..\\lib",
+		"@luna/lib": "link:..\\plugins\\lib",
 		"@uwu/quartz": "^1.5.3",
-		"spitroast": "^2.1.6",
 		"idb-keyval": "^6.2.1",
-		"oby": "^15.1.2"
+		"oby": "^15.1.2",
+		"spitroast": "^2.1.6"
 	}
 }

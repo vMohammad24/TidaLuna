@@ -1,7 +1,7 @@
 import quartz, { type QuartzPlugin } from "@uwu/quartz";
 
 // Ensure patchAction is loaded on window!
-import "./helpers/patchAction.js";
+import "./patchAction.js";
 
 import { findPrepareActionNameAndIdx } from "./helpers/findPrepareActionNameAndIdx.js";
 import { findStoreFunctionName } from "./helpers/findStoreFunctionName.js";

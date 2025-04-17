@@ -1,6 +1,5 @@
-import { logErr } from "./logErr.js";
-
 import type { LunaUnload } from "@luna/lib";
+import { lTrace } from "../index.js";
 export type { LunaUnload } from "@luna/lib";
 
 export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
@@ -17,7 +16,7 @@ export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 				// Give each unload 5s to run before timing out so we dont deadlock
 				await Promise.race([unload(), new Promise((_, rej) => setTimeout(() => rej(new Error("Unload took longer than 5s to run...")), 5000))]);
 			} catch (err) {
-				logErr.msg(`Error unloading ${unload.source ?? ""}.${unload.name}`, err, unload);
+				lTrace.err(`Error unloading ${unload.source ?? ""}.${unload.name}`, err, unload);
 			}
 		}),
 	);

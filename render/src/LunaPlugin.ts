@@ -3,8 +3,8 @@ import quartz from "@uwu/quartz";
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, setDefaults, Signal } from "@inrixia/helpers";
 import { storage } from "./core/storage.js";
-import { logErr } from "./helpers/logErr.js";
 import { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
+import { lTrace } from "./index.js";
 
 type ModuleExports = {
 	unloads?: Set<LunaUnload>;
@@ -37,14 +37,13 @@ export type LunaPluginInfo = {
 	dependencies?: string[];
 	devDependencies?: string[];
 };
-
 export class LunaPlugin {
 	static {
 		// Ensure all plugins are unloaded on beforeunload
 		addEventListener("beforeunload", () => {
 			for (const plugin of Object.values(LunaPlugin.plugins)) {
 				plugin.unload().catch((err) => {
-					const errMsg = `[LUNA] Failed to unload plugin ${plugin.name}! Please report this to the Luna devs. ${err?.message}`;
+					const errMsg = `[Luna] Failed to unload plugin ${plugin.name}! Please report this to the Luna devs. ${err?.message}`;
 					// Use alert here over logErr as Tidal may be partially unloaded
 					alert(errMsg);
 					console.error(errMsg, err);
@@ -253,7 +252,7 @@ export class LunaPlugin {
 			// Alerting users can be handled downstream by listening to loadError
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
 			// Log it to console anyway
-			logErr(`Failed to load plugin ${this.name}`, err);
+			lTrace.err(`Failed to load plugin ${this.name}`, err);
 			await this.unload();
 			// For sanity throw the error just to be safe
 			throw err;
@@ -263,3 +262,5 @@ export class LunaPlugin {
 		}
 	}
 }
+// Expose to @luna/lib
+(<typeof LunaPlugin>window.luna.LunaPlugin) = LunaPlugin;
