@@ -11,7 +11,7 @@
   "license": "MS-Pl",
   "type": "module",
   "devDependencies": {
-    "@inrixia/helpers": "^3.13.1",
+    "@inrixia/helpers": "^3.13.3",
     "@luna/build": "link:build",
     "@types/node": "^22.14.1",
     "prettier": "^3.5.3",

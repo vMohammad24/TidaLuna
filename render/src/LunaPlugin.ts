@@ -1,7 +1,7 @@
 import quartz from "@uwu/quartz";
 
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
-import { Semaphore, setDefaults, Signal } from "@inrixia/helpers";
+import { Promize, Semaphore, setDefaults, Signal } from "@inrixia/helpers";
 import { storage } from "./core/storage.js";
 import { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
 import { lTrace } from "./index.js";
@@ -72,8 +72,7 @@ export class LunaPlugin {
 		this._store = setDefaults<LunaPluginConfig>((LunaPlugin.pluginStore[this.url] ??= defaults), defaults);
 
 		// Enabled has to be setup first because liveReload below accesses it
-		this._enabled = new Signal(this._store.enabled);
-		this._enabled.onValue((next) => {
+		this._enabled = new Signal(this._store.enabled, (next) => {
 			// Protect against disabling permanantly in the background if loading causes a error
 			// Restarting the client will attempt to load again
 			if (this.loadError._ === undefined) this._store.enabled = next;
@@ -81,8 +80,7 @@ export class LunaPlugin {
 		// Allow other code to listen to onEnabled (this._enabled is private)
 		this.onEnabled = this._enabled.onValue.bind(this._enabled);
 
-		this.liveReload = new Signal(this._store.liveReload);
-		this.liveReload.onValue((next) => {
+		this.liveReload = new Signal(this._store.liveReload, (next) => {
 			if ((this._store.liveReload = next)) this.startReloadLoop();
 			else this.stopReloadLoop();
 		});
@@ -112,6 +110,7 @@ export class LunaPlugin {
 	// #endregion
 
 	// #region Signals
+	public readonly loaded: Promize<void> = new Promize();
 	public readonly loading: Signal<boolean> = new Signal(false);
 	public readonly fetching: Signal<boolean> = new Signal(false);
 	public readonly loadError: Signal<string> = new Signal(undefined);
@@ -177,6 +176,7 @@ export class LunaPlugin {
 	private async unload(): Promise<void> {
 		try {
 			this.loading._ = true;
+			this.loaded.reset();
 			await unloadSet(this.exports?.unloads);
 		} finally {
 			this.exports = undefined;
@@ -184,7 +184,7 @@ export class LunaPlugin {
 		}
 	}
 	public async enable() {
-		await this.loadExports(true);
+		await this.loadExports();
 		this._enabled._ = true;
 		// Ensure live reload is running it it should be
 		if (this.liveReload._) this.startReloadLoop();
@@ -204,7 +204,7 @@ export class LunaPlugin {
 
 	// #region Fetch
 	/**
-	 * Returns true if code changed
+	 * Returns true if code changed, should never be called outside of loadExports
 	 */
 	private async fetchNewInfo(): Promise<boolean> {
 		try {
@@ -226,13 +226,10 @@ export class LunaPlugin {
 
 	// #region Load
 	private readonly loadSemaphore: Semaphore = new Semaphore(1);
-	private async loadExports(force: boolean = false): Promise<void> {
+	private async loadExports(): Promise<void> {
 		// Ensure we cant start loading midway through loading
 		const release = await this.loadSemaphore.obtain();
-
 		try {
-			if (!force && !this.enabled) return;
-
 			// If code hasnt changed and we have already loaded exports we are done
 			if (!(await this.fetchNewInfo()) && this.exports !== undefined) return;
 
@@ -274,12 +271,17 @@ export class LunaPlugin {
 			for (const unload of this.unloads) {
 				unload.source = this.name + (unload.source ? `.${unload.source}` : "");
 			}
+
+			this.loaded.res();
 		} catch (err) {
-			// Alerting users can be handled downstream by listening to loadError
+			// Set loadError for anyone listening
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
-			// Log it to console anyway
-			lTrace.err(`Failed to load plugin ${this.name}`, err);
+			// Notify users
+			lTrace.msg.err.withContext(`Failed to load plugin ${this.name}`)(err);
+			// Ensure we arnt partially loaded
 			await this.unload();
+			// Reject anyone waiting on load
+			this.loaded.rej(err);
 			// For sanity throw the error just to be safe
 			throw err;
 		} finally {
