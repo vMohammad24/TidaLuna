@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@inrixia/helpers':
-        specifier: ^3.13.3
-        version: 3.13.3
+        specifier: ^3.13.4
+        version: 3.13.4
       '@luna/build':
         specifier: link:build
         version: link:build
@@ -78,9 +78,6 @@ importers:
 
   render:
     dependencies:
-      '@luna/lib':
-        specifier: link:..\plugins\lib
-        version: link:../plugins/lib
       '@uwu/quartz':
         specifier: ^1.5.3
         version: 1.5.3
@@ -93,6 +90,13 @@ importers:
       spitroast:
         specifier: ^2.1.6
         version: 2.1.6
+    devDependencies:
+      '@luna/lib':
+        specifier: link:..\plugins\lib
+        version: link:../plugins/lib
+      '@luna/ui':
+        specifier: link:..\plugins\ui
+        version: link:../plugins/ui
 
 packages:
 
@@ -254,8 +258,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inrixia/helpers@3.13.3':
-    resolution: {integrity: sha512-mRHZrWJJF1f15W1uA+dyZC58ZoW2JuRsa3WO01GCHbzVdWtVToB+emT0nNdNE88rWoYAVsoTmvTq2TstPIybxA==}
+  '@inrixia/helpers@3.13.4':
+    resolution: {integrity: sha512-n6rlxn7kXZ8r2oqdI587/K3n69O4QyNUiiIZK5McPyZtGzMtfrreJqRuGydVWCHzcRXKNrF7GnX4ju/sUua55g==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -923,7 +927,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.2':
     optional: true
 
-  '@inrixia/helpers@3.13.3': {}
+  '@inrixia/helpers@3.13.4': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:

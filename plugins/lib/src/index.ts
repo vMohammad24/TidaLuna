@@ -1,10 +1,17 @@
-export * from "./exports";
-import * as luna from "./exports";
-window.luna = luna;
+export * from "./window.luna";
 
-declare global {
-	interface Window {
-		// Shouldnt be touching window.luna outside of here and window.core anwyay
-		luna: typeof luna;
-	}
+import type { VoidFn } from "@inrixia/helpers";
+
+export { ContextMenu } from "./classes/ContextMenu";
+export { Page } from "./classes/Page";
+export { StyleTag } from "./classes/StyleTag";
+export { Tracer } from "./classes/Tracer";
+
+export { React, ReactDom } from "./react";
+
+export * as helpers from "./helpers";
+export * as redux from "./redux";
+
+export interface LunaUnload extends VoidFn {
+	source?: string;
 }

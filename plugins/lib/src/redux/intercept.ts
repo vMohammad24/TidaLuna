@@ -1,16 +1,14 @@
-import type { LunaUnload, OActionPayloads } from "./exports";
+import type { LunaUnload } from "..";
+import type { OutdatedActionPayloads } from "./actions";
 import type { ActionType } from "./intercept.actionTypes";
 
-import { interceptors } from "./window.luna";
-
 export type InterceptCallback<P extends unknown> = (payload: P, ...args: unknown[]) => true | unknown;
+export type LunaInterceptors = {
+	[K in ActionType]?: Set<InterceptCallback<unknown>>;
+};
 
-export function intercept<T extends Extract<keyof OActionPayloads, ActionType>>(
-	type: T,
-	cb: InterceptCallback<OActionPayloads[T]>,
-	once?: boolean,
-): void;
-export function intercept<V, T extends string = string>(type: T, cb: InterceptCallback<V>, once?: boolean): void;
+export const interceptors: LunaInterceptors = window.luna.interceptors;
+
 /**
  * Intercept a Redux action based on its `type`
  * @param type The ActionKey to intercept
@@ -18,6 +16,12 @@ export function intercept<V, T extends string = string>(type: T, cb: InterceptCa
  * @param once If set true only intercepts once
  * @returns Function to call to unload/cancel the intercept
  */
+export function intercept<T extends Extract<keyof OutdatedActionPayloads, ActionType>>(
+	type: T,
+	cb: InterceptCallback<OutdatedActionPayloads[T]>,
+	once?: boolean,
+): void;
+export function intercept<V, T extends string = string>(type: T, cb: InterceptCallback<V>, once?: boolean): void;
 export function intercept<P extends unknown, T extends ActionType>(type: T, cb: InterceptCallback<P>, once?: boolean): LunaUnload {
 	interceptors[type] ??= new Set<InterceptCallback<unknown>>();
 	// If once is true then call unIntercept immediately to only run once

@@ -1,5 +1,5 @@
 import type { Signal, VoidLike } from "@inrixia/helpers";
-import { actions } from "../window.luna.js";
+import { actions } from "../redux";
 
 type LoggerFunc = (...data: any[]) => VoidLike;
 

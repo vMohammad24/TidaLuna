@@ -1,8 +1,11 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
-import { Semaphore, setDefaults, Signal, type MaybePromise } from "@inrixia/helpers";
-import { storage } from "./core/storage.js";
-import { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
-import { lTrace } from "./index.js";
+import { Semaphore, Signal } from "@inrixia/helpers";
+import quartz from "@uwu/quartz";
+import { logErr, logWarn } from "./helpers/console.js";
+import { unloadSet } from "./helpers/unloadSet.js";
+import { storage } from "./storage.js";
+
+import type { LunaUnload } from "@luna/lib";
 
 type ModuleExports = {
 	unloads?: Set<LunaUnload>;
@@ -11,22 +14,12 @@ type ModuleExports = {
 	errSignal?: Signal<string | undefined>;
 };
 
-interface LunaPluginConfig {
-	enabled: boolean;
-	liveReload: boolean;
-}
-
-interface LunaPluginStorage extends LunaPluginConfig {
-	code?: string;
-	info?: LunaPluginInfo;
-}
-
 export type LunaAuthor = {
 	name: string;
 	url: string;
 	avatarUrl?: string;
 };
-export type LunaPluginInfo = {
+export type PluginPackage = {
 	author: LunaAuthor;
 	name: string;
 	hash: string;
@@ -34,7 +27,19 @@ export type LunaPluginInfo = {
 	version?: string;
 	dependencies?: string[];
 	devDependencies?: string[];
+	code?: string;
 };
+
+// If adding to this make sure that the values are initalized in LunaPlugin.fromStorage
+export type LunaPluginStorage = {
+	url: string;
+	package: PluginPackage;
+	enabled: boolean;
+	liveReload: boolean;
+};
+
+type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
+
 export class LunaPlugin {
 	// #region Static
 	static {
@@ -51,35 +56,62 @@ export class LunaPlugin {
 		});
 	}
 
-	public static readonly pluginStore = (storage["__plugins"] ??= {});
-	public static readonly plugins: Record<string, LunaPlugin> = {};
-	public static fromUri(uri: string, defaults: Partial<LunaPluginConfig> = {}) {
-		defaults.enabled ??= false;
-		defaults.liveReload ??= false;
+	private static fetchOrThrow(url: string): Promise<Response> {
+		return fetch(url).then((res) => {
+			if (!res.ok) {
+				throw new Error(`Failed to fetch ${url} (${res.status})`);
+			}
+			return res;
+		});
+	}
+	private static fetchJson<T>(url: string): Promise<T> {
+		return this.fetchOrThrow(url).then((res) => res.json());
+	}
+	private static fetchText(url: string): Promise<string> {
+		return this.fetchOrThrow(url).then((res) => res.text());
+	}
+	public static async fetchPackage(url: string): Promise<PluginPackage> {
+		return this.fetchJson(`${url}.json`);
+	}
 
-		return (this.plugins[uri] ??= new this(uri, <LunaPluginConfig>defaults));
+	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
+	public static readonly pluginStorage = (storage["__plugins"] ??= {});
+	// Static store for all loaded plugins so we dont double load any
+	public static readonly plugins: Record<string, LunaPlugin> = {};
+	// Static store for all loaded modules for dynamic imports
+	public static readonly modules: Record<string, ModuleExports> = {};
+
+	/**
+	 * Create a plugin instance from a store:LunaPluginStorage, if package is not populated it will be fetched using the url so we can get the name
+	 */
+	public static async fromStorage(store: PartialLunaPluginStorage): Promise<LunaPlugin> {
+		store.package ??= await this.fetchPackage(store.url);
+		const name = store.package.name;
+		const plugin = (this.plugins[name] ??= new this(name, store));
+		return plugin.load();
 	}
 	// #endregion
 
 	// #region constructor
 	private constructor(
-		public readonly url: string,
-		defaults: LunaPluginConfig,
+		public readonly name: string,
+		storage: PartialLunaPluginStorage,
 	) {
-		// Apply defaults and/or create store
-		this._store = setDefaults<LunaPluginConfig>((LunaPlugin.pluginStore[this.url] ??= defaults), defaults);
-
+		this.store = {
+			...storage,
+			...this.store,
+		};
 		// Enabled has to be setup first because liveReload below accesses it
-		this._enabled = new Signal(this._store.enabled, (next) => {
+		this._enabled = new Signal(this.store.enabled, (next) => {
 			// Protect against disabling permanantly in the background if loading causes a error
 			// Restarting the client will attempt to load again
-			if (this.loadError._ === undefined) this._store.enabled = next;
+			if (this.loadError._ === undefined) this.store.enabled = next;
 		});
 		// Allow other code to listen to onEnabled (this._enabled is private)
 		this.onEnabled = this._enabled.onValue.bind(this._enabled);
 
-		this.liveReload = new Signal(this._store.liveReload, (next) => {
-			if ((this._store.liveReload = next)) this.startReloadLoop();
+		this.liveReload = new Signal(this.store.liveReload, (next) => {
+			if ((this.store.liveReload = next)) this.startReloadLoop();
 			else this.stopReloadLoop();
 		});
 	}
@@ -109,7 +141,6 @@ export class LunaPlugin {
 	public readonly loading: Signal<boolean> = new Signal(false);
 	public readonly fetching: Signal<boolean> = new Signal(false);
 	public readonly loadError: Signal<string> = new Signal(undefined);
-	public Settings: Signal<React.FC> = new Signal(this._exports?.Settings);
 
 	public readonly liveReload: Signal<boolean>;
 	private readonly _enabled: Signal<boolean>;
@@ -121,14 +152,13 @@ export class LunaPlugin {
 	// #endregion
 
 	// #region _exports
-	private readonly _exports?: ModuleExports;
 	private get exports() {
-		return this._exports;
+		return LunaPlugin.modules[this.name];
 	}
 	private set exports(exports: ModuleExports | undefined) {
 		if (this._unloads.size !== 0) {
 			// If we always unload on load then we should never be here
-			lTrace.msg.warn(`Plugin ${this.name} is trying to set exports but unloads are not empty! Please report this to the Luna devs.`);
+			logWarn(`Plugin ${this.name} is trying to set exports but unloads are not empty! Please report this to the Luna devs.`, this);
 			// This is a safety check to ensure we dont leak unloads
 			// If there is somehow leftover unloads we need to add them to the new exports.unloads if it exists
 			if (exports?.unloads !== undefined) {
@@ -137,29 +167,29 @@ export class LunaPlugin {
 			}
 		}
 		// Cast to set, _exports is readonly to avoid accidental internal modification
-		(<ModuleExports | undefined>this._exports) = exports;
-		// Ensure Settings signal is triggered on exports changing
-		this.Settings._ = exports?.Settings;
+		LunaPlugin.modules[this.name] = exports;
 	}
 	private readonly _unloads: Set<LunaUnload> = new Set();
 	private get unloads() {
-		return this._exports?.unloads ?? this._unloads;
+		return this.exports?.unloads ?? this._unloads;
 	}
 	// #endregion
 
-	// #region _store
-	private readonly _store: LunaPluginStorage;
-	private get code() {
-		return this._store.code;
+	// #region Storage
+	public get store(): LunaPluginStorage {
+		return (LunaPlugin.pluginStorage[this.name] ??= {});
 	}
-	private set code(value) {
-		this._store.code = value;
+	private set store(value: LunaPluginStorage) {
+		LunaPlugin.pluginStorage[this.name] = value;
 	}
-	private get hash() {
-		return this._store.info?.hash;
+	public get url(): string {
+		return this.store.url;
 	}
-	public get name() {
-		return this._store.info?.name;
+	public get package(): PluginPackage | undefined {
+		return this.store.package;
+	}
+	private set package(value: PluginPackage) {
+		this.store.package = value;
 	}
 	// #endregion
 
@@ -180,8 +210,10 @@ export class LunaPlugin {
 	/**
 	 * Load the plugin if it is enabled
 	 */
-	public load(): MaybePromise<void> {
-		if (this.enabled) return this.enable();
+	public async load(): Promise<LunaPlugin> {
+		this.package ??= await LunaPlugin.fetchPackage(this.url);
+		if (this.enabled) await this.enable();
+		return this;
 	}
 	// #endregion
 
@@ -209,20 +241,27 @@ export class LunaPlugin {
 	/**
 	 * Returns true if code changed, should never be called outside of loadExports
 	 */
-	private async fetchNewInfo(): Promise<boolean> {
+	private async fetchPackage(): Promise<boolean> {
 		try {
 			this.fetching._ = true;
-			const newInfo: LunaPluginInfo = await fetch(`${this.url}.json`).then((res) => res.json());
-			if (this.hash !== newInfo.hash) {
-				this.code = `${await fetch(`${this.url}.js`).then((res) => res.text())}\n//# sourceURL=${this.url}.js`;
-				this._store.info = newInfo;
-				return true;
-			}
+			const newPackage = await LunaPlugin.fetchPackage(this.url);
+			// Delete this just to be safe
+			delete newPackage.code;
+			const codeChanged = this.package.hash !== newPackage.hash;
+			// If hash hasnt changed then just reuse stored code
+			// If it has then next time this.code() is called it will fetch the new code as newPackage.code is undefined
+			if (!codeChanged) newPackage.code = this.package.code;
+			this.package = newPackage;
+			return codeChanged;
 		} catch {
+			// Fail silently if we cant fetch
 		} finally {
 			this.fetching._ = false;
 		}
 		return false;
+	}
+	public async code() {
+		return (this.package.code ??= `${await LunaPlugin.fetchText(`${this.url}.js`)}\n//# sourceURL=${this.url}.js`);
 	}
 	// #endregion
 
@@ -233,16 +272,29 @@ export class LunaPlugin {
 		const release = await this.loadSemaphore.obtain();
 		try {
 			// If code hasnt changed and we have already loaded exports we are done
-			if (!(await this.fetchNewInfo()) && this.exports !== undefined) return;
+			if (!(await this.fetchPackage()) && this.exports !== undefined) return;
 
+			const code = await this.code();
 			// If code failed to fetch then nothing we can do
-			if (this.code === undefined) return;
+			if (code === undefined) return;
 			this.loading._ = true;
 
 			// Ensure we unload if previously loaded
 			await this.unload();
 
-			this.exports = await import(URL.createObjectURL(new Blob([this.code], { type: "text/javascript" })));
+			// Transforms are done at build so dont need quartz here (for now :3)
+			this.exports = await quartz(code, {
+				plugins: [
+					{
+						resolve: ({ name }) => {
+							if (LunaPlugin.modules[name] === undefined) {
+								throw new Error(`Failed to load plugin ${this.name}, module ${name} not found!`);
+							}
+							return `luna.LunaPlugin.modules["${name}"]`;
+						},
+					},
+				],
+			});
 
 			// Ensure loadError is cleared
 			this.loadError._ = undefined;
@@ -267,7 +319,7 @@ export class LunaPlugin {
 			// Set loadError for anyone listening
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
 			// Notify users
-			lTrace.msg.err.withContext(`Failed to load plugin ${this.name}`)(err);
+			logErr(`Failed to load plugin ${this.name}`, this, err);
 			// Ensure we arnt partially loaded
 			await this.unload();
 			// For sanity throw the error just to be safe
@@ -279,5 +331,3 @@ export class LunaPlugin {
 	}
 	// #endregion
 }
-// Expose to @luna/lib
-(<typeof LunaPlugin>window.luna.LunaPlugin) = LunaPlugin;

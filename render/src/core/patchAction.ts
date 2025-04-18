@@ -1,8 +1,8 @@
 // @ts-expect-error Idk why TS thinks this module doesnt exist
 import { after } from "spitroast";
 
-import { lTrace } from "../index.js";
-import { _buildActions, interceptors } from "./window.core.js";
+import { logErr } from "../helpers/console.js";
+import { _buildActions, interceptors } from "../window.core.js";
 
 const patchAction = (_Obj: { _: Function }) => {
 	after("_", _Obj, ([type], buildAction) => {
@@ -18,7 +18,7 @@ const patchAction = (_Obj: { _: Function }) => {
 
 				const interceptorsSet = interceptors[type];
 				if (interceptorsSet?.size > 0) {
-					const onCeptErr = lTrace.msg.err.withContext(`Failed to run interceptor for ${type}`);
+					const onCeptErr = (...args) => logErr(`Error in ${type} interceptor`, ...args);
 					// Call interceptorSet's callbacks with the args, dont dispatch if any return true
 					for (const interceptor of interceptorsSet) {
 						try {

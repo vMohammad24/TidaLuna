@@ -1,4 +1,4 @@
-import { ContextMenu, Page } from "@luna/lib";
+import { ContextMenu, Page, _buildActions } from "@luna/lib";
 
 const settingsPage = Page.register("Settings");
 settingsPage.root.innerHTML = "HelloWorld";
@@ -11,3 +11,5 @@ ContextMenu.onOpen(({ event, contextMenu }) => {
 		});
 	}
 });
+
+export const test = () => _buildActions;

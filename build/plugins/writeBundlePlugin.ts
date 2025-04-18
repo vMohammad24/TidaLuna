@@ -8,32 +8,24 @@ export const writeBundlePlugin = (pluginPackage?: AnyRecord): Plugin => ({
 	name: "writeBundlePlugin",
 	setup(build) {
 		build.onEnd(async (result) => {
-			if (result.errors.length > 0) throw new Error(JSON.stringify(result.errors));
+			if (result.errors.length > 0) throw new Error(JSON.stringify(result.errors, null, 2));
 
 			let writePackageJson = false;
 			for (const outputFile of result.outputFiles ?? []) {
 				const outDir = dirname(outputFile.path);
 				await mkdir(outDir, { recursive: true });
 
-				// Not a plugin, carry on
-				if (!pluginPackage?.name) await writeFile(outputFile.path, outputFile.contents);
-				else {
-					const code = Buffer.from(outputFile.contents).toString("utf8").replaceAll("@luna/lib", "https://luna/luna.lib.js");
-
-					await writeFile(outputFile.path, code);
-
-					if (!writePackageJson && outputFile.path.endsWith(".js")) {
-						await writeFile(
-							outputFile.path.replace(/\.js$/, ".json"),
-							JSON.stringify({
-								...pluginPackage,
-								// This is no longer accurate after mapping imports
-								hash: outputFile.hash,
-							}),
-						);
-						// Only write the package.json once
-						writePackageJson = true;
-					}
+				await writeFile(outputFile.path, outputFile.contents);
+				if (pluginPackage?.name && !writePackageJson && outputFile.path.endsWith(".js")) {
+					await writeFile(
+						outputFile.path.replace(/\.js$/, ".json"),
+						JSON.stringify({
+							...pluginPackage,
+							hash: outputFile.hash,
+						}),
+					);
+					// Only write the package.json once
+					writePackageJson = true;
 				}
 
 				const fileSizeInBytes = outputFile.contents.byteLength;

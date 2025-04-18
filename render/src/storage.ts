@@ -14,16 +14,15 @@ const reactiveStorage = <T extends AnyRecord>(name: string, defaultValue: Partia
 	});
 };
 
-type LunaStorage = Record<string, AnyRecord>;
-
+export type LunaStorage = Record<string, AnyRecord>;
 /**
  * Write through changes to idb on store value changing. Not read thread/instance safe
  */
-export const storage = ((<LunaStorage>window.luna.storage) = new Proxy(
+export const storage = new Proxy(
 	{},
 	{
 		set(target, key: string, newValue) {
 			return Reflect.set(target, key, reactiveStorage(key, newValue));
 		},
 	},
-));
+);

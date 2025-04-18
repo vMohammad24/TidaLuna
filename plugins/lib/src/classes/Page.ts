@@ -1,6 +1,4 @@
-import { intercept } from "../intercept";
-import { actions } from "../window.luna";
-
+import { actions, intercept } from "../redux";
 export class Page {
 	private static readonly pages: Record<string, Page> = {};
 	public static register(name: string) {

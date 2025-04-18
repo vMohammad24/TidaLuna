@@ -5,8 +5,8 @@ import "./patchAction.js";
 
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
+import { tidalModules } from "../window.core.js";
 import { findPrepareActionNameAndIdx } from "./helpers/findPrepareActionNameAndIdx.js";
-import { moduleCache } from "./window.core.js";
 
 const fetchCode = async (path) => {
 	const res = await fetch(path);
@@ -16,13 +16,13 @@ const fetchCode = async (path) => {
 
 const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);
-	if (moduleCache[path]) return moduleCache[path];
+	if (tidalModules[path]) return tidalModules[path];
 
 	const code = await fetchCode(path);
 
 	// Load each js module and store it in the cache so we can access its exports
-	moduleCache[path] = await quartz(code, config, path);
-	return moduleCache[path];
+	tidalModules[path] = await quartz(code, config, path);
+	return tidalModules[path];
 };
 
 // Theres usually only 1 script on page that needs injecting (https://desktop.tidal.com/) see native/injector
@@ -34,7 +34,7 @@ for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="
 
 	// Fetch, transform execute and store the module in moduleCache
 	// Hijack the Redux store & inject interceptors
-	moduleCache[scriptPath] = await quartz(
+	tidalModules[scriptPath] = await quartz(
 		scriptContent,
 		{
 			// Quartz runs transform > dynamicResolve > resolve
