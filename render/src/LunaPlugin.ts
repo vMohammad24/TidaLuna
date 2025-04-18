@@ -151,6 +151,8 @@ export class LunaPlugin {
 	}
 	// #endregion
 
+	public readonly dependents: Set<LunaPlugin> = new Set();
+
 	// #region _exports
 	private get exports() {
 		return LunaPlugin.modules[this.name];
@@ -201,6 +203,11 @@ export class LunaPlugin {
 	private async unload(): Promise<void> {
 		try {
 			this.loading._ = true;
+			// Unload dependants before unloading this plugin
+			for (const dependant of this.dependents) {
+				log(`Unloading dependant ${dependant.name} of plugin ${this.name}`, dependant, this);
+				await dependant.unload();
+			}
 			await unloadSet(this.exports?.unloads);
 		} finally {
 			this.exports = undefined;
@@ -292,6 +299,8 @@ export class LunaPlugin {
 								logErr(errMsg, this);
 								throw new Error(errMsg);
 							}
+							// Add this plugin as a dependant of the module
+							LunaPlugin.plugins[name].dependents.add(this);
 							return `luna.LunaPlugin.modules["${name}"]`;
 						},
 					},
@@ -319,6 +328,13 @@ export class LunaPlugin {
 			}
 
 			log(`Loaded plugin ${this.name}`, this);
+			// Make sure we load any enabled dependants, this is mostly to facilitate live reloading dependency trees
+			for (const dependant of this.dependents) {
+				log(`Loading dependant ${dependant.name} of plugin ${this.name}`, dependant, this);
+				dependant.load().catch((err) => {
+					logErr(`Failed to load dependant ${dependant.name} of plugin ${this.name}`, dependant, this, err);
+				});
+			}
 		} catch (err) {
 			// Set loadError for anyone listening
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
