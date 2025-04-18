@@ -1,7 +1,7 @@
 import electron from "electron";
 import Module from "module";
 
-import { readdir, readFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import mime from "mime";
 
 import path from "path";
@@ -20,41 +20,42 @@ const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) =>
 // Requires starting client with --remote-debugging-port=9222
 electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:9222");
 
-// Preload bundle files for https://luna/
-const bundleFiles: Record<string, [Buffer, ResponseInit]> = {};
-readdir(bundleDir).then((files) => {
-	files.forEach(async (file) => {
-		const filePath = path.join(bundleDir, file);
-		let content = await readFile(filePath);
+const bundleFile = async (url: string): Promise<[Buffer, ResponseInit]> => {
+	const fileName = url.slice(13);
+	// Eh, can already use native to touch fs dont stress escaping bundleDir
+	const filePath = path.join(bundleDir, fileName);
+	let content = await readFile(filePath);
 
-		// If JS file, check for .map and append if exists
-		if (file.endsWith(".js")) {
-			const mapPath = filePath + ".map";
-			try {
-				// Append base64 encoded source map to the end of the file
-				const base64Map = Buffer.from(await readFile(mapPath, "utf8")).toString("base64");
-				const sourceMapComment = `\n//# sourceMappingURL=data:application/json;base64,${base64Map}`;
-				content = Buffer.concat([content, Buffer.from(sourceMapComment, "utf8")]);
-			} catch {
-				// .map file does not exist, do nothing
-			}
+	// If JS file, check for .map and append if exists
+	if (fileName.endsWith(".js")) {
+		const mapPath = filePath + ".map";
+		try {
+			// Append base64 encoded source map to the end of the file
+			const base64Map = Buffer.from(await readFile(mapPath, "utf8")).toString("base64");
+			const sourceMapComment = `\n//# sourceURL=${url}\n//# sourceMappingURL=data:application/json;base64,${base64Map}`;
+			content = Buffer.concat([content, Buffer.from(sourceMapComment, "utf8")]);
+		} catch {
+			// .map file does not exist, do nothing
 		}
-		bundleFiles[`luna/${file}`] = [content, { headers: { "Content-Type": mime.getType(file) } }];
-	});
-});
+	}
+	return [content, { headers: { "Content-Type": mime.getType(fileName) } }];
+};
 
-ipcHandle("__Luna.renderJs", () => {
-	const code = bundleFiles["luna/luna.js"][0].toString("utf8");
-	const sourceMap = btoa(bundleFiles["luna/luna.js.map"][0].toString("utf8"));
-	return `${code}\n//# sourceURL=https://luna/luna.js\n//# sourceMappingURL=data:application/json;base64,${sourceMap}`;
-});
+// Preload bundle files for https://luna/
+const lunaBundle = bundleFile("https://luna/luna.js").then(([content]) => content);
+ipcHandle("__Luna.renderJs", () => lunaBundle);
 
 // #region CSP/Script Prep
 // Ensure app is ready
 electron.app.whenReady().then(async () => {
 	electron.protocol.handle("https", async (req) => {
-		const bundleResp = bundleFiles[req.url.slice(8)];
-		if (bundleResp) return new Response(...bundleResp);
+		if (req.url.startsWith("https://luna/")) {
+			try {
+				return new Response(...(await bundleFile(req.url)));
+			} catch (err) {
+				return new Response(err.message, { status: 500, statusText: err.message });
+			}
+		}
 		// Bypass CSP & Mark meta scripts for quartz injection
 		if (req.url === "https://desktop.tidal.com/") {
 			const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });

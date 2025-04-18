@@ -110,10 +110,11 @@ export class LunaPlugin {
 		// Allow other code to listen to onEnabled (this._enabled is private)
 		this.onEnabled = this._enabled.onValue.bind(this._enabled);
 
-		this.liveReload = new Signal(this.store.liveReload, (next) => {
+		this._liveReload = new Signal(this.store.liveReload, (next) => {
 			if ((this.store.liveReload = next)) this.startReloadLoop();
 			else this.stopReloadLoop();
 		});
+		this.onLiveReload = this._liveReload.onValue.bind(this._liveReload);
 	}
 	// #endregion
 
@@ -125,7 +126,7 @@ export class LunaPlugin {
 			// Fail quietly
 			await this.loadExports().catch(() => {});
 			// Dont continue to loop if disabled or liveReload is false
-			if (!this.enabled || !this.liveReload._) return;
+			if (!this.enabled || !this._liveReload._) return;
 			this._reloadTimeout = setTimeout(reloadLoop.bind(this), 1000);
 		};
 		// Immediately set reloadTimeout to avoid entering this multiple times
@@ -142,9 +143,16 @@ export class LunaPlugin {
 	public readonly fetching: Signal<boolean> = new Signal(false);
 	public readonly loadError: Signal<string> = new Signal(undefined);
 
-	public readonly liveReload: Signal<boolean>;
-	private readonly _enabled: Signal<boolean>;
+	public readonly _liveReload: Signal<boolean>;
+	public onLiveReload;
+	public get liveReload() {
+		return this._liveReload._;
+	}
+	public set liveReload(value: boolean) {
+		this._liveReload._ = value;
+	}
 
+	private readonly _enabled: Signal<boolean>;
 	public onEnabled;
 	public get enabled() {
 		return this._enabled._;
@@ -229,7 +237,7 @@ export class LunaPlugin {
 		await this.loadExports();
 		this._enabled._ = true;
 		// Ensure live reload is running it it should be
-		if (this.liveReload._) this.startReloadLoop();
+		if (this._liveReload._) this.startReloadLoop();
 	}
 	public async disable() {
 		// Disable the reload loop
