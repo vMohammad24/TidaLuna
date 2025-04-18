@@ -6,7 +6,7 @@ import "./patchAction.js";
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
 import { tidalModules } from "../window.core.js";
-import { findPrepareActionNameAndIdx } from "./helpers/findPrepareActionNameAndIdx.js";
+import { findCreateActionFunction } from "./helpers/findPrepareActionNameAndIdx.js";
 
 const fetchCode = async (path) => {
 	const res = await fetch(path);
@@ -41,20 +41,24 @@ for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="
 			plugins: [
 				{
 					transform({ code }) {
-						const actionData = findPrepareActionNameAndIdx(code);
+						const actionData = findCreateActionFunction(code);
 
 						if (actionData) {
-							const { name: prepareActionName, idx: prepareActionIdx } = actionData;
-
+							const { fnName, startIdx } = actionData;
 							const funcPrefix = "__LunaUnpatched_";
+							const renamedFn = funcPrefix + fnName;
 
-							// rename function declaration
-							code = code.slice(0, prepareActionIdx) + funcPrefix + code.slice(prepareActionIdx);
+							// Rename the original function declaration by adding a prefix
+							// Example: `prepareAction` becomes `__LunaUnpatched_prepareAction`
+							code = code.slice(0, startIdx) + funcPrefix + code.slice(startIdx);
 
-							code =
-								code.slice(0, prepareActionIdx - 9) +
-								`const ${prepareActionName} = patchAction({ _: ${funcPrefix}${prepareActionName} })._;` +
-								code.slice(prepareActionIdx - 9);
+							// Assuming the declaration starts 9 characters before the function name
+							// (e.g., accounting for "const " or "function ")
+							const declarationStartIdx = startIdx - 9;
+							const patchedDeclaration = `const ${fnName} = patchAction({ _: ${renamedFn} })._;`;
+
+							// Insert the new patched declaration before the original (now renamed) one
+							code = code.slice(0, declarationStartIdx) + patchedDeclaration + code.slice(declarationStartIdx);
 						}
 
 						return code;
