@@ -40,8 +40,6 @@ export type LunaPluginStorage = {
 
 type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
 
-console.log(window.luna);
-
 export class LunaPlugin {
 	// #region Static
 	private static fetchOrThrow(url: string): Promise<Response> {

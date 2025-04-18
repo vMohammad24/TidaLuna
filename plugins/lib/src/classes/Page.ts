@@ -1,6 +1,7 @@
 import { unloads, type LunaUnload } from "..";
 import { actions, intercept } from "../redux";
 export class Page {
+	private static openPage?: Page;
 	private static readonly pages: Record<string, Page> = {};
 	public static register(name: string, unloads: Set<LunaUnload>) {
 		return (this.pages[name] ??= new this(name, unloads));
@@ -20,17 +21,18 @@ export class Page {
 
 	static {
 		intercept<{ search: string }>("router/NAVIGATED", unloads, (payload) => {
-			const pageName = payload.search.slice(1);
+			Page.openPage?.root.remove();
+			Page.openPage = undefined;
 			// payload.search = `?name`
+			const pageName = payload.search.slice(1);
 			if (pageName in this.pages) {
 				const page = this.pages[pageName];
-				// Queue a intercept to trigger on navigating away to remove the page
-				intercept("router/NAVIGATED", unloads, () => page.root.remove(), true);
 				setTimeout(() => {
 					const notFound = document.querySelector<HTMLElement>(`[class^="_pageNotFoundError_"]`);
 					if (notFound) {
 						notFound.style.display = "none";
 						page.root.remove(); // Ensure root isnt already on page
+						Page.openPage = page;
 						notFound.insertAdjacentElement("afterend", page.root);
 					}
 				});
