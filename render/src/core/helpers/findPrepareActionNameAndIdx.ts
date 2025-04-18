@@ -1,5 +1,5 @@
 /**
- * Finds the name and index of the Redux action handler? Based on the existance of `.payload,..."meta"in `
+ * Finds the name and index of the Redux action handler? Based on the existance of `.payload,..."meta"in ` in code
  */
 export function findPrepareActionNameAndIdx(bundleCode) {
 	const searchIdx = bundleCode.indexOf(`.payload,..."meta"in `);

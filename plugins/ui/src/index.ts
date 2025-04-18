@@ -11,5 +11,3 @@ ContextMenu.onOpen(({ event, contextMenu }) => {
 		});
 	}
 });
-
-alert("hello world");

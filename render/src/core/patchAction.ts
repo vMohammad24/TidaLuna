@@ -2,23 +2,25 @@
 import { after } from "spitroast";
 
 import { lTrace } from "../index.js";
-import { actions, interceptors, redux } from "./window.core.js";
+import { _buildActions, interceptors } from "./window.core.js";
 
 const patchAction = (_Obj: { _: Function }) => {
 	after("_", _Obj, ([type], buildAction) => {
-		if (actions[type] !== undefined) return;
+		// There can be multiple buildActions for the same type.
+		// But it seems they may just be duplicates so safe to override
+		_buildActions[type] = buildAction;
 
-		// Just assume all buildAction's are promises for the sake of safety
-		actions[type] = async (...args) => redux.dispatch(await buildAction(...args));
-
+		// We proxy all of them anyway
 		return new Proxy(buildAction, {
-			// Intercept all original calls to buildAction
+			// Intercept function call
 			apply(orig, ctxt, args: [unknown, ...unknown[]]) {
-				const interceptor = interceptors[type];
 				let shouldDispatch = true;
-				if (interceptor?.size > 0) {
-					const onCeptErr = lTrace.msg.err.withContext(`Failed to run interceptor! ${type}`);
-					for (const interceptor of interceptors[type]) {
+
+				const interceptorsSet = interceptors[type];
+				if (interceptorsSet?.size > 0) {
+					const onCeptErr = lTrace.msg.err.withContext(`Failed to run interceptor for ${type}`);
+					// Call interceptorSet's callbacks with the args, dont dispatch if any return true
+					for (const interceptor of interceptorsSet) {
 						try {
 							const result = interceptor(...args);
 							if (result === true) shouldDispatch = false;

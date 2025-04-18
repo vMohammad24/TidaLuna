@@ -1,5 +1,4 @@
 import type { AnyRecord, MaybePromise, VoidLike } from "@inrixia/helpers";
-import type { Store } from "redux";
 import type { InterceptCallback } from "./intercept";
 import type { ActionType } from "./intercept.actionTypes";
 
@@ -19,7 +18,7 @@ export type LunaInterceptors = {
 	[K in ActionType]?: Set<InterceptCallback<unknown>>;
 };
 
-if ((window.luna?.moduleCache ?? window.luna?.actions ?? window.luna?.interceptors ?? window.luna?.redux) === undefined) {
+if ((window.luna?.moduleCache ?? window.luna?.actions ?? window.luna?.interceptors) === undefined) {
 	// If you are here check whats going on in render/src/core
 	throw new Error("Luna core has not initalized core exports! Check window.luna for missing values");
 }
@@ -28,10 +27,11 @@ if ((window.luna?.moduleCache ?? window.luna?.actions ?? window.luna?.intercepto
 export const moduleCache: Record<string, any> = window.luna.moduleCache;
 export const actions: LunaActions = window.luna.actions;
 export const interceptors: LunaInterceptors = window.luna.interceptors;
-export const redux: Store = window.luna.redux;
 
 // See render/core/storage.ts
 export const storage: Record<string, AnyRecord> = window.luna.storage;
 
 // See render/LunaPlugin.ts
 export const LunaPlugin: typeof LP.LunaPlugin = window.luna.LunaPlugin;
+
+export const _buildActions: Record<string, Function> = window.luna._buildActions;
