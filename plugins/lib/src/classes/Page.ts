@@ -1,14 +1,22 @@
-import { unloads } from "..";
+import { unloads, type LunaUnload } from "..";
 import { actions, intercept } from "../redux";
 export class Page {
 	private static readonly pages: Record<string, Page> = {};
-	public static register(name: string) {
-		return (this.pages[name] ??= new this(name));
+	public static register(name: string, unloads: Set<LunaUnload>) {
+		return (this.pages[name] ??= new this(name, unloads));
 	}
 
 	public readonly root: HTMLDivElement = document.createElement("div");
 
-	private constructor(public readonly name: string) {}
+	private constructor(
+		public readonly name: string,
+		private readonly unloads: Set<LunaUnload>,
+	) {
+		this.unloads.add(this.root.remove.bind(this.root));
+		this.unloads.add(() => {
+			delete Page.pages[this.name];
+		});
+	}
 
 	static {
 		intercept<{ search: string }>("router/NAVIGATED", unloads, (payload) => {

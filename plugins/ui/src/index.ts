@@ -1,6 +1,8 @@
-import { ContextMenu, Page } from "@luna/lib";
+import { ContextMenu, Page, type LunaUnload } from "@luna/lib";
 
-const settingsPage = Page.register("Settings");
+export const unloads = new Set<LunaUnload>();
+
+const settingsPage = Page.register("Settings", unloads);
 settingsPage.root.innerHTML = "HelloWorld";
 
 ContextMenu.onOpen(({ event, contextMenu }) => {
@@ -10,4 +12,4 @@ ContextMenu.onOpen(({ event, contextMenu }) => {
 			settingsPage.open();
 		});
 	}
-});
+}, unloads);
