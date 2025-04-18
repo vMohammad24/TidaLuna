@@ -1,7 +1,7 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
-import { log, logErr, logWarn } from "./core/helpers/console.js";
+import { log, logErr, logWarn } from "./helpers/console.js";
 import { unloadSet } from "./helpers/unloadSet.js";
 import { ReactiveStore } from "./ReactiveStore.js";
 

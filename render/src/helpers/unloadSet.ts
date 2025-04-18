@@ -1,5 +1,5 @@
 import type { LunaUnload } from "@luna/lib";
-import { logErr } from "../core/helpers/console.js";
+import { logErr } from "./console.js";
 
 export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 	if (unloads === undefined || unloads.size === 0) return;

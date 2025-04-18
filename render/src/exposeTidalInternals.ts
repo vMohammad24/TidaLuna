@@ -1,11 +1,11 @@
 import quartz, { type QuartzPlugin } from "@uwu/quartz";
 
 // Ensure patchAction is loaded on window!
-import "./patchAction.js";
+import "./exposeTidalInternals.patchAction.js";
 
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
-import { findCreateActionFunction } from "./helpers/findPrepareActionNameAndIdx.js";
+import { findCreateActionFunction } from "./helpers/findCreateAction.js";
 
 export const tidalModules = {};
 

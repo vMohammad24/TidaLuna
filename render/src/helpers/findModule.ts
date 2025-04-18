@@ -1,5 +1,5 @@
 import { memoize, type UnknownRecord } from "@inrixia/helpers";
-import { tidalModules } from "../core/exposeTidalInternals.js";
+import { tidalModules } from "../exposeTidalInternals.js";
 
 export interface FoundProperty<T> {
 	value: T;
