@@ -15,5 +15,3 @@ export * as redux from "./redux";
 export interface LunaUnload extends VoidFn {
 	source?: string;
 }
-
-export const unloads = new Set<LunaUnload>();
