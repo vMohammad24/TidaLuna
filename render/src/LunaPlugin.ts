@@ -1,7 +1,7 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
-import { logErr, logWarn } from "./helpers/console.js";
+import { log, logErr, logWarn } from "./helpers/console.js";
 import { unloadSet } from "./helpers/unloadSet.js";
 import { storage } from "./storage.js";
 
@@ -288,7 +288,9 @@ export class LunaPlugin {
 					{
 						resolve: ({ name }) => {
 							if (LunaPlugin.modules[name] === undefined) {
-								throw new Error(`Failed to load plugin ${this.name}, module ${name} not found!`);
+								const errMsg = `Failed to load plugin ${this.name}, module ${name} not found!`;
+								logErr(errMsg, this);
+								throw new Error(errMsg);
 							}
 							return `luna.LunaPlugin.modules["${name}"]`;
 						},
@@ -315,6 +317,8 @@ export class LunaPlugin {
 			for (const unload of this.unloads) {
 				unload.source = this.name + (unload.source ? `.${unload.source}` : "");
 			}
+
+			log(`Loaded plugin ${this.name}`, this);
 		} catch (err) {
 			// Set loadError for anyone listening
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
