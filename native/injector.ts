@@ -53,7 +53,7 @@ electron.app.whenReady().then(async () => {
 			try {
 				return new Response(...(await bundleFile(req.url)));
 			} catch (err) {
-				return new Response(err.message, { status: 500, statusText: err.message });
+				return new Response(err.message, { status: err.message.startsWith("ENOENT") ? 404 : 500, statusText: err.message });
 			}
 		}
 		// Bypass CSP & Mark meta scripts for quartz injection

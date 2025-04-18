@@ -1,11 +1,10 @@
 // Always expose internals first
 export { tidalModules } from "./core/exposeTidalInternals.js";
 export { buildActions, interceptors } from "./core/patchAction.js";
+export { unloadSet } from "./helpers/unloadSet.js";
 export { LunaPlugin } from "./LunaPlugin.js";
 export { ReactiveStore } from "./ReactiveStore.js";
-
-// Ensure window values are set
-import "./window.core.js";
+export * from "./window.core.js";
 
 // Restore the console
 for (let key in console) {

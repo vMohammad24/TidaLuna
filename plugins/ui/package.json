@@ -1,7 +1,11 @@
 {
 	"name": "@luna/ui",
-	"exports": "./src/index.ts",
+	"exports": "./src/index.tsx",
 	"dependencies": {
-		"@luna/lib": "link:..\\lib"
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.0",
+		"@luna/lib": "link:..\\lib",
+		"@mui/icons-material": "^7.0.2",
+		"@mui/material": "^7.0.2"
 	}
 }

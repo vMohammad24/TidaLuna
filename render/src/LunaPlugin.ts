@@ -6,6 +6,7 @@ import { unloadSet } from "./helpers/unloadSet.js";
 import { ReactiveStore } from "./ReactiveStore.js";
 
 import { type LunaUnload } from "@luna/lib";
+import { modules } from "./window.core.js";
 
 type ModuleExports = {
 	unloads?: Set<LunaUnload>;
@@ -64,8 +65,6 @@ export class LunaPlugin {
 	public static readonly pluginStorage = ReactiveStore.getStore("@luna/plugins");
 	// Static store for all loaded plugins so we dont double load any
 	public static readonly plugins: Record<string, LunaPlugin> = {};
-	// Static store for all loaded modules for dynamic imports
-	public static readonly modules: Record<string, object> = {};
 
 	static {
 		// Ensure all plugins are unloaded on beforeunload
@@ -163,7 +162,7 @@ export class LunaPlugin {
 
 	// #region _exports
 	private get exports() {
-		return LunaPlugin.modules[this.name];
+		return modules[this.name];
 	}
 	private set exports(exports: ModuleExports | undefined) {
 		if (this._unloads.size !== 0) {
@@ -177,7 +176,7 @@ export class LunaPlugin {
 			}
 		}
 		// Cast to set, _exports is readonly to avoid accidental internal modification
-		LunaPlugin.modules[this.name] = exports;
+		modules[this.name] = exports;
 	}
 	private readonly _unloads: Set<LunaUnload> = new Set();
 	private get unloads() {
@@ -296,17 +295,14 @@ export class LunaPlugin {
 				plugins: [
 					{
 						resolve: ({ name }) => {
-							// Special handling for @luna/core as its not a plugin
-							if (name === "@luna/core") return `luna.core`;
-
-							if (LunaPlugin.modules[name] === undefined) {
+							if (modules[name] === undefined) {
 								const errMsg = `Failed to load plugin ${this.name}, module ${name} not found!`;
 								logErr(errMsg, this);
 								throw new Error(errMsg);
 							}
-							// Add this plugin as a dependant of the module
-							LunaPlugin.plugins[name].dependents.add(this);
-							return `luna.core.LunaPlugin.modules["${name}"]`;
+							// Add this plugin to the dependents of the module if its a plugin and thus unloadable
+							LunaPlugin.plugins[name]?.dependents.add(this);
+							return `luna.core.modules["${name}"]`;
 						},
 					},
 				],

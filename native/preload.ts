@@ -15,8 +15,9 @@ ipcRenderer.invoke("__Luna.originalPreload").then(require);
 			`(async () => { 
 				const renderJs = await lunaNative.invoke("__Luna.renderJs");
 				const renderUrl = URL.createObjectURL(new Blob([renderJs], { type: "text/javascript" }));
-				window.luna = {};
+				window.luna ??= {};
 				window.luna.core = await import(renderUrl);
+				window.luna.core.modules["@luna/core"] = window.luna.core;
 			})()`,
 			true,
 		)

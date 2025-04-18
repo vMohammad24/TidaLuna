@@ -2,16 +2,16 @@ import type * as lib from "@luna/lib";
 import type * as ui from "@luna/ui";
 import type * as core from "./index.js";
 
-import { LunaPlugin } from "./LunaPlugin.js";
+export const modules: Record<string, object> = {};
 
 // Define getters for lib and ui to proxy to modules
 Object.defineProperty(window.luna, "lib", {
-	get: () => LunaPlugin.modules["@luna/lib"],
+	get: () => modules["@luna/lib"],
 	enumerable: true,
 	configurable: false,
 });
 Object.defineProperty(window.luna, "ui", {
-	get: () => LunaPlugin.modules["@luna/ui"],
+	get: () => modules["@luna/ui"],
 	enumerable: true,
 	configurable: false,
 });
