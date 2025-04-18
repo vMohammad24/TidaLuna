@@ -12,7 +12,7 @@ const buildOutput = buildCache(async (args) => {
 		sourcemap: false,
 		platform: "node",
 		format: "esm",
-		external: ["electron"],
+		external: ["@luna/*", "electron"],
 		plugins: [fileUrlPlugin],
 	});
 

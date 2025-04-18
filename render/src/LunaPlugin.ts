@@ -3,7 +3,7 @@ import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
 import { log, logErr, logWarn } from "./helpers/console.js";
 import { unloadSet } from "./helpers/unloadSet.js";
-import { ReactiveStore } from "./storage.js";
+import { ReactiveStore } from "./ReactiveStore.js";
 
 import { type LunaUnload } from "@luna/lib";
 
@@ -40,22 +40,10 @@ export type LunaPluginStorage = {
 
 type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
 
+console.log(window.luna);
+
 export class LunaPlugin {
 	// #region Static
-	static {
-		// Ensure all plugins are unloaded on beforeunload
-		addEventListener("beforeunload", () => {
-			for (const plugin of Object.values(LunaPlugin.plugins)) {
-				plugin.unload().catch((err) => {
-					const errMsg = `[Luna] Failed to unload plugin ${plugin.name}! Please report this to the Luna devs. ${err?.message}`;
-					// Use alert here over logErr as Tidal may be partially unloaded
-					alert(errMsg);
-					console.error(errMsg, err);
-				});
-			}
-		});
-	}
-
 	private static fetchOrThrow(url: string): Promise<Response> {
 		return fetch(url).then((res) => {
 			if (!res.ok) {
@@ -79,7 +67,21 @@ export class LunaPlugin {
 	// Static store for all loaded plugins so we dont double load any
 	public static readonly plugins: Record<string, LunaPlugin> = {};
 	// Static store for all loaded modules for dynamic imports
-	public static readonly modules: Record<string, ModuleExports> = {};
+	public static readonly modules: Record<string, object> = {};
+
+	static {
+		// Ensure all plugins are unloaded on beforeunload
+		addEventListener("beforeunload", () => {
+			for (const plugin of Object.values(LunaPlugin.plugins)) {
+				plugin.unload().catch((err) => {
+					const errMsg = `[Luna] Failed to unload plugin ${plugin.name}! Please report this to the Luna devs. ${err?.message}`;
+					// Use alert here over logErr as Tidal may be partially unloaded
+					alert(errMsg);
+					console.error(errMsg, err);
+				});
+			}
+		});
+	}
 
 	/**
 	 * Create a plugin instance from a store:LunaPluginStorage, if package is not populated it will be fetched using the url so we can get the name
@@ -296,6 +298,9 @@ export class LunaPlugin {
 				plugins: [
 					{
 						resolve: ({ name }) => {
+							// Special handling for @luna/core as its not a plugin
+							if (name === "@luna/core") return `luna.core`;
+
 							if (LunaPlugin.modules[name] === undefined) {
 								const errMsg = `Failed to load plugin ${this.name}, module ${name} not found!`;
 								logErr(errMsg, this);
@@ -303,7 +308,7 @@ export class LunaPlugin {
 							}
 							// Add this plugin as a dependant of the module
 							LunaPlugin.plugins[name].dependents.add(this);
-							return `luna.LunaPlugin.modules["${name}"]`;
+							return `luna.core.LunaPlugin.modules["${name}"]`;
 						},
 					},
 				],

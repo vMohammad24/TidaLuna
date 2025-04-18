@@ -5,8 +5,9 @@ import "./patchAction.js";
 
 import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
-import { tidalModules } from "../window.core.js";
 import { findCreateActionFunction } from "./helpers/findPrepareActionNameAndIdx.js";
+
+export const tidalModules = {};
 
 const fetchCode = async (path) => {
 	const res = await fetch(path);

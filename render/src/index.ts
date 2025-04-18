@@ -1,5 +1,11 @@
 // Always expose internals first
-import "./core/exposeTidalInternals.js";
+export { tidalModules } from "./core/exposeTidalInternals.js";
+export { buildActions, interceptors } from "./core/patchAction.js";
+export { LunaPlugin } from "./LunaPlugin.js";
+export { ReactiveStore } from "./ReactiveStore.js";
+
+// Ensure window values are set
+import "./window.core.js";
 
 // Restore the console
 for (let key in console) {
@@ -26,7 +32,10 @@ Object.freeze = (arg) => arg;
 
 import { LunaPlugin } from "./LunaPlugin.js";
 
-// Load lib & wait for it to be ready
-await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib" });
-// Load ui
-await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.ui" });
+// Wrap loading of plugins in a timeout to allow the preload to set luna.core to @luna/core (see native/preload.ts)
+setTimeout(async () => {
+	// Load lib
+	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib" });
+	// Load ui after lib as it depends on it. TODO: Automagically handle dependency load ordering
+	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.ui" });
+});

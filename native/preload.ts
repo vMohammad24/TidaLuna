@@ -8,11 +8,16 @@ contextBridge.exposeInMainWorld("lunaNative", {
 // require() the original Tidal preload script
 ipcRenderer.invoke("__Luna.originalPreload").then(require);
 
-// Load the luna.js renderer code
+// Load the luna.js renderer code and store it in window.luna.core
 (async () => {
 	await webFrame
 		.executeJavaScript(
-			`(async () => { await import(URL.createObjectURL(new Blob([await lunaNative.invoke("__Luna.renderJs")], { type: "text/javascript" }))) })()`,
+			`(async () => { 
+				const renderJs = await lunaNative.invoke("__Luna.renderJs");
+				const renderUrl = URL.createObjectURL(new Blob([renderJs], { type: "text/javascript" }));
+				window.luna = {};
+				window.luna.core = await import(renderUrl);
+			})()`,
 			true,
 		)
 		.catch((err) => {

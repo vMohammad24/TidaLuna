@@ -1,20 +1,8 @@
 import type * as lib from "@luna/lib";
 import type * as ui from "@luna/ui";
+import type * as core from "./index.js";
+
 import { LunaPlugin } from "./LunaPlugin.js";
-import { ReactiveStore } from "./storage.js";
-
-// Init window.luna
-window.luna ??= {
-	LunaPlugin,
-	ReactiveStore,
-	tidalModules: {},
-	interceptors: {},
-	_buildActions: {},
-};
-
-export const tidalModules = window.luna.tidalModules;
-export const interceptors = window.luna.interceptors;
-export const _buildActions = window.luna._buildActions;
 
 // Define getters for lib and ui to proxy to modules
 Object.defineProperty(window.luna, "lib", {
@@ -31,17 +19,10 @@ Object.defineProperty(window.luna, "ui", {
 declare global {
 	interface Window {
 		luna: {
-			ReactiveStore: typeof ReactiveStore;
-			LunaPlugin: typeof LunaPlugin;
-
-			// Throw lib & ui here for ease of use, proxied to LunaPlugin.modules
+			// Throw lib, ui & core here for ease of use
 			lib?: typeof lib;
 			ui?: typeof ui;
-
-			// Exposed tidal internals
-			tidalModules: Record<string, any>;
-			interceptors: Record<string, Set<Function>>;
-			_buildActions: Record<string, Function>;
+			core?: typeof core;
 		};
 	}
 	// Define lunaNative exports (see native/preload.ts)

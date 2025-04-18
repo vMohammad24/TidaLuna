@@ -1,9 +1,7 @@
 {
 	"name": "@luna/core",
 	"type": "module",
-	"exports": {
-		"./LunaPlugin": "./src/LunaPlugin.js"
-	},
+	"exports": "./src/index.ts",
 	"dependencies": {
 		"@uwu/quartz": "^1.5.3",
 		"idb-keyval": "^6.2.1",

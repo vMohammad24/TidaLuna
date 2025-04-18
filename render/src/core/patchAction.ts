@@ -2,13 +2,15 @@
 import { after } from "spitroast";
 
 import { logErr } from "../helpers/console.js";
-import { _buildActions, interceptors } from "../window.core.js";
+
+export const buildActions: Record<string, Function> = {};
+export const interceptors: Record<string, Set<Function>> = {};
 
 const patchAction = (_Obj: { _: Function }) => {
 	after("_", _Obj, ([type], buildAction) => {
 		// There can be multiple buildActions for the same type.
 		// But it seems they may just be duplicates so safe to override
-		_buildActions[type] = buildAction;
+		buildActions[type] = buildAction;
 
 		// We proxy all of them anyway
 		return new Proxy(buildAction, {

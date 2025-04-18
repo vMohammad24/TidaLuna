@@ -7,7 +7,7 @@ export type LunaInterceptors = {
 	[K in ActionType]?: Set<InterceptCallback<unknown>>;
 };
 
-export const interceptors: LunaInterceptors = window.luna.interceptors;
+import { interceptors } from "@luna/core";
 
 /**
  * Intercept a Redux action based on its `type`

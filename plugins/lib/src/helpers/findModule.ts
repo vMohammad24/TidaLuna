@@ -1,6 +1,6 @@
 import { memoize, type UnknownRecord } from "@inrixia/helpers";
 
-import { tidalModules } from "../window.luna";
+import { tidalModules } from "@luna/core";
 
 export interface FoundProperty<T> {
 	value: T;
