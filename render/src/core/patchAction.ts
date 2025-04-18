@@ -1,7 +1,7 @@
 // @ts-expect-error Idk why TS thinks this module doesnt exist
 import { after } from "spitroast";
 
-import { logErr } from "../helpers/console.js";
+import { logErr } from "./helpers/console.js";
 
 export const buildActions: Record<string, Function> = {};
 export const interceptors: Record<string, Set<Function>> = {};

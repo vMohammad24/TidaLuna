@@ -26,7 +26,7 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		outfile: `./dist/${safeName}.js`,
 		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.js")],
 		...opts,
-		external: [...(opts?.external ?? []), "@luna/*", "react", "react-dom", "electron"],
+		external: [...(opts?.external ?? []), "@luna/*", "react", "react-dom/client", "react/jsx-runtime", "electron"],
 		plugins: [...(opts?.plugins ?? []), fileUrlPlugin, lunaNativePlugin, writeBundlePlugin(pluginPackage)],
 	};
 };

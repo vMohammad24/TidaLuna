@@ -3,8 +3,6 @@
 	"exports": "./src/index.ts",
 	"devDependencies": {
 		"@luna/core": "link:..\\..\\render",
-		"@types/react": "^19.1.2",
-		"@types/react-dom": "^19.1.2",
 		"neptune-types": "^1.0.1",
 		"redux": "^5.0.1"
 	}

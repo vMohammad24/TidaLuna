@@ -1,4 +1,4 @@
-import { findModuleByProperty } from "../helpers/findModule";
+import { findModuleByProperty } from "@luna/core";
 
 import type { Store } from "redux";
 

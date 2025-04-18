@@ -1,7 +1,7 @@
 import type { AnyRecord } from "@inrixia/helpers";
 import { createStore as createIdbStore, get as idbGet, set as idbSet, type UseStore } from "idb-keyval";
 import { store as obyStore } from "oby";
-import { logErr } from "./helpers/console.js";
+import { logErr } from "./core/helpers/console.js";
 
 export class ReactiveStore {
 	public static Storages: Record<string, ReactiveStore> = {};
