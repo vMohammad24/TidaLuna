@@ -3,9 +3,9 @@ import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
 import { log, logErr, logWarn } from "./helpers/console.js";
 import { unloadSet } from "./helpers/unloadSet.js";
-import { storage } from "./storage.js";
+import { ReactiveStore } from "./storage.js";
 
-import type { LunaUnload } from "@luna/lib";
+import { type LunaUnload } from "@luna/lib";
 
 type ModuleExports = {
 	unloads?: Set<LunaUnload>;
@@ -75,7 +75,7 @@ export class LunaPlugin {
 	}
 
 	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
-	public static readonly pluginStorage = (storage["__plugins"] ??= {});
+	public static readonly pluginStorage = ReactiveStore.getStore("@luna/plugins");
 	// Static store for all loaded plugins so we dont double load any
 	public static readonly plugins: Record<string, LunaPlugin> = {};
 	// Static store for all loaded modules for dynamic imports
@@ -84,9 +84,13 @@ export class LunaPlugin {
 	/**
 	 * Create a plugin instance from a store:LunaPluginStorage, if package is not populated it will be fetched using the url so we can get the name
 	 */
-	public static async fromStorage(store: PartialLunaPluginStorage): Promise<LunaPlugin> {
-		store.package ??= await this.fetchPackage(store.url);
-		const name = store.package.name;
+	public static async fromStorage(storeInit: PartialLunaPluginStorage): Promise<LunaPlugin> {
+		storeInit.package ??= await this.fetchPackage(storeInit.url);
+		const name = storeInit.package.name;
+
+		const store = await LunaPlugin.pluginStorage.get<LunaPluginStorage>(name);
+		LunaPlugin.pluginStorage.set(name, { ...store, ...storeInit });
+
 		const plugin = (this.plugins[name] ??= new this(name, store));
 		return plugin.load();
 	}
@@ -95,12 +99,8 @@ export class LunaPlugin {
 	// #region constructor
 	private constructor(
 		public readonly name: string,
-		storage: PartialLunaPluginStorage,
+		public readonly store: LunaPluginStorage,
 	) {
-		this.store = {
-			...storage,
-			...this.store,
-		};
 		// Enabled has to be setup first because liveReload below accesses it
 		this._enabled = new Signal(this.store.enabled, (next) => {
 			// Protect against disabling permanantly in the background if loading causes a error
@@ -186,12 +186,6 @@ export class LunaPlugin {
 	// #endregion
 
 	// #region Storage
-	public get store(): LunaPluginStorage {
-		return (LunaPlugin.pluginStorage[this.name] ??= {});
-	}
-	private set store(value: LunaPluginStorage) {
-		LunaPlugin.pluginStorage[this.name] = value;
-	}
 	public get url(): string {
 		return this.store.url;
 	}

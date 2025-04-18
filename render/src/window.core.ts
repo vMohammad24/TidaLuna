@@ -1,12 +1,12 @@
 import type * as lib from "@luna/lib";
 import type * as ui from "@luna/ui";
 import { LunaPlugin } from "./LunaPlugin.js";
-import { type LunaStorage, storage } from "./storage.js";
+import { ReactiveStore } from "./storage.js";
 
 // Init window.luna
 window.luna ??= {
 	LunaPlugin,
-	storage,
+	ReactiveStore,
 	tidalModules: {},
 	interceptors: {},
 	_buildActions: {},
@@ -31,7 +31,9 @@ Object.defineProperty(window.luna, "ui", {
 declare global {
 	interface Window {
 		luna: {
+			ReactiveStore: typeof ReactiveStore;
 			LunaPlugin: typeof LunaPlugin;
+
 			// Throw lib & ui here for ease of use, proxied to LunaPlugin.modules
 			lib?: typeof lib;
 			ui?: typeof ui;
@@ -40,9 +42,6 @@ declare global {
 			tidalModules: Record<string, any>;
 			interceptors: Record<string, Set<Function>>;
 			_buildActions: Record<string, Function>;
-
-			// Storage
-			storage: LunaStorage;
 		};
 	}
 	// Define lunaNative exports (see native/preload.ts)
