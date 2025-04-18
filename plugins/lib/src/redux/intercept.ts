@@ -40,7 +40,8 @@ export function intercept<P extends unknown, T extends ActionType>(
 		: cb;
 	// Wrap removing the callback from the interceptors in a unload function and return it
 	const unIntercept = () => {
-		interceptors[type].delete(intercept);
+		// ?. so that it doesn't throw if the interceptor was already removed
+		interceptors[type]?.delete(intercept);
 		if (interceptors[type].size === 0) delete interceptors[type];
 	};
 	unIntercept.source = `intercept.${type}`;
