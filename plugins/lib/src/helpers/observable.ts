@@ -1,6 +1,7 @@
 // based on: https://github.com/KaiHax/kaihax/blob/master/src/patcher.ts
 
 import type { VoidFn } from "@inrixia/helpers";
+import { unloads } from "..";
 
 export type ObserveCallback<E extends Element = Element> = (elem: E) => unknown;
 export type ObserveEntry<E extends Element = Element> = [selector: string, callback: ObserveCallback<E>];
@@ -43,6 +44,10 @@ export const observe = <T extends Element = Element>(selector: string, cb: Obser
 		if (observables.size === 0) observer.disconnect();
 	};
 };
+
+// Disconnect and remove observables on unload
+unloads.add(observer.disconnect.bind(observer));
+unloads.add(observables.clear.bind(observables));
 
 /**
  * Observes the DOM for an element matching the given selector and returns a Promise that resolves with the element when found.

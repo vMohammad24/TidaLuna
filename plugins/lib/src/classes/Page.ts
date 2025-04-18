@@ -1,3 +1,4 @@
+import { unloads } from "..";
 import { actions, intercept } from "../redux";
 export class Page {
 	private static readonly pages: Record<string, Page> = {};
@@ -10,13 +11,13 @@ export class Page {
 	private constructor(public readonly name: string) {}
 
 	static {
-		intercept<{ search: string }>("router/NAVIGATED", (payload) => {
+		intercept<{ search: string }>("router/NAVIGATED", unloads, (payload) => {
 			const pageName = payload.search.slice(1);
 			// payload.search = `?name`
 			if (pageName in this.pages) {
 				const page = this.pages[pageName];
 				// Queue a intercept to trigger on navigating away to remove the page
-				intercept("router/NAVIGATED", () => page.root.remove(), true);
+				intercept("router/NAVIGATED", unloads, () => page.root.remove(), true);
 				setTimeout(() => {
 					const notFound = document.querySelector<HTMLElement>(`[class^="_pageNotFoundError_"]`);
 					if (notFound) {

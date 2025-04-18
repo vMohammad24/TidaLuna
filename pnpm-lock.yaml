@@ -57,6 +57,9 @@ importers:
 
   plugins/lib:
     devDependencies:
+      '@luna/core':
+        specifier: link:..\..\render
+        version: link:../../render
       '@types/react':
         specifier: ^19.1.2
         version: 19.1.2

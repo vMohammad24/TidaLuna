@@ -1,6 +1,6 @@
 import { memoize, type UnknownRecord } from "@inrixia/helpers";
 
-import { moduleCache } from "../window.luna";
+import { tidalModules } from "../window.luna";
 
 export interface FoundProperty<T> {
 	value: T;
@@ -8,13 +8,13 @@ export interface FoundProperty<T> {
 }
 
 export const findModuleProperty = memoize(<T>(propertyName: string, propertyType: string): FoundProperty<T> | undefined => {
-	return recursiveSearch<T>(moduleCache, propertyName, propertyType);
+	return recursiveSearch<T>(tidalModules, propertyName, propertyType);
 });
 
 export const findModuleByProperty = memoize(<T>(propertyName: string, propertyType: string): T | undefined => {
-	const foundProperty = recursiveSearch<T>(moduleCache, propertyName, propertyType);
+	const foundProperty = recursiveSearch<T>(tidalModules, propertyName, propertyType);
 	if (foundProperty === undefined) return;
-	let module = moduleCache;
+	let module = tidalModules;
 	// Remove the final path part
 	foundProperty.path.pop();
 	for (const key of foundProperty.path) module = module[key as string];

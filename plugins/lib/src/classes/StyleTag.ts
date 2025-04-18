@@ -1,11 +1,15 @@
+import type { LunaUnload } from "..";
+
 export class StyleTag {
 	public readonly styleTag: HTMLElement;
 	constructor(
 		public readonly id: string,
+		unloads: Set<LunaUnload>,
 		private _css?: string,
 	) {
 		this.styleTag = (id ? document.getElementById(id) : this.createElement()) ?? this.createElement();
 		this.css = _css;
+		unloads.add(this.remove.bind(this));
 	}
 
 	private createElement() {

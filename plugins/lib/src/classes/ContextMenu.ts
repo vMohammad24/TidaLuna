@@ -1,4 +1,5 @@
 import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
+import { unloads } from "..";
 import { observe } from "../helpers/observable";
 import type { OutdatedActionPayloads } from "../redux";
 import { intercept } from "../redux/intercept";
@@ -23,11 +24,12 @@ export class ContextMenu {
 	}
 
 	public static onOpen: AddReceiver<{ event: OutdatedActionPayloads["contextMenu/OPEN"]; contextMenu: ExtendedElem }> = registerEmitter(
-		(onOpen) =>
-			intercept("contextMenu/OPEN", async (event) => {
+		(onOpen) => {
+			intercept("contextMenu/OPEN", unloads, async (event) => {
 				const contextMenu = await ContextMenu.getContextMenu();
 				if (contextMenu === null) return;
 				onOpen({ event, contextMenu }, llTrace.err.withContext("ContextMenu.onOpen", event.type, contextMenu));
-			}),
+			});
+		},
 	);
 }
