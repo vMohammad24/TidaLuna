@@ -1,4 +1,5 @@
 export * from "./LiveReloadToggle";
+export * from "./LunaAuthor";
 export * from "./LunaButton";
 export * from "./LunaLink";
 export * from "./LunaNumber";

@@ -4,13 +4,12 @@ import { unloadSet, type LunaPlugin, type PluginPackage } from "@luna/core";
 import { store as obyStore } from "oby";
 
 import Box from "@mui/material/Box";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import { LiveReloadToggleButton, LunaSwitch, ReloadButton } from "./components";
-import { LunaPluginAuthor } from "./LunaAuthor";
+import { LiveReloadToggleButton, LunaSwitch, ReloadButton } from "..";
+import { LunaPluginAuthor } from "../LunaAuthor";
 
 export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 	// Have to wrap in function call as Settings is a functional component
@@ -48,6 +47,9 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 	const desc = pkg.description;
 	const name = pkg.name;
 
+	// Dont allow disabling core plugins
+	const canDisable = !["@luna/ui", "@luna/lib"].includes(name);
+
 	return (
 		<Stack
 			spacing={1}
@@ -62,15 +64,12 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 		>
 			<Box>
 				<Stack direction="row" spacing={1}>
-					<FormControlLabel
-						control={<Tooltip title={enabled ? `Disable ${name}` : `Enable ${name}`} children={<LunaSwitch loading={loading} />} />}
-						label={<Typography sx={{ marginTop: 0.2 }} variant="h6" children={name} />}
-						labelPlacement="start"
-						checked={enabled}
-						onChange={(_, checked) => {
-							checked ? plugin.enable() : plugin.disable();
-						}}
-					/>
+					<Box sx={{ minWidth: 85 }}>
+						<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />
+					</Box>
+					{canDisable && (
+						<Tooltip title={enabled ? `Disable ${name}` : `Enable ${name}`} children={<LunaSwitch checked={enabled} loading={loading} />} />
+					)}
 					<Tooltip title="Reload module">
 						<ReloadButton spin={loading} disabled={disabled} onClick={plugin.reload.bind(plugin)} />
 					</Tooltip>
