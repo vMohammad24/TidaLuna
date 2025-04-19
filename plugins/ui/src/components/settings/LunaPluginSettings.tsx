@@ -47,7 +47,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const name = pkg.name;
 
 	// Dont allow disabling core plugins
-	const canDisable = true; //!["@luna/ui", "@luna/lib"].includes(name);
+	const canDisable = !["@luna/ui", "@luna/lib"].includes(name);
 
 	// Memoize callbacks
 	const handleReload = React.useCallback(() => plugin.reload(), [plugin]);
