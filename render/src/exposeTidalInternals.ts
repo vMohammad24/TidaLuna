@@ -15,10 +15,13 @@ const fetchCode = async (path) => {
 	return `${await res.text()}\n//# sourceURL=${path}`;
 };
 
+const messageContainer = document.getElementById("tidaluna-loading-text");
+
 const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);
 	if (tidalModules[path]) return tidalModules[path];
 
+	messageContainer.innerText += `Loading ${path}\n`;
 	const code = await fetchCode(path);
 
 	// Load each js module and store it in the cache so we can access its exports
