@@ -8,13 +8,19 @@ importers:
 
   .:
     dependencies:
-      esbuild:
-        specifier: ^0.25.2
-        version: 0.25.2
-    devDependencies:
       '@inrixia/helpers':
         specifier: ^3.13.6
         version: 3.13.6
+      clean-css:
+        specifier: ^5.3.3
+        version: 5.3.3
+      esbuild:
+        specifier: ^0.25.2
+        version: 0.25.2
+      html-minifier-terser:
+        specifier: ^7.2.0
+        version: 7.2.0
+    devDependencies:
       '@luna/_core':
         specifier: link:render
         version: link:render
@@ -30,12 +36,6 @@ importers:
       '@types/node':
         specifier: ^22.14.1
         version: 22.14.1
-      clean-css:
-        specifier: ^5.3.3
-        version: 5.3.3
-      html-minifier-terser:
-        specifier: ^7.2.0
-        version: 7.2.0
       prettier:
         specifier: ^3.5.3
         version: 3.5.3

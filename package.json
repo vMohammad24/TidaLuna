@@ -24,7 +24,6 @@
   "license": "MS-Pl",
   "type": "module",
   "devDependencies": {
-    "@inrixia/helpers": "^3.13.6",
     "@luna/_core": "link:render",
     "@luna/_lib": "link:plugins/lib",
     "@luna/_ui": "link:plugins/ui",
@@ -33,12 +32,12 @@
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.3",
-    "clean-css": "^5.3.3",
-    "esbuild": "^0.25.2",
-    "html-minifier-terser": "^7.2.0"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
-    "esbuild": "^0.25.2"
+    "@inrixia/helpers": "^3.13.6",
+    "esbuild": "^0.25.2",
+    "clean-css": "^5.3.3",
+    "html-minifier-terser": "^7.2.0"
   }
 }
