@@ -14,6 +14,11 @@ export const defaultBuildOptions: BuildOptions = {
 	minify: true,
 };
 
+export const TidalNodeVersion = "node20.15"; // Tidal node version
+export const TidalChromeVersion = "chrome126"; // Tidal target version
+
+const externals = ["@luna/*", "oby", "react", "react-dom/client", "react/jsx-runtime", "electron"];
+
 export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions) => {
 	const pluginPackage = await readFile(path.join(pluginPath, "package.json"), "utf8").then(JSON.parse);
 	// Sanitize pluginPackage.name, remove @, replace / with .
@@ -22,11 +27,12 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		...defaultBuildOptions,
 		write: false,
 		platform: "browser",
+		target: TidalChromeVersion,
 		format: "esm",
 		outfile: `./dist/${safeName}.js`,
 		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.js")],
 		...opts,
-		external: [...(opts?.external ?? []), "@luna/*", "oby", "react", "react-dom/client", "react/jsx-runtime", "electron"],
+		external: [...(opts?.external ?? []), ...externals],
 		plugins: [...(opts?.plugins ?? []), fileUrlPlugin, lunaNativePlugin, writeBundlePlugin(pluginPackage)],
 	};
 };

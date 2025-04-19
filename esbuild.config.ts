@@ -1,4 +1,4 @@
-import { build, context, pluginBuildOptions, type BuildOptions } from "@luna/build";
+import { build, context, pluginBuildOptions, TidalNodeVersion, type BuildOptions } from "@luna/build";
 import { mkdir, writeFile } from "fs/promises";
 import { basename, dirname, join } from "path";
 
@@ -26,12 +26,14 @@ const buildConfigs: BuildOptions[] = [
 		entryPoints: ["native/preload.ts"],
 		outfile: "dist/preload.js",
 		platform: "node",
+		target: TidalNodeVersion,
 		format: "cjs",
 		external: ["electron"],
 	},
 	{
 		entryPoints: ["render/src/index.ts"],
 		outfile: "dist/luna.js",
+		target: TidalNodeVersion,
 		platform: "browser",
 		format: "esm",
 	},

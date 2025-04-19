@@ -1,5 +1,5 @@
 import { build, Plugin } from "esbuild";
-import { defaultBuildOptions } from "../index.js";
+import { defaultBuildOptions, TidalNodeVersion } from "../index.js";
 import { fileUrlPlugin } from "./fileUrl.js";
 import { buildCache } from "./outputCache.js";
 
@@ -11,6 +11,7 @@ const buildOutput = buildCache(async (args) => {
 		metafile: true,
 		sourcemap: false,
 		platform: "node",
+		target: TidalNodeVersion, // Tidal node version
 		format: "esm",
 		external: ["@luna/*", "electron"],
 		plugins: [fileUrlPlugin],
