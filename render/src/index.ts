@@ -7,8 +7,8 @@ export { unloadSet } from "./helpers/unloadSet.js";
 
 export { modules } from "./modules.js";
 
-export { LunaPlugin } from "./LunaPlugin.js";
-export { ReactiveStore } from "./ReactiveStore.js";
+export * from "./LunaPlugin.js";
+export * from "./ReactiveStore.js";
 
 // Ensure this is loaded
 import "./window.core.js";

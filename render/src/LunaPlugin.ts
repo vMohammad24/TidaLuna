@@ -21,9 +21,9 @@ export type LunaAuthor = {
 	avatarUrl?: string;
 };
 export type PluginPackage = {
-	author: LunaAuthor;
 	name: string;
 	hash: string;
+	author?: LunaAuthor | string;
 	description?: React.ReactNode;
 	version?: string;
 	dependencies?: string[];
@@ -51,14 +51,11 @@ export class LunaPlugin {
 			return res;
 		});
 	}
-	private static fetchJson<T>(url: string): Promise<T> {
-		return this.fetchOrThrow(url).then((res) => res.json());
-	}
 	private static fetchText(url: string): Promise<string> {
 		return this.fetchOrThrow(url).then((res) => res.text());
 	}
 	public static async fetchPackage(url: string): Promise<PluginPackage> {
-		return this.fetchJson(`${url}.json`);
+		return this.fetchOrThrow(`${url}.json`).then((res) => res.json());
 	}
 
 	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
@@ -107,13 +104,13 @@ export class LunaPlugin {
 			if (this.loadError._ === undefined) this.store.enabled = next;
 		});
 		// Allow other code to listen to onEnabled (this._enabled is private)
-		this.onEnabled = this._enabled.onValue.bind(this._enabled);
+		this.onSetEnabled = this._enabled.onValue.bind(this._enabled);
 
 		this._liveReload = new Signal(this.store.liveReload, (next) => {
 			if ((this.store.liveReload = next)) this.startReloadLoop();
 			else this.stopReloadLoop();
 		});
-		this.onLiveReload = this._liveReload.onValue.bind(this._liveReload);
+		this.onSetLiveReload = this._liveReload.onValue.bind(this._liveReload);
 	}
 	// #endregion
 
@@ -143,7 +140,7 @@ export class LunaPlugin {
 	public readonly loadError: Signal<string> = new Signal(undefined);
 
 	public readonly _liveReload: Signal<boolean>;
-	public onLiveReload;
+	public onSetLiveReload;
 	public get liveReload() {
 		return this._liveReload._;
 	}
@@ -152,7 +149,7 @@ export class LunaPlugin {
 	}
 
 	private readonly _enabled: Signal<boolean>;
-	public onEnabled;
+	public onSetEnabled;
 	public get enabled() {
 		return this._enabled._;
 	}
@@ -161,7 +158,7 @@ export class LunaPlugin {
 	public readonly dependents: Set<LunaPlugin> = new Set();
 
 	// #region _exports
-	private get exports() {
+	public get exports() {
 		return modules[this.name];
 	}
 	private set exports(exports: ModuleExports | undefined) {
@@ -259,7 +256,8 @@ export class LunaPlugin {
 			// If hash hasnt changed then just reuse stored code
 			// If it has then next time this.code() is called it will fetch the new code as newPackage.code is undefined
 			if (!codeChanged) newPackage.code = this.package.code;
-			this.package = newPackage;
+			// Only update this.package if its actually changed
+			if (JSON.stringify(newPackage) !== JSON.stringify(this.package)) this.package = newPackage;
 			return codeChanged;
 		} catch {
 			// Fail silently if we cant fetch

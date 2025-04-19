@@ -9,6 +9,7 @@
 		"@mui/material": "^7.0.2"
 	},
 	"devDependencies": {
+		"@luna/core": "link:..\\..\\render",
 		"@types/react": "^19.1.2",
 		"@types/react-dom": "^19.1.2",
 		"oby": "^15.1.2"
