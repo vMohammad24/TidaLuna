@@ -1,8 +1,8 @@
 import React from "react";
 
-import { LunaButton, type LunaButtonProps } from "./LunaButton";
+import { LunaButton, type LunaButtonProps } from "../LunaButton";
+import type { LunaTitleValues } from "../LunaTitle";
 import { LunaSetting } from "./LunaSetting";
-import type { LunaTitleValues } from "./LunaTitle";
 
 export type LunaButtonSettingProps = LunaButtonProps & LunaTitleValues;
 

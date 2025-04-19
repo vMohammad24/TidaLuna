@@ -13,21 +13,11 @@ export const LunaSecureText = (props: LunaSecureTextProps) => {
 	return (
 		<OutlinedInput
 			{...props}
-			sx={{
-				"&.Mui-error": {
-					"& .MuiOutlinedInput-notchedOutline": {
-						borderColor: "warning.main",
-					},
-				},
-				color: "#fefefe",
-				...props.sx,
-			}}
 			type={showPassword ? "text" : "password"}
 			endAdornment={
 				<InputAdornment position="end">
 					<Tooltip title={showPassword ? "Hide" : "Show"}>
 						<IconButton
-							sx={{ color: "grey" }}
 							onClick={() => setShowPassword((show) => !show)}
 							onMouseDown={(e) => e.preventDefault()}
 							onMouseUp={(e) => e.preventDefault()}

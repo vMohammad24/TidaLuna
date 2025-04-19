@@ -1,37 +1,44 @@
 import React from "react";
 
 import InputAdornment from "@mui/material/InputAdornment";
-import { LunaText, type LunaTextProps } from "./LunaText";
 
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { useTheme } from "@mui/material/styles";
+import TextField, { type TextFieldProps } from "@mui/material/TextField";
 
-export type LunaNumberProps = LunaTextProps & {
+export type LunaNumberProps = TextFieldProps & {
 	min?: number;
 	max?: number;
+	value?: number;
+	defaultValue?: number;
 	onNumber?: (num: number) => unknown;
 };
 
 export const LunaNumber = (props: LunaNumberProps) => {
+	const theme = useTheme();
+	const [number, setNumber] = React.useState(isNaN(props.value) ? (props.defaultValue ?? 0) : props.value);
 	const onNumber = (number: any) => {
 		const num = +number;
 		if (isNaN(num)) return;
 		if (props.max !== undefined && num > props.max) return;
 		if (props.min !== undefined && num < props.min) return;
+		setNumber(num);
 		props.onNumber?.(num);
 	};
 	return (
-		<LunaText
+		<TextField
+			variant="outlined"
 			slotProps={{
 				input: {
 					startAdornment: (
 						<InputAdornment position="start">
 							<RemoveIcon
 								sx={{
-									color: "grey",
+									color: theme.palette.text.secondary,
 									cursor: "pointer",
 								}}
-								onClick={() => onNumber(--(props.value as any))}
+								onClick={() => onNumber(number - 1)}
 							/>
 						</InputAdornment>
 					),
@@ -39,10 +46,10 @@ export const LunaNumber = (props: LunaNumberProps) => {
 						<InputAdornment position="end">
 							<AddIcon
 								sx={{
-									color: "grey",
+									color: theme.palette.text.secondary,
 									cursor: "pointer",
 								}}
-								onClick={() => onNumber(++(props.value as any))}
+								onClick={() => onNumber(number + 1)}
 							/>
 						</InputAdornment>
 					),
@@ -52,6 +59,7 @@ export const LunaNumber = (props: LunaNumberProps) => {
 			inputProps={{
 				style: { textAlign: "center" },
 			}}
+			value={number}
 			{...props}
 			sx={{
 				width: 128,

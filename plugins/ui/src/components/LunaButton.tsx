@@ -2,7 +2,6 @@ import React from "react";
 
 import Button, { type ButtonProps } from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-import { grey } from "@mui/material/colors";
 import Tooltip from "@mui/material/Tooltip";
 
 export type LunaButtonProps = ButtonProps & {
@@ -17,11 +16,6 @@ export const LunaButton = (props: LunaButtonProps) => {
 				variant={props.variant ?? "contained"}
 				children={props.children}
 				{...props}
-				sx={{
-					backgroundColor: grey[900],
-					color: grey.A200,
-					...props.sx,
-				}}
 			/>
 		</Tooltip>
 	);

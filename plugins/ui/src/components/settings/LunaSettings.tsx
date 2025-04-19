@@ -1,5 +1,5 @@
 import React from "react";
-import { LunaStack, type LunaStackProps } from "./LunaStack";
+import { LunaStack, type LunaStackProps } from "../LunaStack";
 
 export const LunaSettings = (props: LunaStackProps) => (
 	<LunaStack

@@ -2,53 +2,34 @@ import React from "react";
 
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import { styled } from "@mui/material/styles";
 import Switch from "@mui/material/Switch";
 
-import { grey } from "@mui/material/colors";
-
+import { useTheme } from "@mui/material";
 import type { SwitchProps } from "@mui/material/Switch";
 import Tooltip from "@mui/material/Tooltip";
 
-const darkGrey = grey[900];
-const lightGrey = grey.A100;
-const StyledSwitch = styled(Switch)(() => ({
-	padding: 8,
-	"& .MuiSwitch-switchBase": {
-		"& + .MuiSwitch-track": {
-			opacity: 0.5,
-			backgroundColor: darkGrey,
-		},
-		"&.Mui-checked": {
-			"& + .MuiSwitch-track": {
-				opacity: 1,
-				backgroundColor: lightGrey,
-			},
-		},
-	},
-	"& .MuiSwitch-track": {
-		opacity: 1,
-		borderRadius: 12,
-	},
-}));
-
-const LoadingIcon = ({ checked, loading }: { checked?: boolean; loading?: boolean }) => (
-	<Box
-		style={{
-			borderRadius: 12,
-			marginTop: 2,
-			marginLeft: 2,
-			width: 16,
-			height: 16,
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "center",
-			backgroundColor: checked ? darkGrey : lightGrey,
-		}}
-	>
-		{loading && <CircularProgress size={12} thickness={4} sx={{ color: checked ? lightGrey : darkGrey }} />}
-	</Box>
-);
+const LoadingIcon = ({ checked, loading }: { checked?: boolean; loading?: boolean }) => {
+	const theme = useTheme();
+	const color = checked ? theme.palette.text.primary : theme.palette.text.secondary;
+	const backgroundColor = checked ? "#000" : theme.palette.text.primary;
+	return (
+		<Box
+			style={{
+				borderRadius: 12,
+				marginTop: 2,
+				marginLeft: 2,
+				width: 16,
+				height: 16,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				backgroundColor: backgroundColor,
+			}}
+		>
+			{loading && <CircularProgress size={12} thickness={4} style={{ color }} />}
+		</Box>
+	);
+};
 
 export interface LunaSwitchProps extends SwitchProps {
 	loading?: boolean;
@@ -61,7 +42,7 @@ export const LunaSwitch = (props: LunaSwitchProps) => (
 		}}
 		title={props.tooltip ?? props.title}
 	>
-		<StyledSwitch
+		<Switch
 			disabled={props.loading}
 			icon={<LoadingIcon loading={props.loading} />}
 			checkedIcon={<LoadingIcon checked loading={props.loading} />}

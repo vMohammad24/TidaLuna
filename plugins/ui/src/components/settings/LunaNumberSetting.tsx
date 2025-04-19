@@ -1,8 +1,8 @@
 import React from "react";
 
-import { LunaNumber, type LunaNumberProps } from "./LunaNumber";
+import { LunaNumber, type LunaNumberProps } from "../LunaNumber";
+import { type LunaTitleValues } from "../LunaTitle";
 import { LunaSetting } from "./LunaSetting";
-import { type LunaTitleValues } from "./LunaTitle";
 
 export type LunaNumberSettingProps = LunaNumberProps & LunaTitleValues;
 export const LunaNumberSetting = (props: LunaNumberSettingProps) => (

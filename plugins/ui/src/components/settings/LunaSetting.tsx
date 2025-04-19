@@ -1,7 +1,7 @@
 import React from "react";
 
 import Stack, { type StackProps } from "@mui/material/Stack";
-import { LunaTitle, type LunaTitleValues } from "./LunaTitle";
+import { LunaTitle, type LunaTitleValues } from "../LunaTitle";
 
 export type LunaSettingProps = StackProps & LunaTitleValues;
 export const LunaSetting = (props: LunaSettingProps) => (

@@ -1,9 +1,9 @@
 import Box from "@mui/material/Box";
 import React from "react";
 
-import { LunaSecureText, type LunaSecureTextProps } from "./LunaSecureText";
+import { LunaSecureText, type LunaSecureTextProps } from "../LunaSecureText";
+import { type LunaTitleValues } from "../LunaTitle";
 import { LunaSetting } from "./LunaSetting";
-import { type LunaTitleValues } from "./LunaTitle";
 
 export type LunaSecureTextSettingProps = LunaSecureTextProps & LunaTitleValues;
 export const LunaSecureTextSetting = (props: LunaSecureTextSettingProps) => (

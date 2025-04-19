@@ -1,7 +1,7 @@
 import React from "react";
+import { LunaSwitch, type LunaSwitchProps } from "../LunaSwitch";
+import type { LunaTitleValues } from "../LunaTitle";
 import { LunaSetting } from "./LunaSetting";
-import { LunaSwitch, type LunaSwitchProps } from "./LunaSwitch";
-import type { LunaTitleValues } from "./LunaTitle";
 
 export type LunaSwitchSettingProps = LunaSwitchProps & LunaTitleValues;
 export const LunaSwitchSetting = (props: LunaSwitchSettingProps) => (
