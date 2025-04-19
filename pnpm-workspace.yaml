@@ -1,5 +1,4 @@
 packages:
- - "./build"
  - "./native"
  - "./render"
  - "./plugins/*"
