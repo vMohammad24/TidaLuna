@@ -3,6 +3,7 @@
 	"exports": "./index.ts",
 	"type": "module",
 	"dependencies": {
+		"@inrixia/helpers": "^3.13.6",
 		"@uwu/quartz": "^1.5.3",
 		"clean-css": "^5.3.3",
 		"esbuild": "^0.25.2",
