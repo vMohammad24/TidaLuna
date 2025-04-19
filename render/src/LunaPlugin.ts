@@ -63,6 +63,9 @@ export class LunaPlugin {
 	// Static store for all loaded plugins so we dont double load any
 	public static readonly plugins: Record<string, LunaPlugin> = {};
 
+	// Static list of Luna plugins that should be seperate from user plugins
+	public static readonly lunaPlugins: string[] = ["@luna/lib", "@luna/ui"];
+
 	static {
 		// Ensure all plugins are unloaded on beforeunload
 		addEventListener("beforeunload", () => {

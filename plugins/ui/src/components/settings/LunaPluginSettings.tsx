@@ -1,6 +1,6 @@
 import React from "react";
 
-import { unloadSet, type LunaPlugin, type PluginPackage } from "@luna/core";
+import { LunaPlugin, unloadSet, type PluginPackage } from "@luna/core";
 import { store as obyStore } from "oby";
 
 import Box from "@mui/material/Box";
@@ -47,7 +47,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const name = pkg.name;
 
 	// Dont allow disabling core plugins
-	const canDisable = !["@luna/ui", "@luna/lib"].includes(name);
+	const canDisable = !LunaPlugin.lunaPlugins.includes(name);
 
 	// Memoize callbacks
 	const handleReload = React.useCallback(() => plugin.reload(), [plugin]);
