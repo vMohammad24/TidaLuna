@@ -1,8 +1,21 @@
 {
-  "name": "tidaluna",
-  "version": "1.0.0",
+  "name": "luna",
   "description": "A client mod for the Tidal music app for plugins",
-  "main": "src/index.js",
+  "author": {
+    "name": "Inrixia",
+    "url": "https://github.com/Inrixia"
+  },
+  "exports": {
+    ".": {
+      "types": "./luna.d.ts"
+    },
+    "./build": "./build/index.ts"
+  },
+  "homepage": "https://github.com/Inrixia/TidaLuna",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Inrixia/TidaLuna.git"
+  },
   "scripts": {
     "format": "prettier -wc ./src",
     "watch": "rimraf ./dist && tsx ./esbuild.config.ts --watch",
@@ -12,11 +25,17 @@
   "type": "module",
   "devDependencies": {
     "@inrixia/helpers": "^3.13.6",
+    "@luna/_core": "link:render",
+    "@luna/_lib": "link:plugins/lib",
+    "@luna/_ui": "link:plugins/ui",
     "@luna/build": "link:build",
     "@types/node": "^22.14.1",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "esbuild": "^0.25.2"
   }
 }

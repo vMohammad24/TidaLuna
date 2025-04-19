@@ -1,4 +1,4 @@
-import { type BuildOptions, build as esBuild, context as esContext } from "esbuild";
+import { type BuildOptions } from "esbuild";
 
 import { readFile } from "fs/promises";
 import path from "path";
@@ -40,7 +40,7 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 /**
  * Overloads the given opts to use the logOutputPlugin and writeBundlePlugin
  */
-const makeBuildOpts = (opts: BuildOptions) => {
+export const makeBuildOpts = (opts: BuildOptions) => {
 	try {
 		const plugins = opts?.plugins ?? [];
 		const hasWriteBundle = plugins.some((p) => p?.name === writeBundlePlugin().name);
@@ -55,20 +55,3 @@ const makeBuildOpts = (opts: BuildOptions) => {
 		throw err;
 	}
 };
-
-export const build = async (opts: BuildOptions) => {
-	const _opts = await makeBuildOpts(opts);
-	return esBuild(_opts).catch((err) => {
-		console.error(_opts, err);
-		throw err;
-	});
-};
-export const context = (opts: BuildOptions) => {
-	const _opts = makeBuildOpts(opts);
-	return esContext(_opts).catch((err) => {
-		console.error(_opts, err);
-		throw err;
-	});
-};
-
-export { type BuildOptions };

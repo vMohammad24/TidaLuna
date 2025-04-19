@@ -7,10 +7,23 @@ settings:
 importers:
 
   .:
+    dependencies:
+      esbuild:
+        specifier: ^0.25.2
+        version: 0.25.2
     devDependencies:
       '@inrixia/helpers':
         specifier: ^3.13.6
         version: 3.13.6
+      '@luna/_core':
+        specifier: link:render
+        version: link:render
+      '@luna/_lib':
+        specifier: link:plugins/lib
+        version: link:plugins/lib
+      '@luna/_ui':
+        specifier: link:plugins/ui
+        version: link:plugins/ui
       '@luna/build':
         specifier: link:build
         version: link:build

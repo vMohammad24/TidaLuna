@@ -1,6 +1,10 @@
 {
 	"name": "@luna/core",
 	"type": "module",
+	"author": {
+		"name": "Inrixia",
+		"url": "https://github.com/Inrixia"
+	},
 	"exports": "./src/index.ts",
 	"dependencies": {
 		"@uwu/quartz": "^1.5.3",
