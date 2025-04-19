@@ -122,28 +122,5 @@ export const lunaMuiTheme = createTheme({
 				},
 			},
 		},
-		MuiOutlinedInput: {
-			styleOverrides: {
-				root: ({ theme }) => ({
-					"&:hover .MuiOutlinedInput-notchedOutline": {
-						borderColor: theme.palette.text.primary,
-					},
-					"&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-						borderColor: theme.palette.primary.main,
-					},
-				}),
-				// Default border color
-				notchedOutline: ({ theme }) => ({
-					borderColor: theme.palette.text.secondary,
-				}),
-			},
-		},
-		MuiSvgIcon: {
-			styleOverrides: {
-				root: ({ theme }) => ({
-					color: theme.palette.text.secondary,
-				}),
-			},
-		},
 	},
 });

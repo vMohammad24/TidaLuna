@@ -13,11 +13,8 @@ export const LiveReloadToggleButton = (props: LiveReloadToggleButtonProps) => {
 	const [fetching, setFetching] = React.useState(false);
 
 	React.useEffect(() => {
-		if (props.fetching && !fetching) {
-			setFetching(true);
-		} else if (!props.fetching && fetching) {
-			setTimeout(() => setFetching(false), 250);
-		}
+		if (props.fetching && !fetching) setFetching(true);
+		else if (!props.fetching && fetching) setTimeout(() => setFetching(false), 250);
 	}, [props.fetching]);
 
 	return (

@@ -18,6 +18,9 @@ export const LunaSecureText = (props: LunaSecureTextProps) => {
 				<InputAdornment position="end">
 					<Tooltip title={showPassword ? "Hide" : "Show"}>
 						<IconButton
+							sx={{
+								color: (theme) => theme.palette.text.secondary,
+							}}
 							onClick={() => setShowPassword((show) => !show)}
 							onMouseDown={(e) => e.preventDefault()}
 							onMouseUp={(e) => e.preventDefault()}
