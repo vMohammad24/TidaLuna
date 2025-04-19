@@ -62,6 +62,7 @@ export class Page {
 			notFound.style.display = "none";
 			const mainContainer = notFound.parentElement;
 			mainContainer.appendChild(this.root);
+			mainContainer.removeAttribute("style");
 			Object.assign(mainContainer!.style, this.pageStyles);
 			Page.openPage = this;
 		}
