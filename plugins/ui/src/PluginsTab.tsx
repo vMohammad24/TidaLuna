@@ -3,9 +3,9 @@ import React from "react";
 import Stack from "@mui/material/Stack";
 
 import { LunaPlugin } from "@luna/core";
-import { LunaPluginSettings } from "./components";
+import { LunaPluginSettings } from "./lunaPageComponents/LunaPluginSettings";
 
-export const PluginSettings = React.memo(() => {
+export const PluginsTab = React.memo(() => {
 	const plugins = [];
 	for (const pluginName in LunaPlugin.plugins) {
 		if (LunaPlugin.lunaPlugins.includes(pluginName)) continue;

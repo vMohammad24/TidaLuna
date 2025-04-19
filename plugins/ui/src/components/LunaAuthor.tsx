@@ -15,7 +15,7 @@ const AuthorName = React.memo((props: { name: string } & TypographyProps) => (
 	</Typography>
 ));
 
-export const LunaPluginAuthor = React.memo(({ author }: { author: LunaAuthor | string }) => {
+export const LunaAuthorDisplay = React.memo(({ author }: { author: LunaAuthor | string }) => {
 	if (typeof author === "string") return <Box paddingTop={0.75} children={<AuthorName name={author} />} />;
 	return (
 		<Tooltip title={`Visit ${author.name}'s profile`}>

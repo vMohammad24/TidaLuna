@@ -12,7 +12,7 @@ export interface LiveReloadToggleButtonProps extends IconButtonProps {
 	plugin: LunaPlugin;
 }
 
-export const LiveReloadToggleButton = React.memo((props: LiveReloadToggleButtonProps) => {
+export const LiveReloadToggle = React.memo((props: LiveReloadToggleButtonProps) => {
 	const { plugin, ...iconButtonProps } = props;
 	const [fetching, setFetching] = React.useState(plugin.fetching._);
 	const [liveReload, setLiveReload] = React.useState(plugin.liveReload);

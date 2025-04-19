@@ -8,8 +8,8 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import { LiveReloadToggleButton, LunaSwitch, ReloadButton } from "..";
-import { LunaPluginAuthor } from "../LunaAuthor";
+import { LunaAuthorDisplay, LunaSwitch, ReloadButton } from "../components";
+import { LiveReloadToggle } from "./LiveReloadToggle";
 
 export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }) => {
 	// Have to wrap in function call as Settings is a functional component
@@ -75,7 +75,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 					<Tooltip title="Reload module">
 						<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />
 					</Tooltip>
-					<LiveReloadToggleButton plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
+					<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
 					{loadError && (
 						<Typography
 							variant="caption"
@@ -91,7 +91,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 						/>
 					)}
 					<Box sx={{ flexGrow: 1 }} /> {/* This pushes the author section to the right */}
-					{author && <LunaPluginAuthor author={author} />}
+					{author && <LunaAuthorDisplay author={author} />}
 				</Stack>
 				{desc && <Typography variant="subtitle2" gutterBottom children={desc} />}
 			</Box>
