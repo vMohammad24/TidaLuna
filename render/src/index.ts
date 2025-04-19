@@ -26,7 +26,7 @@ for (let key in console) {
 	});
 }
 
-// Force properties to be writable for patching
+// Force properties to be writable for patching? Dunno if this is needed but eh
 const _defineProperty = Object.defineProperty;
 Object.defineProperty = function (...args) {
 	args[2].configurable = true;
