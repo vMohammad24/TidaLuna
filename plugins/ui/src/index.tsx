@@ -2,9 +2,9 @@ import React from "react";
 
 import { ContextMenu, type LunaUnload } from "@luna/lib";
 
-import { Page } from "./classes/Page";
-
 import { ThemeProvider } from "@mui/material/styles";
+
+import { Page } from "./classes/Page";
 
 import { LunaPage } from "./LunaPage";
 import { lunaMuiTheme } from "./lunaTheme";

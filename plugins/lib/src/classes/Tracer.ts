@@ -72,21 +72,17 @@ export const Tracer = (source: string, errSignal?: Signal<string | undefined>) =
 	);
 	const debug = createLogger(console.debug);
 
-	const createMessager = (
-		logger: Logger,
-		messager: "message/MESSAGE_INFO" | "message/MESSAGE_WARN" | "message/MESSAGE_ERROR",
-		severity: "DEBUG" | "ERROR" | "INFO" | "WARN",
-	): Messenger => {
+	const createMessager = (logger: Logger, messager: Messager): Messenger => {
 		const _messager = (message: unknown) => {
 			logger(message);
-			actions[messager]?.({ message: `${source} - ${message}`, category: "OTHER", severity });
+			messager(`${source} - ${message}`);
 		};
 		_messager.withContext = (context: string) => {
 			const loggerWithContext = logger.withContext(context);
 			const msgWithContext = (message: unknown) => {
 				loggerWithContext(message);
 				if (message instanceof Error) message = message.message;
-				actions[messager]?.({ message: `${source} (${context}) - ${message}`, category: "OTHER", severity });
+				messager(`${source} (${context}) - ${message}`);
 			};
 			msgWithContext.throw = (message: unknown) => {
 				msgWithContext(message);
@@ -103,10 +99,16 @@ export const Tracer = (source: string, errSignal?: Signal<string | undefined>) =
 		err,
 		debug,
 		msg: {
-			log: createMessager(log, "message/MESSAGE_INFO", "INFO"),
-			warn: createMessager(warn, "message/MESSAGE_WARN", "WARN"),
-			err: createMessager(err, "message/MESSAGE_ERROR", "ERROR"),
+			log: createMessager(log, InfoMessage),
+			warn: createMessager(warn, WarnMessage),
+			err: createMessager(err, ErrorMessage),
 		},
 	};
 };
+
 export const llTrace = Tracer("[Luna.lib]");
+
+type Messager = typeof InfoMessage | typeof WarnMessage | typeof ErrorMessage;
+export const InfoMessage = (message: string) => actions["message/MESSAGE_INFO"]?.({ message, category: "OTHER", severity: "INFO" });
+export const WarnMessage = (message: string) => actions["message/MESSAGE_WARN"]?.({ message, category: "OTHER", severity: "MESSAGE_WARN" });
+export const ErrorMessage = (message: string) => actions["message/MESSAGE_ERROR"]?.({ message, category: "OTHER", severity: "ERROR" });

@@ -1,9 +1,9 @@
 import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { unloads } from "..";
-import type { OutdatedActionPayloads } from "../redux";
-import { intercept } from "../redux/intercept";
-import { observe } from "./Observable";
 import { llTrace } from "./Tracer";
+
+import { intercept, type OutdatedActionPayloads } from "../redux";
+import { observe } from "./Observable";
 
 type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };
 export class ContextMenu {

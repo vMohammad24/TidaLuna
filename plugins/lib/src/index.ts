@@ -6,7 +6,7 @@ import { observe } from "./classes/Observable";
 export { ContextMenu } from "./classes/ContextMenu";
 export { observe } from "./classes/Observable";
 export { StyleTag } from "./classes/StyleTag";
-export { Tracer } from "./classes/Tracer";
+export { ErrorMessage, InfoMessage, Tracer, WarnMessage } from "./classes/Tracer";
 
 export * as redux from "./redux";
 
