@@ -11,28 +11,24 @@ import Typography from "@mui/material/Typography";
 import { LiveReloadToggleButton, LunaSwitch, ReloadButton } from "..";
 import { LunaPluginAuthor } from "../LunaAuthor";
 
-export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
+export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }) => {
 	// Have to wrap in function call as Settings is a functional component
 	const [Settings, setSettings] = React.useState(() => plugin.exports.Settings);
 
 	const [enabled, setEnabled] = React.useState(plugin.enabled);
 	const [loading, setLoading] = React.useState(true);
-	const [liveReload, setLiveReload] = React.useState(plugin.liveReload);
-	const [fetching, setFetching] = React.useState(plugin.fetching._);
 	const [loadError, setLoadError] = React.useState(plugin.loadError._);
 
 	const [pkg, setPackage] = React.useState<PluginPackage>(obyStore.unwrap(plugin.store.package));
 
 	React.useEffect(() => {
 		const unloads = new Set([
-			plugin.onSetLiveReload((next) => setLiveReload(next)),
 			plugin.onSetEnabled((next) => setEnabled(next)),
 			plugin.loading.onValue((next) => {
 				// If stopped loading then update settings
 				if (next === false) setSettings(() => plugin.exports.Settings);
 				setLoading(next);
 			}),
-			plugin.fetching.onValue((next) => setFetching(next)),
 			plugin.loadError.onValue((next) => setLoadError(next)),
 			obyStore.on(
 				() => plugin.store.package,
@@ -42,7 +38,7 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 		return () => {
 			unloadSet(unloads);
 		};
-	}, []);
+	}, [plugin]);
 
 	const disabled = !enabled || loading;
 
@@ -51,7 +47,10 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 	const name = pkg.name;
 
 	// Dont allow disabling core plugins
-	const canDisable = !["@luna/ui", "@luna/lib"].includes(name);
+	const canDisable = true; //!["@luna/ui", "@luna/lib"].includes(name);
+
+	// Memoize callbacks
+	const handleReload = React.useCallback(() => plugin.reload(), [plugin]);
 
 	return (
 		<Stack
@@ -74,17 +73,9 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 						<Tooltip title={enabled ? `Disable ${name}` : `Enable ${name}`} children={<LunaSwitch checked={enabled} loading={loading} />} />
 					)}
 					<Tooltip title="Reload module">
-						<ReloadButton spin={loading} disabled={disabled} onClick={plugin.reload.bind(plugin)} />
+						<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />
 					</Tooltip>
-					<Tooltip title={liveReload ? "Disable live reloading" : "Enable live reloading (for development)"}>
-						<LiveReloadToggleButton
-							disabled={disabled}
-							enabled={liveReload}
-							fetching={fetching}
-							sx={{ marginLeft: 1 }}
-							onClick={() => (plugin.liveReload = !plugin.liveReload)}
-						/>
-					</Tooltip>
+					<LiveReloadToggleButton plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
 					{loadError && (
 						<Typography
 							variant="caption"
@@ -108,4 +99,4 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 			{Settings && <Settings />}
 		</Stack>
 	);
-};
+});

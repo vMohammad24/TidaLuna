@@ -7,7 +7,7 @@ export type LunaTitleValues = TypographyProps & {
 	desc?: ReactNode;
 };
 export type LunaTitleProps = BoxProps & TypographyProps & LunaTitleValues;
-export const LunaTitle = (props: LunaTitleProps) => {
+export const LunaTitle = React.memo((props: LunaTitleProps) => {
 	props.variant ??= "h6";
 	return (
 		<Box>
@@ -15,4 +15,4 @@ export const LunaTitle = (props: LunaTitleProps) => {
 			{props.desc && <Typography variant="subtitle2" gutterBottom children={props.desc} />}
 		</Box>
 	);
-};
+});

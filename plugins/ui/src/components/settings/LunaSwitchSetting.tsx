@@ -4,8 +4,8 @@ import type { LunaTitleValues } from "../LunaTitle";
 import { LunaSetting } from "./LunaSetting";
 
 export type LunaSwitchSettingProps = LunaSwitchProps & LunaTitleValues;
-export const LunaSwitchSetting = (props: LunaSwitchSettingProps) => (
+export const LunaSwitchSetting = React.memo((props: LunaSwitchSettingProps) => (
 	<LunaSetting title={props.title} desc={props.desc}>
 		<LunaSwitch {...props} />
 	</LunaSetting>
-);
+));

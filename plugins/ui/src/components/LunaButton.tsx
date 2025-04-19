@@ -8,7 +8,7 @@ export type LunaButtonProps = ButtonProps & {
 	tooltip?: string;
 };
 
-export const LunaButton = (props: LunaButtonProps) => {
+export const LunaButton = React.memo((props: LunaButtonProps) => {
 	return (
 		<Tooltip sx={{ marginRight: "auto" }} title={props.tooltip ?? props.title}>
 			<Button
@@ -19,4 +19,4 @@ export const LunaButton = (props: LunaButtonProps) => {
 			/>
 		</Tooltip>
 	);
-};
+});

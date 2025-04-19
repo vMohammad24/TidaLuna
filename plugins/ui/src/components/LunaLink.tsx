@@ -3,7 +3,7 @@ import React from "react";
 import Link, { type LinkProps } from "@mui/material/Link";
 
 export interface LunaLinkProps extends LinkProps {}
-export const LunaLink = (props: LunaLinkProps) => {
+export const LunaLink = React.memo((props: LunaLinkProps) => {
 	const href = props.href ?? (typeof props.children === "string" ? props.children : undefined);
 	return (
 		<Link
@@ -15,4 +15,4 @@ export const LunaLink = (props: LunaLinkProps) => {
 			target={"_blank"}
 		/>
 	);
-};
+});

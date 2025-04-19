@@ -8,14 +8,14 @@ import Typography, { type TypographyProps } from "@mui/material/Typography";
 import type { LunaAuthor } from "@luna/core";
 import Box from "@mui/material/Box";
 
-const AuthorName = (props: { name: string } & TypographyProps) => (
+const AuthorName = React.memo((props: { name: string } & TypographyProps) => (
 	<Typography {...props} sx={{ fontWeight: 500, paddingTop: 0.2 }}>
 		<Typography variant="caption" style={{ opacity: 0.7 }} children="by " />
 		{props.name}
 	</Typography>
-);
+));
 
-export const LunaPluginAuthor = ({ author }: { author: LunaAuthor | string }) => {
+export const LunaPluginAuthor = React.memo(({ author }: { author: LunaAuthor | string }) => {
 	if (typeof author === "string") return <Box paddingTop={0.75} children={<AuthorName name={author} />} />;
 	return (
 		<Tooltip title={`Visit ${author.name}'s profile`}>
@@ -41,4 +41,4 @@ export const LunaPluginAuthor = ({ author }: { author: LunaAuthor | string }) =>
 			</Stack>
 		</Tooltip>
 	);
-};
+});

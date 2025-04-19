@@ -15,7 +15,7 @@ export type LunaNumberProps = TextFieldProps & {
 	onNumber?: (num: number) => unknown;
 };
 
-export const LunaNumber = (props: LunaNumberProps) => {
+export const LunaNumber = React.memo((props: LunaNumberProps) => {
 	const theme = useTheme();
 	const [number, setNumber] = React.useState(isNaN(props.value) ? (props.defaultValue ?? 0) : props.value);
 	const onNumber = (number: any) => {
@@ -67,4 +67,4 @@ export const LunaNumber = (props: LunaNumberProps) => {
 			}}
 		/>
 	);
-};
+});

@@ -6,7 +6,7 @@ import { type LunaTitleValues } from "../LunaTitle";
 import { LunaSetting } from "./LunaSetting";
 
 export type LunaTextSettingProps = TextFieldProps & LunaTitleValues;
-export const LunaTextSetting = (props: LunaTextSettingProps) => (
+export const LunaTextSetting = React.memo((props: LunaTextSettingProps) => (
 	<LunaSetting spacing={8} title={props.title} desc={props.desc}>
 		<TextField
 			variant="outlined"
@@ -18,4 +18,4 @@ export const LunaTextSetting = (props: LunaTextSettingProps) => (
 			label={null}
 		/>
 	</LunaSetting>
-);
+));

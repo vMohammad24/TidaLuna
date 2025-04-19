@@ -14,7 +14,7 @@ enum SettingsTab {
 	Settings = "Settings",
 }
 
-export const LunaSettings = () => {
+export const LunaSettings = React.memo(() => {
 	const [tab, setTab] = React.useState(SettingsTab.Plugins);
 	return (
 		<Container maxWidth="md" sx={{ padding: 0, marginBottom: 10, flexGrow: 1 }}>
@@ -25,4 +25,4 @@ export const LunaSettings = () => {
 			<Container sx={{ marginTop: 3, marginLeft: -3 }}>{tab === SettingsTab.Plugins && <PluginSettings />}</Container>
 		</Container>
 	);
-};
+});

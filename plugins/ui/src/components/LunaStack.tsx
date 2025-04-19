@@ -7,7 +7,7 @@ import { LunaTitle, type LunaTitleValues } from "./LunaTitle";
 
 export type LunaStackProps = StackProps & Partial<LunaTitleValues>;
 
-export const LunaStack = (props: LunaStackProps) => {
+export const LunaStack = React.memo((props: LunaStackProps) => {
 	const { title, desc, variant } = props;
 	delete props.title;
 	return (
@@ -16,4 +16,4 @@ export const LunaStack = (props: LunaStackProps) => {
 			<Stack spacing={1} {...props} />
 		</Box>
 	);
-};
+});

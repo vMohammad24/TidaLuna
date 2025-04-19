@@ -4,7 +4,7 @@ import { LunaPlugin } from "@luna/core";
 import Stack from "@mui/material/Stack";
 import { LunaPluginSettings, LunaStack } from "./components";
 
-export const PluginSettings = () => {
+export const PluginSettings = React.memo(() => {
 	return (
 		<Stack spacing={2}>
 			<LunaStack variant="h5" title="Main" desc="Core functionality of Luna">
@@ -17,4 +17,4 @@ export const PluginSettings = () => {
 			<LunaStack variant="h5" title="_DEV.Tools" desc="Various developer tools for working with Neptune"></LunaStack>
 		</Stack>
 	);
-};
+});

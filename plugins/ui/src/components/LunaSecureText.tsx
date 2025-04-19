@@ -8,7 +8,7 @@ import React from "react";
 
 export interface LunaSecureTextProps extends OutlinedInputProps {}
 
-export const LunaSecureText = (props: LunaSecureTextProps) => {
+export const LunaSecureText = React.memo((props: LunaSecureTextProps) => {
 	const [showPassword, setShowPassword] = React.useState(false);
 	return (
 		<OutlinedInput
@@ -33,4 +33,4 @@ export const LunaSecureText = (props: LunaSecureTextProps) => {
 			}
 		/>
 	);
-};
+});

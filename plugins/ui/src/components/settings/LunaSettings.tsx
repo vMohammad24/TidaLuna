@@ -1,7 +1,7 @@
 import React from "react";
 import { LunaStack, type LunaStackProps } from "../LunaStack";
 
-export const LunaSettings = (props: LunaStackProps) => (
+export const LunaSettings = React.memo((props: LunaStackProps) => (
 	<LunaStack
 		{...props}
 		variant="h7"
@@ -13,4 +13,4 @@ export const LunaSettings = (props: LunaStackProps) => (
 			paddingBottom: 1,
 		}}
 	/>
-);
+));

@@ -6,7 +6,7 @@ interface ReloadButtonProps extends IconButtonProps {
 	spin?: boolean;
 }
 
-export const ReloadButton = ({ spin, ...props }: ReloadButtonProps) => {
+export const ReloadButton = React.memo(({ spin, ...props }: ReloadButtonProps) => {
 	const [isSpinning, setIsSpinning] = useState(false);
 
 	useEffect(() => {
@@ -30,4 +30,4 @@ export const ReloadButton = ({ spin, ...props }: ReloadButtonProps) => {
 			/>
 		</IconButton>
 	);
-};
+});

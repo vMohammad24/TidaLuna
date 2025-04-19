@@ -6,7 +6,7 @@ import { LunaSetting } from "./LunaSetting";
 
 export type LunaButtonSettingProps = LunaButtonProps & LunaTitleValues;
 
-export const LunaButtonSetting = (props: LunaButtonSettingProps) => (
+export const LunaButtonSetting = React.memo((props: LunaButtonSettingProps) => (
 	<LunaSetting title={props.title} desc={props.desc}>
 		<LunaButton
 			{...props}
@@ -19,4 +19,4 @@ export const LunaButtonSetting = (props: LunaButtonSettingProps) => (
 			children={props.children}
 		/>
 	</LunaSetting>
-);
+));
