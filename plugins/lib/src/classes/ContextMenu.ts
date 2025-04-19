@@ -1,8 +1,8 @@
 import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { unloads } from "..";
-import { observe } from "../helpers/observable";
 import type { OutdatedActionPayloads } from "../redux";
 import { intercept } from "../redux/intercept";
+import { observe } from "./Observable";
 import { llTrace } from "./Tracer";
 
 type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };

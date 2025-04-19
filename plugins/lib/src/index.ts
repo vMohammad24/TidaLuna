@@ -3,11 +3,10 @@ export * from "./window.luna";
 import type { VoidFn } from "@inrixia/helpers";
 
 export { ContextMenu } from "./classes/ContextMenu";
-export { Page } from "./classes/Page";
+export { observe } from "./classes/Observable";
 export { StyleTag } from "./classes/StyleTag";
 export { Tracer } from "./classes/Tracer";
 
-export * as helpers from "./helpers";
 export * as redux from "./redux";
 
 export interface LunaUnload extends VoidFn {

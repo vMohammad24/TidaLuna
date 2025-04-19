@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@inrixia/helpers':
-        specifier: ^3.13.5
-        version: 3.13.5
+        specifier: ^3.13.6
+        version: 3.13.6
       '@luna/build':
         specifier: link:build
         version: link:build
@@ -52,8 +52,8 @@ importers:
         version: 4.0.7
     devDependencies:
       electron:
-        specifier: ^35.1.5
-        version: 35.1.5
+        specifier: ^35.2.0
+        version: 35.2.0
 
   plugins/lib:
     devDependencies:
@@ -365,8 +365,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inrixia/helpers@3.13.5':
-    resolution: {integrity: sha512-eacKqHAvAEgVg4s1xW4iS7kVjf6PTjPO2+DuL1ykykOg1cMGPq+n1BjCXXDb1f43o6LO3vQA7d0t1VYyIRxZfg==}
+  '@inrixia/helpers@3.13.6':
+    resolution: {integrity: sha512-DfYTZXeVG2bKV6P7Fabbw/NUbZbTUJHRDb1KLjzCa415z1jCgDt8xdyQGLEnvmWfA2oHOY1TQMgiTMTPqe7aDw==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -667,8 +667,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron@35.1.5:
-    resolution: {integrity: sha512-LolvbKKQUSCGvEwbEQNt1cxD1t+YYClDNwBIjn4d28KM8FSqUn9zJuf6AbqNA7tVs9OFl/EQpmg/m4lZV1hH8g==}
+  electron@35.2.0:
+    resolution: {integrity: sha512-GHda7oCkN0pA23qzah735DEbRa06IPwlzP3uvjAmf9af8gxdj5i93JEHeQVGVmSVpd7sSb1pfecs9nz7B1q5ag==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -1418,7 +1418,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.2':
     optional: true
 
-  '@inrixia/helpers@3.13.5': {}
+  '@inrixia/helpers@3.13.6': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -1719,7 +1719,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron@35.1.5:
+  electron@35.2.0:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.14.1
