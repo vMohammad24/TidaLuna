@@ -12,3 +12,5 @@ modules["react/jsx-runtime"].default ??= modules["react/jsx-runtime"];
 // Expose react-dom
 modules["react-dom/client"] = findModuleByProperty("createRoot", "function");
 modules["react-dom/client"].default ??= modules["react-dom/client"];
+
+modules["oby"] = await import("oby");

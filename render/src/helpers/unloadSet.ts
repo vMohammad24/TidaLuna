@@ -6,9 +6,6 @@ export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 	const toUnload: LunaUnload[] = [];
 	for (const unload of unloads) toUnload.push(unload);
 
-	// Clear unloads after called to ensure their never called again
-	unloads.clear();
-
 	await Promise.all(
 		toUnload.map(async (unload) => {
 			try {
@@ -19,4 +16,7 @@ export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 			}
 		}),
 	);
+
+	// Clear unloads after called to ensure their never called again
+	unloads.clear();
 };
