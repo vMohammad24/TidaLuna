@@ -3,19 +3,20 @@ import React from "react";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
+import Typography, { type TypographyProps } from "@mui/material/Typography";
 
 import type { LunaAuthor } from "@luna/core";
+import Box from "@mui/material/Box";
 
-const AuthorName = ({ name }: { name: string }) => (
-	<Typography sx={{ fontWeight: 500, paddingTop: 0.2 }}>
+const AuthorName = (props: { name: string } & TypographyProps) => (
+	<Typography {...props} sx={{ fontWeight: 500, paddingTop: 0.2 }}>
 		<Typography variant="caption" style={{ opacity: 0.7 }} children="by " />
-		{name}
+		{props.name}
 	</Typography>
 );
 
 export const LunaPluginAuthor = ({ author }: { author: LunaAuthor | string }) => {
-	if (typeof author === "string") return <AuthorName name={author} />;
+	if (typeof author === "string") return <Box paddingTop={0.75} children={<AuthorName name={author} />} />;
 	return (
 		<Tooltip title={`Visit ${author.name}'s profile`}>
 			<Stack

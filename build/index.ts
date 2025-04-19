@@ -33,7 +33,7 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.js")],
 		...opts,
 		external: [...(opts?.external ?? []), ...externals],
-		plugins: [...(opts?.plugins ?? []), fileUrlPlugin, lunaNativePlugin, writeBundlePlugin(pluginPackage)],
+		plugins: [...(opts?.plugins ?? []), fileUrlPlugin, lunaNativePlugin, writeBundlePlugin(path.join(pluginPath, "package.json"))],
 	};
 };
 

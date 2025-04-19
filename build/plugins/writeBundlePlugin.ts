@@ -1,10 +1,9 @@
-import type { AnyRecord } from "@inrixia/helpers";
 import type { Plugin } from "esbuild";
 
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { basename, dirname } from "path";
 
-export const writeBundlePlugin = (pluginPackage?: AnyRecord): Plugin => ({
+export const writeBundlePlugin = (pluginPackagePath?: string): Plugin => ({
 	name: "writeBundlePlugin",
 	setup(build) {
 		build.onEnd(async (result) => {
@@ -16,7 +15,8 @@ export const writeBundlePlugin = (pluginPackage?: AnyRecord): Plugin => ({
 				await mkdir(outDir, { recursive: true });
 
 				await writeFile(outputFile.path, outputFile.contents);
-				if (pluginPackage?.name && !writePackageJson && outputFile.path.endsWith(".js")) {
+				if (pluginPackagePath && !writePackageJson && outputFile.path.endsWith(".js")) {
+					const pluginPackage = await readFile(pluginPackagePath, "utf8").then(JSON.parse);
 					await writeFile(
 						outputFile.path.replace(/\.js$/, ".json"),
 						JSON.stringify({

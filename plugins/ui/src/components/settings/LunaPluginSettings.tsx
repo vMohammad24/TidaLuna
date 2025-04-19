@@ -34,7 +34,10 @@ export const LunaPluginSettings = ({ plugin }: { plugin: LunaPlugin }) => {
 			}),
 			plugin.fetching.onValue((next) => setFetching(next)),
 			plugin.loadError.onValue((next) => setLoadError(next)),
-			obyStore.on(plugin.store.package, () => setPackage(obyStore.unwrap(plugin.store.package))),
+			obyStore.on(
+				() => plugin.store.package,
+				() => setPackage(obyStore.unwrap(plugin.store.package)),
+			),
 		]);
 		return () => {
 			unloadSet(unloads);
