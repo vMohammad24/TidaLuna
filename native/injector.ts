@@ -77,7 +77,7 @@ electron.app.whenReady().then(async () => {
 			// Add loading text to the body
 			body = body.replace(
 				/<body(.*?)>/i,
-				`<body$1><div id="tidaluna-loading" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; text-align: center;">
+				`<body$1><div id="tidaluna-loading" style="position: absolute; z-index: -1; top: 20%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; text-align: center;">
 					<h1>Loading Tida<b><span style="color: #31d8ff;">Luna</span></b>...</h1>
 					<div id="tidaluna-loading-text" style="position: absolute; top: 100%;"></div>
 				</div>`,

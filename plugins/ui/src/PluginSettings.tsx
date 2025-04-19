@@ -11,5 +11,6 @@ export const PluginSettings = React.memo(() => {
 		if (LunaPlugin.lunaPlugins.includes(pluginName)) continue;
 		plugins.push(<LunaPluginSettings key={pluginName} plugin={LunaPlugin.plugins[pluginName]} />);
 	}
+	if (plugins.length === 0) return "You have no plugins installed!";
 	return <Stack spacing={2}>{plugins}</Stack>;
 });

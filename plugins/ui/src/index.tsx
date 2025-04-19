@@ -28,7 +28,7 @@ ContextMenu.onOpen(unloads, ({ event, contextMenu }) => {
 		contextMenu.addButton("Luna Settings", (e) => {
 			e.preventDefault();
 			settingsPage.open();
-		});
+		}).style.color = "#31d8ff";
 	}
 });
 
