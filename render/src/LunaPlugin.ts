@@ -87,6 +87,9 @@ export class LunaPlugin {
 		storeInit.package ??= await this.fetchPackage(storeInit.url);
 		const name = storeInit.package.name;
 
+		// Disable liveReload on load so people dont accidentally leave it on
+		storeInit.liveReload ??= false;
+
 		const store = await LunaPlugin.pluginStorage.get<LunaPluginStorage>(name);
 		LunaPlugin.pluginStorage.set(name, { ...store, ...storeInit });
 
