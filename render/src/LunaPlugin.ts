@@ -164,7 +164,7 @@ export class LunaPlugin {
 	public readonly dependents: Set<LunaPlugin> = new Set();
 
 	// #region _exports
-	public get exports() {
+	public get exports(): ModuleExports | undefined {
 		return modules[this.name];
 	}
 	private set exports(exports: ModuleExports | undefined) {

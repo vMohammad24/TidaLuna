@@ -17,5 +17,3 @@ export interface LunaUnload extends VoidFn {
 observe.promise("div[class^='_mainContainer'] > div[class^='_bar'] > div[class^='_title']", 30000).then((title) => {
 	title.innerHTML = 'TIDA<b><span style="color: #32f4ff;">Luna</span></b>';
 });
-
-alert("loaded!");

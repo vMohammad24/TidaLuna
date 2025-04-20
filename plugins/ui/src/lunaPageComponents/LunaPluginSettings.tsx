@@ -8,15 +8,14 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import { LunaAuthorDisplay, LunaSwitch, ReloadButton } from "../components";
+import { LunaAuthorDisplay, LunaSwitch } from "../components";
 import { LiveReloadToggle } from "./LiveReloadToggle";
+import { ReloadButton } from "./ReloadButton";
 
 export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }) => {
 	// Have to wrap in function call as Settings is a functional component
-	const [Settings, setSettings] = React.useState(() => plugin.exports.Settings);
-
 	const [enabled, setEnabled] = React.useState(plugin.enabled);
-	const [loading, setLoading] = React.useState(true);
+	const [loading, setLoading] = React.useState(plugin.loading._);
 	const [loadError, setLoadError] = React.useState(plugin.loadError._);
 
 	const [pkg, setPackage] = React.useState<PluginPackage>(obyStore.unwrap(plugin.store.package));
@@ -24,11 +23,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	React.useEffect(() => {
 		const unloads = new Set([
 			plugin.onSetEnabled((next) => setEnabled(next)),
-			plugin.loading.onValue((next) => {
-				// If stopped loading then update settings
-				if (next === false) setSettings(() => plugin.exports.Settings);
-				setLoading(next);
-			}),
+			plugin.loading.onValue((next) => setLoading(next)),
 			plugin.loadError.onValue((next) => setLoadError(next)),
 			obyStore.on(
 				() => plugin.store.package,
@@ -39,6 +34,8 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 			unloadSet(unloads);
 		};
 	}, [plugin]);
+
+	console.log(loading);
 
 	const disabled = !enabled || loading;
 
@@ -51,6 +48,9 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 
 	// Memoize callbacks
 	const handleReload = React.useCallback(() => plugin.reload(), [plugin]);
+	const toggleEnabled = React.useCallback((_: unknown, checked: boolean) => (checked ? plugin.enable() : plugin.disable()), [plugin]);
+
+	const Settings = plugin.exports?.Settings;
 
 	return (
 		<Stack
@@ -70,7 +70,10 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 						<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />
 					</Box>
 					{canDisable && (
-						<Tooltip title={enabled ? `Disable ${name}` : `Enable ${name}`} children={<LunaSwitch checked={enabled} loading={loading} />} />
+						<Tooltip
+							title={enabled ? `Disable ${name}` : `Enable ${name}`}
+							children={<LunaSwitch checked={enabled} loading={loading} onChange={toggleEnabled} />}
+						/>
 					)}
 					<Tooltip title="Reload module">
 						<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />
