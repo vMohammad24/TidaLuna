@@ -1,8 +1,10 @@
-import { redux, unloads, type LunaUnload } from "@luna/lib";
-
-import { createRoot, type Root } from "react-dom/client";
+import type { LunaUnload } from "@luna/core";
+import { redux } from "@luna/lib";
 
 import { store as obyStore } from "oby";
+import { createRoot, type Root } from "react-dom/client";
+
+import { unloads } from "..";
 
 export class Page {
 	private static openPage?: Page;

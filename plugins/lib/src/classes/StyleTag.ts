@@ -1,4 +1,4 @@
-import type { LunaUnload } from "..";
+import type { LunaUnload } from "@luna/core";
 
 export class StyleTag {
 	public readonly styleTag: HTMLElement;

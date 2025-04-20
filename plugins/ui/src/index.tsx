@@ -1,6 +1,7 @@
 import React from "react";
 
-import { ContextMenu, type LunaUnload } from "@luna/lib";
+import type { LunaUnload } from "@luna/core";
+import { ContextMenu } from "@luna/lib";
 
 import { ThemeProvider } from "@mui/material/styles";
 

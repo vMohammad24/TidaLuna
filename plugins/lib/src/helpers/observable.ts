@@ -56,7 +56,7 @@ unloads.add(observables.clear.bind(observables));
  * @param timeoutMs The maximum time (in milliseconds) to wait for the element to appear.
  * @returns A Promise that resolves with the found Element (cast to type T) or null if the timeout is reached.
  */
-observe.promise = <T extends Element>(selector: string, timeoutMs: number = 1000): Promise<T | null> =>
+export const observePromise = <T extends Element>(selector: string, timeoutMs: number = 1000): Promise<T | null> =>
 	new Promise<T | null>((res) => {
 		const unob = observe(selector, (elem) => {
 			unob();

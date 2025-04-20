@@ -1,5 +1,9 @@
-import type { LunaUnload } from "@luna/lib";
+import type { VoidFn } from "@inrixia/helpers";
 import { logErr } from "./console.js";
+
+export interface LunaUnload extends VoidFn {
+	source?: string;
+}
 
 export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 	if (unloads === undefined || unloads.size === 0) return;
