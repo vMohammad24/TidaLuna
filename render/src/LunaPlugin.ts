@@ -5,7 +5,8 @@ import { log, logErr, logWarn } from "./helpers/console.js";
 import { unloadSet } from "./helpers/unloadSet.js";
 import { ReactiveStore } from "./ReactiveStore.js";
 
-import { type LunaUnload } from "@luna/lib";
+import { type LunaUnload } from "@luna/core";
+import { fetchJson, fetchText } from "./helpers/fetch.js";
 import { modules } from "./modules.js";
 
 type ModuleExports = {
@@ -43,19 +44,11 @@ type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
 
 export class LunaPlugin {
 	// #region Static
-	private static fetchOrThrow(url: string): Promise<Response> {
-		return fetch(url).then((res) => {
-			if (!res.ok) {
-				throw new Error(`Failed to fetch ${url} (${res.status})`);
-			}
-			return res;
-		});
+	public static fetchPackage(url: string): Promise<PluginPackage> {
+		return fetchJson(`${url}.json`);
 	}
-	private static fetchText(url: string): Promise<string> {
-		return this.fetchOrThrow(url).then((res) => res.text());
-	}
-	public static async fetchPackage(url: string): Promise<PluginPackage> {
-		return this.fetchOrThrow(`${url}.json`).then((res) => res.json());
+	public static fetchCode(url: string): Promise<string> {
+		return fetchText(`${url}.js`);
 	}
 
 	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
@@ -302,7 +295,7 @@ export class LunaPlugin {
 		return false;
 	}
 	public async code() {
-		return (this.package!.code ??= `${await LunaPlugin.fetchText(`${this.url}.js`)}\n//# sourceURL=${this.url}.js`);
+		return (this.package!.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.js`);
 	}
 	// #endregion
 

@@ -1,7 +1,7 @@
 // based on: https://github.com/KaiHax/kaihax/blob/master/src/patcher.ts
 
 import type { VoidFn } from "@inrixia/helpers";
-import { unloads } from "..";
+import { unloads } from "../index.safe";
 
 export type ObserveCallback<E extends Element = Element> = (elem: E) => unknown;
 export type ObserveEntry<E extends Element = Element> = [selector: string, callback: ObserveCallback<E>];

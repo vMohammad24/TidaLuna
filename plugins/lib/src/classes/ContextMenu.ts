@@ -1,6 +1,5 @@
 import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { unloads } from "..";
-import { llTrace } from "./Tracer";
 
 import { observePromise } from "../helpers/observable";
 import { intercept, type OutdatedActionPayloads } from "../redux";
@@ -28,7 +27,7 @@ export class ContextMenu {
 			intercept("contextMenu/OPEN", unloads, async (event) => {
 				const contextMenu = await ContextMenu.getContextMenu();
 				if (contextMenu === null) return;
-				onOpen({ event, contextMenu }, llTrace.err.withContext("ContextMenu.onOpen", event.type, contextMenu));
+				onOpen({ event, contextMenu }, () => {});
 			});
 		},
 	);

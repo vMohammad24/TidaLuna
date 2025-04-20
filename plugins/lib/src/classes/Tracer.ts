@@ -106,8 +106,6 @@ export const Tracer = (source: string, errSignal?: Signal<string | undefined>) =
 	};
 };
 
-export const llTrace = Tracer("[Luna.lib]");
-
 type Messager = typeof InfoMessage | typeof WarnMessage | typeof ErrorMessage;
 export const InfoMessage = (message: string) => actions["message/MESSAGE_INFO"]?.({ message, category: "OTHER", severity: "INFO" });
 export const WarnMessage = (message: string) => actions["message/MESSAGE_WARN"]?.({ message, category: "OTHER", severity: "MESSAGE_WARN" });
