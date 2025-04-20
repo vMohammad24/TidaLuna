@@ -1,8 +1,6 @@
 // @ts-expect-error Idk why TS thinks this module doesnt exist
 import { after } from "spitroast";
 
-import { coreTrace } from "./trace/Tracer";
-
 export const buildActions: Record<string, Function> = {};
 export const interceptors: Record<string, Set<Function>> = {};
 
@@ -12,6 +10,12 @@ const patchAction = (_Obj: { _: Function }) => {
 		// But it seems they may just be duplicates so safe to override
 		buildActions[type] = buildAction;
 
+		const onCeptErr = async (err: unknown) => {
+			// Dynamic import to avoid circular dependency
+			const { coreTrace } = await import("./trace");
+			coreTrace.msg.err.withContext(`Error running interceptor for ${type}`)(err);
+		};
+
 		// We proxy all of them anyway
 		return new Proxy(buildAction, {
 			// Intercept function call
@@ -20,7 +24,6 @@ const patchAction = (_Obj: { _: Function }) => {
 
 				const interceptorsSet = interceptors[type];
 				if (interceptorsSet?.size > 0) {
-					const onCeptErr = coreTrace.msg.err.withContext(`Error running interceptor for ${type}`);
 					// Call interceptorSet's callbacks with the args, dont dispatch if any return true
 					for (const interceptor of interceptorsSet) {
 						try {

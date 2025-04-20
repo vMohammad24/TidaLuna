@@ -79,6 +79,3 @@ for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="
 		scriptPath,
 	);
 }
-// if (Object.keys(actions).length === 0 || Object.keys(moduleCache).length === 0 || Object.keys(redux).length === 0) {
-// 	throw new Error("Luna.core failed to init!");
-// }

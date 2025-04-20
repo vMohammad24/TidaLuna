@@ -15,8 +15,6 @@ export * from "./ReactiveStore.js";
 
 export const invoke = lunaNative.invoke;
 
-export { Signal } from "@inrixia/helpers";
-
 // Ensure this is loaded
 import "./window.core.js";
 
