@@ -10,6 +10,8 @@ export { ErrorMessage, InfoMessage, Tracer, WarnMessage } from "./classes/Tracer
 
 export * as redux from "./redux";
 
+export { Signal } from "@inrixia/helpers";
+
 export interface LunaUnload extends VoidFn {
 	source?: string;
 }

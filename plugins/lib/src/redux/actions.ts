@@ -6,12 +6,12 @@ import { store } from "./store";
 
 export type { ActionTypes as OutdatedActionPayloads } from "neptune-types/tidal";
 
-export type LunaAction<P = unknown> = P extends VoidLike ? () => MaybePromise<VoidLike> : (payload: P) => MaybePromise<VoidLike>;
+export type LunaAction<P = unknown> = P extends VoidLike ? () => MaybePromise<VoidLike> : (payload?: P) => MaybePromise<VoidLike>;
 export type LunaActions = {
 	[K in ActionType]: LunaAction;
 };
 
-export const actions = {};
+export const actions: LunaActions = <LunaActions>{};
 for (const [name, buildAction] of Object.entries(buildActions)) {
 	actions[name] = (...args: any[]) => store.dispatch(buildAction(...args));
 }

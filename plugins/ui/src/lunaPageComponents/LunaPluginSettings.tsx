@@ -35,8 +35,6 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 		};
 	}, [plugin]);
 
-	console.log(loading);
-
 	const disabled = !enabled || loading;
 
 	const author = pkg.author;
