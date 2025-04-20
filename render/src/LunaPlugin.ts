@@ -90,6 +90,8 @@ export class LunaPlugin {
 		storeInit.package ??= await this.fetchPackage(storeInit.url);
 		const name = storeInit.package.name;
 
+		if (name in this.plugins) return this.plugins[name];
+
 		// Disable liveReload on load so people dont accidentally leave it on
 		storeInit.liveReload ??= false;
 
@@ -186,7 +188,6 @@ export class LunaPlugin {
 				this._unloads.clear();
 			}
 		}
-		// Cast to set, _exports is readonly to avoid accidental internal modification
 		modules[this.name] = exports;
 	}
 	private readonly _unloads: Set<LunaUnload> = new Set();
@@ -230,7 +231,6 @@ export class LunaPlugin {
 	 * Load the plugin if it is enabled
 	 */
 	public async load(): Promise<LunaPlugin> {
-		this.package ??= await LunaPlugin.fetchPackage(this.url);
 		if (this.enabled) await this.enable();
 		return this;
 	}
@@ -238,10 +238,15 @@ export class LunaPlugin {
 
 	// #region enable/disable
 	public async enable() {
-		await this.loadExports();
-		this._enabled._ = true;
-		// Ensure live reload is running it it should be
-		if (this._liveReload._) this.startReloadLoop();
+		try {
+			this.loading._ = true;
+			await this.loadExports();
+			this._enabled._ = true;
+			// Ensure live reload is running it it should be
+			if (this._liveReload._) this.startReloadLoop();
+		} finally {
+			this.loading._ = false;
+		}
 	}
 	public async disable() {
 		// Disable the reload loop
@@ -253,6 +258,22 @@ export class LunaPlugin {
 	public async reload() {
 		await this.disable();
 		await this.enable();
+	}
+
+	public async uninstall() {
+		await this.disable();
+		this.loading._ = true;
+		// Remove from storage
+		await LunaPlugin.pluginStorage.del(this.name);
+		delete LunaPlugin.plugins[this.name];
+		delete modules[this.name];
+		// Effectively uninstall
+		delete (<any>this.store).package;
+		for (const name in LunaPlugin.plugins) {
+			// Just to be safe
+			LunaPlugin.plugins[name].dependents.delete(this);
+		}
+		this.loading._ = false;
 	}
 	// #endregion
 

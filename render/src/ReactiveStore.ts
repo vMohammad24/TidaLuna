@@ -1,5 +1,5 @@
 import type { AnyRecord } from "@inrixia/helpers";
-import { createStore as createIdbStore, get as idbGet, keys as idbKeys, set as idbSet, type UseStore } from "idb-keyval";
+import { createStore as createIdbStore, del as idbDel, get as idbGet, keys as idbKeys, set as idbSet, type UseStore } from "idb-keyval";
 import { store as obyStore } from "oby";
 import { logErr } from "./helpers/console.js";
 
@@ -36,6 +36,10 @@ export class ReactiveStore<T extends AnyRecord> {
 
 	public set(key: string, value: T) {
 		obyStore.reconcile(this.storeCache[key], value);
+	}
+
+	public del(key: string) {
+		return idbDel(key, this.idbStore);
 	}
 
 	public keys(): Promise<string[]> {

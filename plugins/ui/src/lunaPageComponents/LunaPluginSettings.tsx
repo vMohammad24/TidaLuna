@@ -8,6 +8,9 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+
+import IconButton from "@mui/material/IconButton";
 import { LunaAuthorDisplay, LunaSwitch } from "../components";
 import { LiveReloadToggle } from "./LiveReloadToggle";
 import { ReloadButton } from "./ReloadButton";
@@ -35,6 +38,13 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 		};
 	}, [plugin]);
 
+	// Memoize callbacks
+	const handleReload = React.useCallback(plugin.reload.bind(plugin), [plugin]);
+	const toggleEnabled = React.useCallback((_: unknown, checked: boolean) => (checked ? plugin.enable() : plugin.disable()), [plugin]);
+	const uninstall = React.useCallback(plugin.uninstall.bind(plugin), [plugin]);
+
+	if (pkg === undefined) return null;
+
 	const disabled = !enabled || loading;
 
 	const author = pkg.author;
@@ -42,11 +52,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const name = pkg.name;
 
 	// Dont allow disabling core plugins
-	const canDisable = !LunaPlugin.lunaPlugins.includes(name);
-
-	// Memoize callbacks
-	const handleReload = React.useCallback(() => plugin.reload(), [plugin]);
-	const toggleEnabled = React.useCallback((_: unknown, checked: boolean) => (checked ? plugin.enable() : plugin.disable()), [plugin]);
+	const isCore = LunaPlugin.lunaPlugins.includes(name);
 
 	const Settings = plugin.exports?.Settings;
 
@@ -67,16 +73,17 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 					<Box sx={{ minWidth: 85 }}>
 						<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />
 					</Box>
-					{canDisable && (
+					{!isCore && (
 						<Tooltip
 							title={enabled ? `Disable ${name}` : `Enable ${name}`}
 							children={<LunaSwitch checked={enabled} loading={loading} onChange={toggleEnabled} />}
 						/>
 					)}
-					<Tooltip title="Reload module">
-						<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />
-					</Tooltip>
+					<Tooltip title="Reload plugin" children={<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />} />
 					<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
+					{!isCore && (
+						<Tooltip title="Uninstall plugin" children={<IconButton color="error" children={<DeleteForeverIcon />} onClick={uninstall} />} />
+					)}
 					{loadError && (
 						<Typography
 							variant="caption"
