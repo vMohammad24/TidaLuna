@@ -9,11 +9,6 @@
 	"dependencies": {
 		"@uwu/quartz": "^1.5.3",
 		"idb-keyval": "^6.2.1",
-		"oby": "^15.1.2",
 		"spitroast": "^2.1.6"
-	},
-	"devDependencies": {
-		"@luna/lib": "link:..\\plugins\\lib",
-		"@luna/ui": "link:..\\plugins\\ui"
 	}
 }

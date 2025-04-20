@@ -10,6 +10,8 @@ window.require = <NodeJS.Require>((moduleName: string) => {
 window.require.cache = modules;
 window.require.main = undefined;
 
+// Important! You should update tsconfig.json if you add a new module here
+
 // Expose react
 modules["react"] = findModuleByProperty("createElement", "function");
 modules["react"].default ??= modules["react"];

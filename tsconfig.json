@@ -1,12 +1,23 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
+		"module": "Preserve",
+		"moduleResolution": "bundler",
 		"jsx": "react",
 		"noEmit": true,
-		"esModuleInterop": true,
-		"isolatedModules": true,
-		"forceConsistentCasingInFileNames": true
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"lib": ["DOM", "ESNext"],
+		"types": ["node", "luna"],
+		"baseUrl": ".",
+		"paths": {
+			"@luna/lib": ["./plugins/lib/src/index.ts"],
+			"@luna/core": ["./render/src/index.ts"],
+			"@luna/ui": ["./plugins/ui/src/index.tsx"],
+			"oby": ["./node_modules/oby"],
+			"react-dom/client": ["./node_modules/@types/react-dom/client"],
+			"react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+			"react": ["./node_modules/@types/react"]
+		}
 	}
 }

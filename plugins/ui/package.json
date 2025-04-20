@@ -7,17 +7,11 @@
 		"avatarUrl": "https://2.gravatar.com/avatar/eeaffef9eb9b436dccc58c6c44c9fe8c3528e83e3bf64e1c736a68dbe8c097d3"
 	},
 	"exports": "./src/index.tsx",
+	"types": "./src/luna.ui.d.ts",
 	"dependencies": {
 		"@emotion/react": "^11.14.0",
 		"@emotion/styled": "^11.14.0",
-		"@luna/lib": "link:..\\lib",
 		"@mui/icons-material": "^7.0.2",
 		"@mui/material": "^7.0.2"
-	},
-	"devDependencies": {
-		"@luna/core": "link:..\\..\\render",
-		"@types/react": "^19.1.2",
-		"@types/react-dom": "^19.1.2",
-		"oby": "^15.1.2"
 	}
 }

@@ -1,5 +1,5 @@
-import { makeBuildOpts, pluginBuildOptions, TidalNodeVersion } from "@luna/build";
 import { build, context, type BuildOptions } from "esbuild";
+import { makeBuildOpts, pluginBuildOptions, TidalNodeVersion } from "luna/build";
 
 import { mkdir, writeFile } from "fs/promises";
 import { basename, dirname, join } from "path";
@@ -16,9 +16,10 @@ const buildConfigs: BuildOptions[] = [
 				name: "write-package-json",
 				setup(build) {
 					build.onEnd(async ({ outputFiles }) => {
-						const outDir = dirname(outputFiles[1].path);
+						const path = outputFiles![1].path;
+						const outDir = dirname(path);
 						await mkdir(outDir, { recursive: true });
-						await writeFile(join(outDir, "package.json"), JSON.stringify({ main: basename(outputFiles[1].path) }));
+						await writeFile(join(outDir, "package.json"), JSON.stringify({ main: basename(path) }));
 					});
 				},
 			},
@@ -54,7 +55,7 @@ const buildAll = () =>
 const watchAll = () =>
 	buildConfigs.map(async (opts: BuildOptions) => {
 		const _opts = makeBuildOpts(opts);
-		const onErr = (err) => {
+		const onErr = (err: Error) => {
 			console.error(_opts, err);
 			throw err;
 		};

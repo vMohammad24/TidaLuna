@@ -8,8 +8,6 @@
 	},
 	"exports": "./src/index.ts",
 	"devDependencies": {
-		"@luna/core": "link:..\\..\\render",
-		"neptune-types": "^1.0.1",
-		"redux": "^5.0.1"
+		"neptune-types": "^1.0.1"
 	}
 }

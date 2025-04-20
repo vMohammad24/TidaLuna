@@ -1,7 +1,3 @@
-import type * as lib from "@luna/lib";
-import type * as ui from "@luna/ui";
-import type * as core from "./index.js";
-
 import { modules } from "./modules.js";
 
 // Define getters for lib and ui to proxy to modules
@@ -20,9 +16,9 @@ declare global {
 	interface Window {
 		luna: {
 			// Throw lib, ui & core here for ease of use
-			lib?: typeof lib;
-			ui?: typeof ui;
-			core?: typeof core;
+			lib?: typeof import("@luna/lib");
+			ui?: typeof import("@luna/ui");
+			core?: typeof import("@luna/core");
 		};
 	}
 	// Define lunaNative exports (see native/preload.ts)
