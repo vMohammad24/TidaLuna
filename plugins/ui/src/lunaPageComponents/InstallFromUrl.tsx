@@ -5,7 +5,7 @@ import TextField from "@mui/material/TextField";
 import { debounce } from "@inrixia/helpers";
 import { LunaPlugin } from "@luna/core";
 
-import { InfoMessage } from "@luna/lib";
+import { Messager } from "@luna/core";
 
 const successSx = {
 	"& .MuiOutlinedInput-root:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline": {
@@ -40,7 +40,8 @@ export const InstallFromUrl = React.memo(() => {
 			const successMessage = `Loaded plugin ${plugin.name}!`;
 			setErr(null);
 			setSuccess(successMessage);
-			InfoMessage(successMessage);
+			// TODO: Clean up this mess
+			Messager.Info(successMessage);
 			// Clear success message after a delay
 			setTimeout(() => setSuccess(null), 2000);
 		} catch (e: any) {

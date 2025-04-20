@@ -1,6 +1,6 @@
 {
 	"name": "@luna/lib",
-	"description": "Luna library exposing redux, interceptors and other utilities",
+	"description": "Luna library exposing helpers, interceptors and other utilities",
 	"author": {
 		"name": "Inrixia",
 		"url": "https://github.com/Inrixia",

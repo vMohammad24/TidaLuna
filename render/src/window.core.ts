@@ -11,14 +11,19 @@ Object.defineProperty(window.luna, "ui", {
 	enumerable: true,
 	configurable: false,
 });
-
+Object.defineProperty(window.luna, "unstable", {
+	get: () => modules["@luna/unstable"],
+	enumerable: true,
+	configurable: false,
+});
 declare global {
 	interface Window {
 		luna: {
 			// Throw lib, ui & core here for ease of use
+			core?: typeof import("@luna/core");
 			lib?: typeof import("@luna/lib");
 			ui?: typeof import("@luna/ui");
-			core?: typeof import("@luna/core");
+			unstable?: typeof import("@luna/unstable");
 		};
 	}
 	// Define lunaNative exports (see native/preload.ts)

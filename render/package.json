@@ -10,5 +10,11 @@
 		"@uwu/quartz": "^1.5.3",
 		"idb-keyval": "^6.2.1",
 		"spitroast": "^2.1.6"
+	},
+	"devDependencies": {
+		"redux": "^5.0.1",
+		"@types/react": "^19.1.2",
+		"@types/react-dom": "^19.1.2",
+		"oby": "^15.1.2"
 	}
 }

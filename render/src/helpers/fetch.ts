@@ -7,12 +7,12 @@ export const rejectNotOk = (res: Response): Response => {
 export const toJson = <T>(res: Response): Promise<T> => res.json();
 export const toText = (res: Response): Promise<string> => res.text();
 
-export const fetchJson = <T>(...args: Parameters<typeof fetch>) =>
+export const json = <T>(...args: Parameters<typeof fetch>) =>
 	fetch(...args)
 		.then(rejectNotOk)
 		.then(toJson<T>);
 
-export const fetchText = (...args: Parameters<typeof fetch>) =>
+export const text = (...args: Parameters<typeof fetch>) =>
 	fetch(...args)
 		.then(rejectNotOk)
 		.then(toText);

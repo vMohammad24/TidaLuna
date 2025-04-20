@@ -1,7 +1,7 @@
 import type { AnyRecord } from "@inrixia/helpers";
 import { createStore as createIdbStore, del as idbDel, get as idbGet, keys as idbKeys, set as idbSet, type UseStore } from "idb-keyval";
 import { store as obyStore } from "oby";
-import { logErr } from "./helpers/console.js";
+import { coreTrace, type Tracer } from "./trace";
 
 export class ReactiveStore<T extends AnyRecord> {
 	public static Storages: Record<string, ReactiveStore<AnyRecord>> = {};
@@ -10,7 +10,9 @@ export class ReactiveStore<T extends AnyRecord> {
 	}
 
 	public readonly idbStore: UseStore;
+	public readonly trace: Tracer;
 	private constructor(public readonly idbName: string) {
+		this.trace = coreTrace.withSource(`.ReactiveStore[${idbName}]`).trace;
 		this.idbStore = createIdbStore(idbName, "_");
 	}
 
@@ -26,9 +28,7 @@ export class ReactiveStore<T extends AnyRecord> {
 		// Set up a listener to write to the idb store when the object changes
 		obyStore.on(reactiveObj, () => {
 			const unwrappedObj = obyStore.unwrap(reactiveObj);
-			idbSet(key, unwrappedObj, this.idbStore).catch((err) => {
-				logErr(`Failed to write Storage.${this.idbName}.${key} = `, unwrappedObj, err);
-			});
+			idbSet(key, unwrappedObj, this.idbStore).catch(this.trace.err.withContext(`Failed to write ${key} = `, unwrappedObj));
 		});
 
 		return (this.storeCache[key] = reactiveObj);

@@ -1,8 +1,7 @@
 import type { MaybePromise, VoidLike } from "@inrixia/helpers";
 import type { ActionType } from "./intercept.actionTypes";
 
-import { buildActions } from "@luna/core";
-import { store } from "./store";
+import { buildActions, reduxStore } from "@luna/core";
 
 export type { ActionTypes as OutdatedActionPayloads } from "neptune-types/tidal";
 
@@ -13,5 +12,7 @@ export type LunaActions = {
 
 export const actions: LunaActions = <LunaActions>{};
 for (const [name, buildAction] of Object.entries(buildActions)) {
-	actions[name as keyof LunaActions] = (...args: any[]) => store.dispatch(buildAction(...args));
+	actions[name as keyof LunaActions] = (...args: any[]) => reduxStore.dispatch(buildAction(...args));
 }
+
+export { reduxStore as store };

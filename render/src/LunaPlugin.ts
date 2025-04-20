@@ -1,13 +1,13 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
-import { log, logErr, logWarn } from "./helpers/console.js";
 import { unloadSet } from "./helpers/unloadSet.js";
 import { ReactiveStore } from "./ReactiveStore.js";
 
 import { type LunaUnload } from "@luna/core";
-import { fetchJson, fetchText } from "./helpers/fetch.js";
+import * as ftch from "./helpers/fetch.js";
 import { modules } from "./modules.js";
+import { coreTrace, Tracer } from "./trace";
 
 type ModuleExports = {
 	unloads?: Set<LunaUnload>;
@@ -45,10 +45,10 @@ type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
 export class LunaPlugin {
 	// #region Static
 	public static fetchPackage(url: string): Promise<PluginPackage> {
-		return fetchJson(`${url}.json`);
+		return ftch.json(`${url}.json`);
 	}
 	public static fetchCode(url: string): Promise<string> {
-		return fetchText(`${url}.js`);
+		return ftch.text(`${url}.js`);
 	}
 
 	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
@@ -97,8 +97,17 @@ export class LunaPlugin {
 
 	public static async loadStoredPlugins() {
 		const keys = await LunaPlugin.pluginStorage.keys();
-		return Promise.all(keys.map(async (name) => LunaPlugin.fromStorage(await LunaPlugin.pluginStorage.get(name)).catch(logErr)));
+		return Promise.all(
+			keys.map(async (name) =>
+				LunaPlugin.fromStorage(await LunaPlugin.pluginStorage.get(name)).catch(this.trace.err.withContext("loadStoredPlugins", name)),
+			),
+		);
 	}
+	// #endregion
+
+	// #region Tracer
+	public static readonly trace: Tracer = coreTrace.withSource(".LunaPlugin").trace;
+	public readonly trace: Tracer;
 	// #endregion
 
 	// #region constructor
@@ -106,6 +115,7 @@ export class LunaPlugin {
 		public readonly name: string,
 		public readonly store: LunaPluginStorage,
 	) {
+		this.trace = LunaPlugin.trace.withSource(`[${this.name}]`).trace;
 		// Enabled has to be setup first because liveReload below accesses it
 		this._enabled = new Signal(this.store.enabled, (next) => {
 			// Protect against disabling permanantly in the background if loading causes a error
@@ -173,7 +183,7 @@ export class LunaPlugin {
 	private set exports(exports: ModuleExports | undefined) {
 		if (this._unloads.size !== 0) {
 			// If we always unload on load then we should never be here
-			logWarn(`Plugin ${this.name} is trying to set exports but unloads are not empty! Please report this to the Luna devs.`, this);
+			this.trace.msg.warn(`Plugin ${this.name} is trying to set exports but unloads are not empty! Please report this to the Luna devs.`);
 			// This is a safety check to ensure we dont leak unloads
 			// If there is somehow leftover unloads we need to add them to the new exports.unloads if it exists
 			if (exports?.unloads !== undefined) {
@@ -211,7 +221,7 @@ export class LunaPlugin {
 			this.loading._ = true;
 			// Unload dependants before unloading this plugin
 			for (const dependant of this.dependents) {
-				log(`Unloading dependant ${dependant.name} of plugin ${this.name}`, dependant, this);
+				this.trace.log(`Unloading dependant ${dependant.name}`);
 				await dependant.unload();
 			}
 			await unloadSet(this.exports?.unloads);
@@ -322,9 +332,7 @@ export class LunaPlugin {
 					{
 						resolve: ({ name }) => {
 							if (modules[name] === undefined) {
-								const errMsg = `Failed to load plugin ${this.name}, module ${name} not found!`;
-								logErr(errMsg, this);
-								throw new Error(errMsg);
+								this.trace.msg.err.throw(`Failed to load, module ${name} not found!`);
 							}
 							// Add this plugin to the dependents of the module if its a plugin and thus unloadable
 							LunaPlugin.plugins[name]?.dependents.add(this);
@@ -354,19 +362,17 @@ export class LunaPlugin {
 				unload.source = this.name + (unload.source ? `.${unload.source}` : "");
 			}
 
-			log(`Loaded plugin ${this.name}`, this);
+			this.trace.log(`Loaded`);
 			// Make sure we load any enabled dependants, this is mostly to facilitate live reloading dependency trees
 			for (const dependant of this.dependents) {
-				log(`Loading dependant ${dependant.name} of plugin ${this.name}`, dependant, this);
-				dependant.load().catch((err) => {
-					logErr(`Failed to load dependant ${dependant.name} of plugin ${this.name}`, dependant, this, err);
-				});
+				this.trace.log(`Loading dependant ${dependant.name}`);
+				dependant.load().catch(this.trace.err.withContext(`Failed to load dependant ${dependant.name} of plugin ${this.name}`));
 			}
 		} catch (err) {
 			// Set loadError for anyone listening
 			this.loadError._ = (<any>err)?.message ?? err?.toString();
 			// Notify users
-			logErr(`Failed to load plugin ${this.name}`, this, err);
+			this.trace.msg.err.withContext(`Failed to load`)(err);
 			// Ensure we arnt partially loaded
 			await this.unload();
 			// For sanity throw the error just to be safe

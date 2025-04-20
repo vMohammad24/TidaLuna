@@ -1,5 +1,5 @@
 import type { VoidFn } from "@inrixia/helpers";
-import { logErr } from "./console.js";
+import { coreTrace } from "../trace";
 
 export interface LunaUnload extends VoidFn {
 	source?: string;
@@ -16,7 +16,7 @@ export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
 				// Give each unload 5s to run before timing out so we dont deadlock
 				await Promise.race([unload(), new Promise((_, rej) => setTimeout(() => rej(new Error("Unload took longer than 5s to run...")), 5000))]);
 			} catch (err) {
-				logErr(`Error unloading ${unload.source ?? ""}.${unload.name}`, err, unload);
+				coreTrace.msg.err.withContext(`Error unloading ${unload.source ?? ""}.${unload.name}`)(err);
 			}
 		}),
 	);

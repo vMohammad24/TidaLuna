@@ -36,11 +36,8 @@
     "@types/clean-css": "^4.2.11",
     "@types/html-minifier-terser": "^7.0.2",
     "@types/node": "^22.14.1",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
     "clean-css": "^5.3.3",
     "esbuild": "^0.25.2",
-    "html-minifier-terser": "^7.2.0",
-    "oby": "^15.1.2"
+    "html-minifier-terser": "^7.2.0"
   }
 }
