@@ -82,7 +82,10 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 					<Tooltip title="Reload plugin" children={<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />} />
 					<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
 					{!isCore && (
-						<Tooltip title="Uninstall plugin" children={<IconButton color="error" children={<DeleteForeverIcon />} onClick={uninstall} />} />
+						<Tooltip
+							title="Uninstall plugin (disabled for now)"
+							children={<IconButton disabled={true} color="error" children={<DeleteForeverIcon />} onClick={uninstall} />}
+						/>
 					)}
 					{loadError && (
 						<Typography
