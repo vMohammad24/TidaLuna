@@ -84,6 +84,9 @@ export class LunaPlugin {
 	 * Create a plugin instance from a store:LunaPluginStorage, if package is not populated it will be fetched using the url so we can get the name
 	 */
 	public static async fromStorage(storeInit: PartialLunaPluginStorage): Promise<LunaPlugin> {
+		// Ensure the url is sanitized incase users paste a link to the actual file
+		storeInit.url = storeInit.url.replace(/(\.js|\.json|\.js.map)$/, "");
+
 		storeInit.package ??= await this.fetchPackage(storeInit.url);
 		const name = storeInit.package.name;
 
