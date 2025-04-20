@@ -146,7 +146,7 @@ export class LunaPlugin {
 	// #region Signals
 	public readonly loading: Signal<boolean> = new Signal(false);
 	public readonly fetching: Signal<boolean> = new Signal(false);
-	public readonly loadError: Signal<string> = new Signal(undefined);
+	public readonly loadError: Signal<string | undefined> = new Signal(undefined);
 
 	public readonly _liveReload: Signal<boolean>;
 	public onSetLiveReload;
@@ -261,10 +261,10 @@ export class LunaPlugin {
 			const newPackage = await LunaPlugin.fetchPackage(this.url);
 			// Delete this just to be safe
 			delete newPackage.code;
-			const codeChanged = this.package.hash !== newPackage.hash;
+			const codeChanged = this.package?.hash !== newPackage.hash;
 			// If hash hasnt changed then just reuse stored code
 			// If it has then next time this.code() is called it will fetch the new code as newPackage.code is undefined
-			if (!codeChanged) newPackage.code = this.package.code;
+			if (!codeChanged) newPackage.code = this.package?.code;
 			// Only update this.package if its actually changed
 			if (JSON.stringify(newPackage) !== JSON.stringify(this.package)) this.package = newPackage;
 			return codeChanged;
@@ -276,7 +276,7 @@ export class LunaPlugin {
 		return false;
 	}
 	public async code() {
-		return (this.package.code ??= `${await LunaPlugin.fetchText(`${this.url}.js`)}\n//# sourceURL=${this.url}.js`);
+		return (this.package!.code ??= `${await LunaPlugin.fetchText(`${this.url}.js`)}\n//# sourceURL=${this.url}.js`);
 	}
 	// #endregion
 

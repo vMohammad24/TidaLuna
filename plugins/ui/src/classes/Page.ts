@@ -29,7 +29,7 @@ export class Page {
 		});
 
 		// Make styles a deeply reactive obyStore & set parentElement styles when it changes
-		this.pageStyles = obyStore({});
+		this.pageStyles = obyStore(<CSSStyleDeclaration>{});
 		obyStore.on(this.pageStyles, () => {
 			if (this.root.parentElement) {
 				Object.assign(this.root.parentElement.style, obyStore.unwrap(this.pageStyles));
@@ -60,7 +60,7 @@ export class Page {
 		const notFound = document.querySelector<HTMLElement>(`[class^="_pageNotFoundError_"]`);
 		if (notFound) {
 			notFound.style.display = "none";
-			const mainContainer = notFound.parentElement;
+			const mainContainer = notFound.parentElement!;
 			mainContainer.appendChild(this.root);
 			mainContainer.removeAttribute("style");
 			Object.assign(mainContainer!.style, this.pageStyles);

@@ -12,7 +12,7 @@ export class ContextMenu {
 		if (contextMenu !== null) {
 			contextMenu.addButton = (text, onClick) => {
 				const newButton = <Element>contextMenu.children[0].cloneNode(true);
-				newButton.querySelector<HTMLAnchorElement>("a").href = "";
+				newButton.querySelector<HTMLAnchorElement>("a")!.href = "";
 				const span = newButton.querySelector<HTMLSpanElement>("span")!;
 				span.innerText = text;
 				span.onclick = onClick;

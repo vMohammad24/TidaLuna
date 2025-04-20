@@ -38,7 +38,7 @@ const bundleFile = async (url: string): Promise<[Buffer, ResponseInit]> => {
 			// .map file does not exist, do nothing
 		}
 	}
-	return [content, { headers: { "Content-Type": mime.getType(fileName) } }];
+	return [content, { headers: { "Content-Type": mime.getType(fileName)! } }];
 };
 
 // Preload bundle files for https://luna/
@@ -52,7 +52,7 @@ electron.app.whenReady().then(async () => {
 		if (req.url.startsWith("https://luna/")) {
 			try {
 				return new Response(...(await bundleFile(req.url)));
-			} catch (err) {
+			} catch (err: any) {
 				return new Response(err.message, { status: err.message.startsWith("ENOENT") ? 404 : 500, statusText: err.message });
 			}
 		}
@@ -103,7 +103,7 @@ ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
 	ipcHandle(channel, async (_, exportName, ...args) => {
 		try {
 			return await exports[exportName](...args);
-		} catch (err) {
+		} catch (err: any) {
 			// Set cause to identify native module
 			err.cause = `[Luna.native].${name}.${exportName}`;
 			throw err;
@@ -148,8 +148,8 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
 // Replace the default electron BrowserWindow with our proxied one
 const electronPath = require.resolve("electron");
-delete require.cache[electronPath].exports;
-require.cache[electronPath].exports = {
+delete require.cache[electronPath]!.exports;
+require.cache[electronPath]!.exports = {
 	...electron,
 	BrowserWindow: ProxiedBrowserWindow,
 };
@@ -171,7 +171,7 @@ const tidalAppPath = path.join(process.resourcesPath, "original.asar");
 const tidalPackage = require(path.resolve(path.join(tidalAppPath, "package.json")));
 const startPath = path.join(tidalAppPath, tidalPackage.main);
 
-require.main.filename = startPath;
+require.main!.filename = startPath;
 // @ts-expect-error This exists?
 electron.app.setAppPath?.(tidalAppPath);
 electron.app.name = tidalPackage.name;

@@ -31,7 +31,7 @@ export class ReactiveStore {
 			});
 		});
 
-		return (this.storeCache[key] = reactiveObj);
+		return (this.storeCache[key] = reactiveObj) as T;
 	}
 
 	public set<T extends AnyRecord>(key: string, value: T) {

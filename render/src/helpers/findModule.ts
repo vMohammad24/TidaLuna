@@ -10,13 +10,13 @@ export const findModuleProperty = memoize(<T>(propertyName: string, propertyType
 	return recursiveSearch<T>(tidalModules, propertyName, propertyType);
 });
 
-export const findModuleByProperty = memoize(<T>(propertyName: string, propertyType: string): T | undefined => {
+export const findModuleByProperty = memoize(<T extends object>(propertyName: string, propertyType: string): T | undefined => {
 	const foundProperty = recursiveSearch<T>(tidalModules, propertyName, propertyType);
 	if (foundProperty === undefined) return;
-	let module = tidalModules;
+	let module: object = tidalModules;
 	// Remove the final path part
 	foundProperty.path.pop();
-	for (const key of foundProperty.path) module = module[key as string];
+	for (const key of foundProperty.path) module = module[key as keyof typeof module];
 	return <T>module;
 });
 

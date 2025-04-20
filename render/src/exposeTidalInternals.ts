@@ -7,15 +7,16 @@ import { resolveAbsolutePath } from "./helpers/resolvePath.js";
 
 import { findCreateActionFunction } from "./helpers/findCreateAction.js";
 
-export const tidalModules = {};
+export const tidalModules: Record<string, object> = {};
 
-const fetchCode = async (path) => {
+const fetchCode = async (path: string) => {
 	const res = await fetch(path);
 	// Include sourceURL so that dev tools shows things nicely under sources
 	return `${await res.text()}\n//# sourceURL=${path}`;
 };
 
-const messageContainer = document.getElementById("tidaluna-loading-text");
+// Created in native/injector.ts
+const messageContainer = document.getElementById("tidaluna-loading-text")!;
 
 const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);

@@ -13,5 +13,5 @@ export type LunaActions = {
 
 export const actions: LunaActions = <LunaActions>{};
 for (const [name, buildAction] of Object.entries(buildActions)) {
-	actions[name] = (...args: any[]) => store.dispatch(buildAction(...args));
+	actions[name as keyof LunaActions] = (...args: any[]) => store.dispatch(buildAction(...args));
 }

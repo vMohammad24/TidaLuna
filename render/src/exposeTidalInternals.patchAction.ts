@@ -7,7 +7,7 @@ export const buildActions: Record<string, Function> = {};
 export const interceptors: Record<string, Set<Function>> = {};
 
 const patchAction = (_Obj: { _: Function }) => {
-	after("_", _Obj, ([type], buildAction) => {
+	after("_", _Obj, ([type]: [string], buildAction: Function) => {
 		// There can be multiple buildActions for the same type.
 		// But it seems they may just be duplicates so safe to override
 		buildActions[type] = buildAction;
@@ -20,7 +20,7 @@ const patchAction = (_Obj: { _: Function }) => {
 
 				const interceptorsSet = interceptors[type];
 				if (interceptorsSet?.size > 0) {
-					const onCeptErr = (...args) => logErr(`Error in ${type} interceptor`, ...args);
+					const onCeptErr = (...args: any[]) => logErr(`Error in ${type} interceptor`, ...args);
 					// Call interceptorSet's callbacks with the args, dont dispatch if any return true
 					for (const interceptor of interceptorsSet) {
 						try {
