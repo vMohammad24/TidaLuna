@@ -1,5 +1,5 @@
-import { build, context, type BuildOptions } from "esbuild";
-import { makeBuildOpts, pluginBuildOptions, TidalNodeVersion } from "luna/build";
+import { type BuildOptions } from "esbuild";
+import { listen, TidalNodeVersion } from "luna/build";
 
 import { mkdir, writeFile } from "fs/promises";
 import { basename, dirname, join } from "path";
@@ -40,28 +40,7 @@ const buildConfigs: BuildOptions[] = [
 		platform: "browser",
 		format: "esm",
 	},
-	await pluginBuildOptions("./plugins/lib"),
-	await pluginBuildOptions("./plugins/ui"),
 ];
 
-const buildAll = () =>
-	buildConfigs.map(async (opts: BuildOptions) => {
-		const _opts = await makeBuildOpts(opts);
-		build(_opts).catch((err) => {
-			console.error(_opts, err);
-			throw err;
-		});
-	});
-const watchAll = () =>
-	buildConfigs.map(async (opts: BuildOptions) => {
-		const _opts = makeBuildOpts(opts);
-		const onErr = (err: Error) => {
-			console.error(_opts, err);
-			throw err;
-		};
-		const ctx = await context(_opts).catch(onErr);
-		ctx.watch().catch(onErr);
-	});
-
-if (process.argv.includes("--watch")) watchAll();
-else buildAll();
+import "build/buildPlugins";
+listen(buildConfigs);

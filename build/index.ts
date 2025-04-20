@@ -1,4 +1,4 @@
-import { type BuildOptions } from "esbuild";
+import { type BuildOptions, build as esBuild, context as esContext } from "esbuild";
 
 import { readFile } from "fs/promises";
 import path from "path";
@@ -55,3 +55,23 @@ export const makeBuildOpts = (opts: BuildOptions) => {
 		throw err;
 	}
 };
+
+export const build = (opts: BuildOptions[]) =>
+	opts.map(makeBuildOpts).forEach(async (buildOptions: BuildOptions) => {
+		esBuild(buildOptions).catch((err) => {
+			console.error(buildOptions, err);
+			throw err;
+		});
+	});
+
+export const watch = (opts: BuildOptions[]) =>
+	opts.map(makeBuildOpts).forEach(async (buildOptions: BuildOptions) => {
+		const onErr = (err: Error) => {
+			console.error(buildOptions, err);
+			throw err;
+		};
+		const ctx = await esContext(buildOptions).catch(onErr);
+		ctx.watch().catch(onErr);
+	});
+
+export const listen = process.argv.includes("--watch") ? watch : build;

@@ -11,6 +11,12 @@ importers:
       '@inrixia/helpers':
         specifier: ^3.13.6
         version: 3.13.6
+      '@types/clean-css':
+        specifier: ^4.2.11
+        version: 4.2.11
+      '@types/html-minifier-terser':
+        specifier: ^7.0.2
+        version: 7.0.2
       '@types/node':
         specifier: ^22.14.1
         version: 22.14.1
@@ -472,6 +478,12 @@ packages:
 
   '@types/cacheable-request@6.0.3':
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
+
+  '@types/clean-css@4.2.11':
+    resolution: {integrity: sha512-Y8n81lQVTAfP2TOdtJJEsCoYl1AnOkqDqMvXb9/7pfgZZ7r8YrEyurrAvAoAjHOGXKRybay+5CsExqIH6liccw==}
+
+  '@types/html-minifier-terser@7.0.2':
+    resolution: {integrity: sha512-mm2HqV22l8lFQh4r2oSsOEVea+m0qqxEmwpc9kC1p/XzmjLWrReR9D/GRs8Pex2NX/imyEH9c5IU/7tMBQCHOA==}
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
@@ -1524,6 +1536,13 @@ snapshots:
       '@types/keyv': 3.1.4
       '@types/node': 22.14.1
       '@types/responselike': 1.0.3
+
+  '@types/clean-css@4.2.11':
+    dependencies:
+      '@types/node': 22.14.1
+      source-map: 0.6.1
+
+  '@types/html-minifier-terser@7.0.2': {}
 
   '@types/http-cache-semantics@4.0.4': {}
 

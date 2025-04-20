@@ -15,6 +15,7 @@
       "types": "./luna.d.ts"
     },
     "./build": "./build/index.ts",
+    "./buildPlugins": "./build/buildPlugins.ts",
     "./tsconfig.json": "./tsconfig.json"
   },
   "type": "module",
@@ -31,13 +32,15 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@types/clean-css": "^4.2.11",
+    "@types/html-minifier-terser": "^7.0.2",
+    "@inrixia/helpers": "^3.13.6",
+    "@types/node": "^22.14.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "@types/node": "^22.14.1",
-    "oby": "^15.1.2",
-    "@inrixia/helpers": "^3.13.6",
     "clean-css": "^5.3.3",
     "esbuild": "^0.25.2",
-    "html-minifier-terser": "^7.2.0"
+    "html-minifier-terser": "^7.2.0",
+    "oby": "^15.1.2"
   }
 }
