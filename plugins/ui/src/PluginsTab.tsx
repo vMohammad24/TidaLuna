@@ -8,7 +8,7 @@ import { LunaPluginSettings } from "./lunaPageComponents/LunaPluginSettings";
 export const PluginsTab = React.memo(() => {
 	const plugins = [];
 	for (const pluginName in LunaPlugin.plugins) {
-		if (LunaPlugin.lunaPlugins.includes(pluginName)) continue;
+		if (LunaPlugin.corePlugins.has(pluginName)) continue;
 		plugins.push(<LunaPluginSettings key={pluginName} plugin={LunaPlugin.plugins[pluginName]} />);
 	}
 	if (plugins.length === 0) return "You have no plugins installed!";

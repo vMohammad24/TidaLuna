@@ -1,15 +1,19 @@
 import { buildActions } from "../exposeTidalInternals.patchAction";
-import { reduxStore } from "../modules";
 import { sanitizeData } from "./sanitizeData";
 
 export class Messager {
+	private static async dispatch(action: any) {
+		// Disgusting hack to avoid cyclic dependencies on init
+		// TODO: Remove this monstrosity
+		return (await import("../modules")).reduxStore.dispatch(action);
+	}
 	public static Info(...data: any[]) {
-		reduxStore.dispatch(buildActions["message/MESSAGE_INFO"]?.({ message: sanitizeData(...data), category: "OTHER", severity: "INFO" }));
+		Messager.dispatch(buildActions["message/MESSAGE_INFO"]?.({ message: sanitizeData(...data), category: "OTHER", severity: "INFO" }));
 	}
 	public static Warn(...data: any[]) {
-		reduxStore.dispatch(buildActions["message/MESSAGE_WARN"]?.({ message: sanitizeData(...data), category: "OTHER", severity: "MESSAGE_WARN" }));
+		Messager.dispatch(buildActions["message/MESSAGE_WARN"]?.({ message: sanitizeData(...data), category: "OTHER", severity: "MESSAGE_WARN" }));
 	}
 	public static Error(...data: any[]) {
-		reduxStore.dispatch(buildActions["message/MESSAGE_ERROR"]?.({ message: sanitizeData(...data), category: "OTHER", severity: "ERROR" }));
+		Messager.dispatch(buildActions["message/MESSAGE_ERROR"]?.({ message: sanitizeData(...data), category: "OTHER", severity: "ERROR" }));
 	}
 }

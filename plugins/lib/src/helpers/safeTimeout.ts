@@ -16,8 +16,3 @@ export const safeInterval = (unloads: NullishUnloads, cb: () => void, delay?: nu
 	unload.source = "safeInterval";
 	return unload;
 };
-
-/**
- * Returns a promise that resolves after the given milliseconds.
- */
-export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));

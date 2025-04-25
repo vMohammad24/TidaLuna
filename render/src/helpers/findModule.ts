@@ -1,5 +1,6 @@
 import { memoize, type UnknownRecord } from "@inrixia/helpers";
 import { tidalModules } from "../exposeTidalInternals.js";
+import { coreTrace } from "../trace/Tracer.js";
 
 export interface FoundProperty<T> {
 	value: T;
@@ -12,7 +13,10 @@ export const findModuleProperty = memoize(<T>(propertyName: string, propertyType
 
 export const findModuleByProperty = memoize(<T extends object>(propertyName: string, propertyType: string): T | undefined => {
 	const foundProperty = recursiveSearch<T>(tidalModules, propertyName, propertyType);
-	if (foundProperty === undefined) return;
+	if (foundProperty === undefined) {
+		coreTrace.warn("findModuleByProperty", `Module with property '${propertyName}' of type '${propertyType}' not found!`);
+		return;
+	}
 	let module: object = tidalModules;
 	// Remove the final path part
 	foundProperty.path.pop();

@@ -52,7 +52,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const name = pkg.name;
 
 	// Dont allow disabling core plugins
-	const isCore = LunaPlugin.lunaPlugins.includes(name);
+	const isCore = LunaPlugin.corePlugins.has(name);
 
 	const Settings = plugin.exports?.Settings;
 

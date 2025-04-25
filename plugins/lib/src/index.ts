@@ -4,6 +4,7 @@ export { ContextMenu } from "./classes/ContextMenu";
 export { StyleTag } from "./classes/StyleTag";
 
 export * from "./helpers";
+export * from "./outdated.types";
 export * as redux from "./redux";
 
 import { observePromise } from "./helpers/observable";

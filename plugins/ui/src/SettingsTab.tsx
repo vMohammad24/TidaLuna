@@ -9,7 +9,7 @@ import { LunaPluginSettings } from "./lunaPageComponents/LunaPluginSettings";
 export const SettingsTab = React.memo(() => {
 	const corePlugins = [];
 	for (const pluginName in LunaPlugin.plugins) {
-		if (!LunaPlugin.lunaPlugins.includes(pluginName)) continue;
+		if (!LunaPlugin.corePlugins.has(pluginName)) continue;
 		corePlugins.push(<LunaPluginSettings key={pluginName} plugin={LunaPlugin.plugins[pluginName]} />);
 	}
 	return (

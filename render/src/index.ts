@@ -8,7 +8,8 @@ export { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
 
 export { Messager, Tracer } from "./trace";
 
-export { modules, reduxStore } from "./modules.js";
+export { type Store } from "redux";
+export { getCredentials, modules, reduxStore } from "./modules.js";
 
 export * from "./LunaPlugin.js";
 export * from "./ReactiveStore.js";
@@ -26,9 +27,8 @@ setTimeout(async () => {
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib" });
 	// Load ui after lib as it depends on it.
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.ui" });
-
-	// // Load unstable api's
-	// await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.unstable" });
+	// Load unstable api's
+	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.unstable" });
 
 	// Load all plugins from storage
 	await LunaPlugin.loadStoredPlugins();

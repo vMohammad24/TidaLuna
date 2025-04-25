@@ -1,0 +1,11 @@
+export { Album } from "./classes/Album";
+export { Artist } from "./classes/Artist";
+export { ContextMenu } from "./classes/ContextMenu";
+export { MediaItem } from "./classes/MediaItem/MediaItem";
+export { Playlist } from "./classes/Playlist";
+export { PlayState } from "./classes/PlayState";
+export { Quality } from "./classes/Quality";
+
+export { type PlaybackInfo, type TidalManifest } from "./classes/MediaItem/MediaItem.playbackInfo.types";
+
+export { errSignal, unloads } from "./window.unstable";

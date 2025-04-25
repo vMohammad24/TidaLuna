@@ -17,9 +17,9 @@ const intercepts: Record<ActionType, Semaphore> = {} as Record<ActionType, Semap
  */
 export const interceptActionResp = async <RESAT extends ActionType, REJAT extends ActionType, RES extends InterceptPayload<RESAT>>(
 	trigger: Function,
-	resActionTypes: RESAT[],
-	rejActionTypes: REJAT[],
 	unloads: NullishUnloads,
+	resActionTypes: RESAT[],
+	rejActionTypes?: REJAT[],
 	{ timeoutMs, cancel }: { timeoutMs?: number; cancel?: true } = {},
 ): Promise<RES> => {
 	const _unloads = new Set<LunaUnload>();
@@ -30,7 +30,7 @@ export const interceptActionResp = async <RESAT extends ActionType, REJAT extend
 	timeoutMs ??= 5000;
 
 	const resPromises = resActionTypes.map((type) => interceptPromise(type, _unloads, cancel));
-	const rejPromises = rejActionTypes.map((type) => interceptPromise(type, _unloads, cancel));
+	const rejPromises = rejActionTypes?.map((type) => interceptPromise(type, _unloads, cancel)) ?? [];
 	const rejTimeout = new Promise<never>((_, rej) =>
 		safeTimeout(_unloads, () => rej(`[interceptActionResp.TIMEOUT] ${JSON.stringify([resActionTypes, rejActionTypes])}`), timeoutMs),
 	);

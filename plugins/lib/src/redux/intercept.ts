@@ -1,4 +1,4 @@
-import type { OutdatedActionPayloads } from "./actions";
+import type { OutdatedActionPayloads } from "../outdated.types";
 import type { ActionType } from "./intercept.actionTypes";
 
 export type InterceptPayload<T extends ActionType> = T extends keyof OutdatedActionPayloads ? OutdatedActionPayloads[T] : unknown;

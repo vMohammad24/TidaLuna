@@ -23,7 +23,7 @@ declare global {
 			core?: typeof import("@luna/core");
 			lib?: typeof import("@luna/lib");
 			ui?: typeof import("@luna/ui");
-			unstable?: typeof import("@luna/unstable");
+			// unstable?: typeof import("@luna/unstable");
 		};
 	}
 	// Define lunaNative exports (see native/preload.ts)

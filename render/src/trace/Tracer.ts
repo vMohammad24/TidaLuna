@@ -49,7 +49,7 @@ export const Tracer = (source: string, errSignal: Signal<string | undefined> | n
 				}),
 				err: createLogger(source, (...data) => {
 					Messager.Error(...data);
-					return console.error(...data);
+					return errConsumer(...data);
 				}),
 			},
 		},

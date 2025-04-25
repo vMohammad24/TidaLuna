@@ -1,8 +1,9 @@
 import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
-import { libTrace, unloads } from "..";
+import { libTrace, unloads, type OutdatedActionPayloads } from "..";
+
+import { intercept } from "../redux";
 
 import { observePromise } from "../helpers/observable";
-import { intercept, type OutdatedActionPayloads } from "../redux";
 
 type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };
 export class ContextMenu {
@@ -23,12 +24,11 @@ export class ContextMenu {
 	}
 
 	public static onOpen: AddReceiver<{ event: OutdatedActionPayloads["contextMenu/OPEN"]; contextMenu: ExtendedElem }> = registerEmitter(
-		(onOpen) => {
+		(onOpen) =>
 			intercept("contextMenu/OPEN", unloads, async (event) => {
 				const contextMenu = await ContextMenu.getContextMenu();
 				if (contextMenu === null) return;
 				onOpen({ event, contextMenu }, libTrace.msg.err.withContext("ContextMenu.onOpen", event.type, contextMenu));
-			});
-		},
+			}),
 	);
 }

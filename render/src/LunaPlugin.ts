@@ -57,7 +57,7 @@ export class LunaPlugin {
 	public static readonly plugins: Record<string, LunaPlugin> = {};
 
 	// Static list of Luna plugins that should be seperate from user plugins
-	public static readonly lunaPlugins: string[] = ["@luna/lib", "@luna/ui"];
+	public static readonly corePlugins: Set<string> = new Set(["@luna/lib", "@luna/ui", "@luna/unstable"]);
 
 	static {
 		// Ensure all plugins are unloaded on beforeunload

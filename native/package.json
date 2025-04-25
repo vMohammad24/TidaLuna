@@ -1,6 +1,6 @@
 {
 	"devDependencies": {
-		"electron": "^35.2.0"
+		"electron": "^35.2.1"
 	},
 	"dependencies": {
 		"mime": "^4.0.7"

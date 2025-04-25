@@ -31,7 +31,7 @@ const buildOutput = buildCache(async (args) => {
 		${output.exports
 			.map((_export) => {
 				const exportName = _export === "default" ? "default" : `const ${_export}`;
-				return `export ${exportName} = invokeNative("${_export}");`;
+				return `export ${exportName} = lunaNative.invoke("${_export}");`;
 			})
 			.join("\n")}
 	`,

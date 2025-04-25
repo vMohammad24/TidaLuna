@@ -1,5 +1,6 @@
+import { Memo } from "@inrixia/helpers";
 import type { Store } from "redux";
-import { findModuleByProperty } from "./helpers/findModule.js";
+import { findModuleByProperty, findModuleProperty } from "./helpers/findModule.js";
 
 export const modules: Record<string, any> = {};
 
@@ -11,7 +12,10 @@ window.require = <NodeJS.Require>((moduleName: string) => {
 window.require.cache = modules;
 window.require.main = undefined;
 
-export const reduxStore: Store = <Store>findModuleByProperty("replaceReducer", "function");
+export const reduxStore: Store = findModuleByProperty("replaceReducer", "function")!;
+export const getCredentials = Memo.argless(
+	findModuleProperty<() => Promise<{ token: string; clientId: string }>>("getCredentials", "function")?.value!,
+);
 
 // Expose react
 modules["react"] = findModuleByProperty("createElement", "function");
