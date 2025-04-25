@@ -34,7 +34,7 @@ export function intercept<T extends ActionType>(actionType: T, unloads: NullishU
 	const unIntercept = () => {
 		// ?. so that it doesn't throw if the interceptor was already removed
 		interceptors[actionType]?.delete(intercept);
-		if (interceptors[actionType].size === 0) delete interceptors[actionType];
+		if (interceptors[actionType]?.size === 0) delete interceptors[actionType];
 	};
 	unIntercept.source = `intercept.${actionType}`;
 	interceptors[actionType].add(intercept);
