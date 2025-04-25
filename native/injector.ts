@@ -11,7 +11,7 @@ const bundleDir = process.env.TIDALUNA_DIST_PATH ?? __dirname;
 
 // Safe ipcHandler to ensure no duplicates
 const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) => {
-	electron.ipcMain.removeAllListeners(channel);
+	electron.ipcMain.removeHandler(channel);
 	electron.ipcMain.handle(channel, listener);
 };
 // #endregion
@@ -98,7 +98,7 @@ electron.app.whenReady().then(async () => {
 ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
 	// Load module
 	const exports = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
-	const channel = `__${name}`;
+	const channel = `__LunaNative.${name}`;
 	// Register handler for calling module exports
 	ipcHandle(channel, async (_, exportName, ...args) => {
 		try {
@@ -109,6 +109,7 @@ ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
 			throw err;
 		}
 	});
+	return channel;
 });
 // #endregion
 
