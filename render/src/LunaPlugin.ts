@@ -52,7 +52,7 @@ export class LunaPlugin {
 	}
 
 	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
-	public static readonly pluginStorage: ReactiveStore<LunaPluginStorage> = ReactiveStore.getStore("@luna/plugins");
+	public static readonly pluginStorage: ReactiveStore = ReactiveStore.getStore("@luna/plugins");
 	// Static store for all loaded plugins so we dont double load any
 	public static readonly plugins: Record<string, LunaPlugin> = {};
 
@@ -88,7 +88,7 @@ export class LunaPlugin {
 		// Disable liveReload on load so people dont accidentally leave it on
 		storeInit.liveReload ??= false;
 
-		const store = await LunaPlugin.pluginStorage.get(name);
+		const store = await LunaPlugin.pluginStorage.getReactive<LunaPluginStorage>(name);
 		LunaPlugin.pluginStorage.set(name, { ...store, ...storeInit });
 
 		const plugin = (this.plugins[name] ??= new this(name, store));
@@ -99,7 +99,7 @@ export class LunaPlugin {
 		const keys = await LunaPlugin.pluginStorage.keys();
 		return Promise.all(
 			keys.map(async (name) =>
-				LunaPlugin.fromStorage(await LunaPlugin.pluginStorage.get(name)).catch(this.trace.err.withContext("loadStoredPlugins", name)),
+				LunaPlugin.fromStorage(await LunaPlugin.pluginStorage.getReactive(name)).catch(this.trace.err.withContext("loadStoredPlugins", name)),
 			),
 		);
 	}

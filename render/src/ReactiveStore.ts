@@ -1,12 +1,14 @@
-import type { AnyRecord } from "@inrixia/helpers";
+import type { AnyRecord, MaybePromise } from "@inrixia/helpers";
 import { createStore as createIdbStore, del as idbDel, get as idbGet, keys as idbKeys, set as idbSet, type UseStore } from "idb-keyval";
 import { store as obyStore } from "oby";
 import { coreTrace, type Tracer } from "./trace";
 
-export class ReactiveStore<T extends AnyRecord> {
-	public static Storages: Record<string, ReactiveStore<AnyRecord>> = {};
-	public static getStore<T extends AnyRecord>(name: string): ReactiveStore<T> {
-		return (this.Storages[name] ??= new this<T>(name));
+type StoreReconcileable = AnyRecord | any[];
+
+export class ReactiveStore {
+	public static Storages: Record<string, ReactiveStore> = {};
+	public static getStore(name: string): ReactiveStore {
+		return (this.Storages[name] ??= new this(name));
 	}
 
 	public readonly idbStore: UseStore;
@@ -16,12 +18,12 @@ export class ReactiveStore<T extends AnyRecord> {
 		this.idbStore = createIdbStore(idbName, "_");
 	}
 
-	private readonly storeCache: Record<string, T> = {};
-	public async get(key: string): Promise<T> {
-		if (key in this.storeCache) return this.storeCache[key];
+	private readonly reactiveCache: Record<string, any> = {};
+	public async getReactive<T extends StoreReconcileable>(key: string): Promise<T> {
+		if (key in this.reactiveCache) return this.reactiveCache[key];
 
 		// Create the oby reactive object
-		const reactiveObj = obyStore(<T>{});
+		const reactiveObj = obyStore({});
 		// Reconcile the object with the idb store to ensure we have the latest values
 		obyStore.reconcile(reactiveObj, (await idbGet<T>(key, this.idbStore)) ?? {});
 
@@ -31,11 +33,29 @@ export class ReactiveStore<T extends AnyRecord> {
 			idbSet(key, unwrappedObj, this.idbStore).catch(this.trace.err.withContext(`Failed to write ${key} = `, unwrappedObj));
 		});
 
-		return (this.storeCache[key] = reactiveObj);
+		return <T>(this.reactiveCache[key] = reactiveObj);
 	}
 
-	public set(key: string, value: T) {
-		obyStore.reconcile(this.storeCache[key], value);
+	public async ensure<T>(key: string, defaultValue: T | (() => MaybePromise<T>)): Promise<T> {
+		const value = await this.get<T>(key);
+		if (value === undefined) {
+			if (defaultValue instanceof Function) return await this.set(key, await defaultValue());
+			return await this.set(key, defaultValue);
+		}
+		return value;
+	}
+
+	public get<T>(key: string): Promise<T | undefined> {
+		return idbGet<T>(key, this.idbStore);
+	}
+
+	public async set<T>(key: string, value: T) {
+		await idbSet(key, value, this.idbStore);
+		if (key in this.reactiveCache) {
+			// Reconcile the reactive object with the new value
+			obyStore.reconcile(this.reactiveCache[key], value);
+		}
+		return value;
 	}
 
 	public del(key: string) {
