@@ -2,7 +2,7 @@ import Box, { type BoxProps } from "@mui/material/Box";
 import Typography, { type TypographyProps } from "@mui/material/Typography";
 import React, { type ReactNode } from "react";
 
-export type LunaTitleValues = TypographyProps & {
+export type LunaTitleValues = {
 	title: ReactNode;
 	desc?: ReactNode;
 };
