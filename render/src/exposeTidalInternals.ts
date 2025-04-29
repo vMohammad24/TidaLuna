@@ -15,6 +15,7 @@ const fetchCode = async (path: string) => {
 	return `${await res.text()}\n//# sourceURL=${path}`;
 };
 
+let loading = 0;
 // Created in native/injector.ts
 const messageContainer = document.getElementById("tidaluna-loading-text")!;
 
@@ -23,10 +24,13 @@ const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, 
 	if (tidalModules[path]) return tidalModules[path];
 
 	messageContainer.innerText += `Loading ${path}\n`;
+	loading++;
 	const code = await fetchCode(path);
 
 	// Load each js module and store it in the cache so we can access its exports
 	tidalModules[path] = await quartz(code, config, path);
+	loading--;
+	setTimeout(() => (document.getElementById("tidaluna-loading")!.style.opacity = "0"), 2000);
 	return tidalModules[path];
 };
 
