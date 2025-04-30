@@ -1,8 +1,14 @@
 import type { OutdatedActionPayloads } from "../outdated.types";
 import type { ActionType } from "./intercept.actionTypes";
 
-export type InterceptPayload<T extends ActionType> = T extends keyof OutdatedActionPayloads ? OutdatedActionPayloads[T] : unknown;
-export type InterceptCallback<T extends ActionType, P = InterceptPayload<T>> = (payload: P) => true | unknown;
+export type InterceptPayload<T extends ActionType | ReadonlyArray<ActionType>> =
+	T extends ReadonlyArray<infer U extends ActionType> // Check if T is an array, ensure U is ActionType
+		? InterceptPayload<U> // If yes, give a union of all payloads
+		: T extends keyof OutdatedActionPayloads // If no (T is ActionType), check if it's a known key
+			? OutdatedActionPayloads[T] // If yes, get the specific payload
+			: unknown; // Otherwise, the payload is unknown
+
+export type InterceptCallback<T extends ActionType | ActionType[], P = InterceptPayload<T>> = (payload: P) => true | unknown;
 export type LunaInterceptors = {
 	[K in ActionType]?: Set<InterceptCallback<K>>;
 };
@@ -21,8 +27,21 @@ import { interceptors, type LunaUnload } from "@luna/core";
  */
 export function intercept<T extends ActionType>(actionType: T, unloads: NullishUnloads, cb: InterceptCallback<T>, once?: boolean): LunaUnload;
 export function intercept<P>(actionType: ActionType, unloads: NullishUnloads, cb: InterceptCallback<ActionType, P>, once?: boolean): LunaUnload;
-export function intercept<T extends ActionType>(actionType: T, unloads: NullishUnloads, cb: InterceptCallback<T>, once?: boolean): LunaUnload {
-	interceptors[actionType] ??= new Set<InterceptCallback<T>>();
+export function intercept<T extends ActionType[]>(actionType: T, unloads: NullishUnloads, cb: InterceptCallback<T>, once?: boolean): LunaUnload;
+export function intercept<P>(
+	actionTypes: ActionType[],
+	unloads: NullishUnloads,
+	cb: InterceptCallback<ActionType, P>,
+	once?: boolean,
+): LunaUnload;
+export function intercept<T extends ActionType | ActionType[]>(
+	actionTypes: T,
+	unloads: NullishUnloads,
+	cb: InterceptCallback<T>,
+	once?: boolean,
+): LunaUnload {
+	const actionTypeArray: ActionType[] = Array.isArray(actionTypes) ? actionTypes : [actionTypes];
+
 	// If once is true then call unIntercept immediately to only run once
 	const intercept = once
 		? (payload: InterceptPayload<T>) => {
@@ -30,15 +49,22 @@ export function intercept<T extends ActionType>(actionType: T, unloads: NullishU
 				return cb(payload);
 			}
 		: cb;
+
 	// Wrap removing the callback from the interceptors in a unload function and return it
 	const unIntercept = () => {
-		// ?. so that it doesn't throw if the interceptor was already removed
-		interceptors[actionType]?.delete(intercept);
-		if (interceptors[actionType]?.size === 0) delete interceptors[actionType];
+		for (const actionType of actionTypeArray) {
+			// ?. so that it doesn't throw if the interceptor was already removed
+			interceptors[actionType]?.delete(intercept);
+			if (interceptors[actionType]?.size === 0) delete interceptors[actionType];
+		}
 	};
-	unIntercept.source = `intercept.${actionType}`;
-	interceptors[actionType].add(intercept);
-	unloads?.add(unIntercept);
+	unIntercept.source = `intercept${JSON.stringify(actionTypeArray)}`;
+
+	for (const actionType of actionTypeArray) {
+		interceptors[actionType] ??= new Set<InterceptCallback<T>>();
+		interceptors[actionType].add(intercept);
+		unloads?.add(unIntercept);
+	}
 	return unIntercept;
 }
 
