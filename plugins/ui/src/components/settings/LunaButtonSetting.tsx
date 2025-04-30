@@ -7,16 +7,21 @@ import { LunaSetting } from "./LunaSetting";
 export type LunaButtonSettingProps = LunaButtonProps & LunaTitleValues;
 
 export const LunaButtonSetting = React.memo((props: LunaButtonSettingProps) => (
-	<LunaSetting title={props.title} desc={props.desc}>
-		<LunaButton
-			{...props}
-			sx={{
-				marginLeft: "auto",
-				marginRight: 2,
-				height: 40,
-				...props.sx,
-			}}
-			children={props.children}
-		/>
-	</LunaSetting>
+	<LunaSetting
+		title={props.title}
+		desc={props.desc}
+		children={
+			<LunaButton
+				{...props}
+				sx={{
+					marginLeft: "auto",
+					display: "flex",
+					marginRight: 2,
+					height: 40,
+					...props.sx,
+				}}
+				children={props.children}
+			/>
+		}
+	/>
 ));
