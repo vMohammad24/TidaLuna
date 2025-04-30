@@ -7,9 +7,11 @@ type StoreReconcileable = AnyRecord | any[];
 
 export class ReactiveStore {
 	public static Storages: Record<string, ReactiveStore> = {};
-	public static getPluginStorage<T extends AnyRecord>(pluginName: string) {
+	public static async getPluginStorage<T extends AnyRecord>(pluginName: string, defaultValue?: T) {
 		const pluginStore = this.getStore(`@luna/pluginStorage`);
-		return pluginStore.getReactive<T>(pluginName);
+		const storage = await pluginStore.getReactive<T>(pluginName);
+		if (defaultValue !== undefined) Object.keys(defaultValue).forEach((key) => (storage[key as keyof T] ??= defaultValue[key]));
+		return storage;
 	}
 	public static getStore(name: string): ReactiveStore {
 		return (this.Storages[name] ??= new this(name));
@@ -23,13 +25,13 @@ export class ReactiveStore {
 	}
 
 	private readonly reactiveCache: Record<string, any> = {};
-	public async getReactive<T extends StoreReconcileable>(key: string): Promise<T> {
+	public async getReactive<T extends StoreReconcileable>(key: string, defaultValue: T = <T>{}): Promise<T> {
 		if (key in this.reactiveCache) return this.reactiveCache[key];
 
 		// Create the oby reactive object
-		const reactiveObj = obyStore({});
+		const reactiveObj = obyStore(defaultValue);
 		// Reconcile the object with the idb store to ensure we have the latest values
-		obyStore.reconcile(reactiveObj, (await idbGet<T>(key, this.idbStore)) ?? {});
+		obyStore.reconcile(reactiveObj, (await idbGet<T>(key, this.idbStore)) ?? defaultValue);
 
 		// Set up a listener to write to the idb store when the object changes
 		obyStore.on(reactiveObj, () => {
