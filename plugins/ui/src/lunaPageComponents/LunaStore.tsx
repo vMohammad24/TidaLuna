@@ -2,17 +2,12 @@ import React from "react";
 
 import { type PluginPackage } from "@luna/core";
 
-import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-
-import IconButton from "@mui/material/IconButton";
-
-import { LunaAuthorDisplay } from "../components";
+import { LunaTrashButton } from "../components/LunaTrashButton";
+import { LunaPluginHeader } from "./LunaPluginHeader";
 import { LunaStorePlugin } from "./LunaStorePlugin";
 import { ReloadButton } from "./ReloadButton";
 
@@ -55,6 +50,8 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 	const author = pkg?.author;
 	const desc = pkg?.description;
 
+	const link = pkg?.homepage ?? pkg?.repository?.url ?? url;
+
 	return (
 		<Stack
 			spacing={1}
@@ -65,37 +62,19 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				padding: 2,
 			}}
 		>
-			<Box>
-				<Stack direction="row" spacing={1}>
-					<Box sx={{ minWidth: 85 }}>
-						<Tooltip title={url} children={<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />} />
-					</Box>
-					<Tooltip title="Reload store" children={<ReloadButton spin={loading} disabled={disabled} onClick={fetchPackage} />} />
-					{
-						<Tooltip
-							title="Uninstall store"
-							children={<IconButton disabled={disabled} color="error" children={<DeleteForeverIcon />} onClick={onRemove} />}
-						/>
-					}
-					{loadError && (
-						<Typography
-							variant="caption"
-							sx={{
-								color: "white",
-								fontWeight: 500,
-								backgroundColor: "rgba(256, 0, 0, 0.5)",
-								padding: 1,
-								borderRadius: 1,
-								paddingTop: 1.5,
-							}}
-							children={loadError}
-						/>
-					)}
-					<Box sx={{ flexGrow: 1 }} /> {/* This pushes the author section to the right */}
-					{author && <LunaAuthorDisplay author={author} />}
-				</Stack>
-				{desc && <Typography variant="subtitle2" gutterBottom children={desc} />}
-			</Box>
+			<LunaPluginHeader
+				name={name}
+				link={link}
+				loadError={loadError}
+				author={author}
+				desc={desc}
+				children={
+					<>
+						<ReloadButton title="Reload store" spin={loading} disabled={disabled} onClick={fetchPackage} />
+						<LunaTrashButton title="Remove store" />
+					</>
+				}
+			/>
 			<Grid columns={2} spacing={2} container>
 				{pkg?.plugins.map((plugin) => <Grid size={1} children={<LunaStorePlugin url={`${url}/${plugin}`} key={plugin} />} />)}
 			</Grid>

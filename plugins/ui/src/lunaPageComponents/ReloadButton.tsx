@@ -1,9 +1,12 @@
 import CachedIcon from "@mui/icons-material/Cached";
 import IconButton, { type IconButtonProps } from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+
 import React, { useEffect, useState } from "react";
 
 interface ReloadButtonProps extends IconButtonProps {
 	spin?: boolean;
+	title?: string;
 }
 
 export const ReloadButton = ({ spin, ...props }: ReloadButtonProps) => {
@@ -21,16 +24,25 @@ export const ReloadButton = ({ spin, ...props }: ReloadButtonProps) => {
 	}, [spin, isSpinning]);
 
 	return (
-		<IconButton {...props} color="warning">
-			<CachedIcon
-				sx={{
-					animation: isSpinning ? "spin 0.5s linear infinite" : "none",
-					"@keyframes spin": {
-						"0%": { transform: "rotate(0deg)" },
-						"100%": { transform: "rotate(360deg)" },
-					},
-				}}
-			/>
-		</IconButton>
+		<Tooltip
+			title={props.title}
+			children={
+				<IconButton
+					{...props}
+					color="warning"
+					children={
+						<CachedIcon
+							sx={{
+								animation: isSpinning ? "spin 0.5s linear infinite" : "none",
+								"@keyframes spin": {
+									"0%": { transform: "rotate(0deg)" },
+									"100%": { transform: "rotate(360deg)" },
+								},
+							}}
+						/>
+					}
+				/>
+			}
+		/>
 	);
 };

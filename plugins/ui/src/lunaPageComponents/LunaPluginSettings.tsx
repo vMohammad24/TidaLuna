@@ -52,6 +52,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const author = pkg.author;
 	const desc = pkg.description;
 	const name = pkg.name;
+	const link = pkg.homepage ?? pkg.repository?.url;
 
 	// Dont allow disabling core plugins
 	const isCore = LunaPlugin.corePlugins.has(name);
@@ -72,6 +73,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 		>
 			<LunaPluginHeader
 				name={name}
+				link={link}
 				loadError={loadError}
 				author={author}
 				desc={desc}
@@ -83,7 +85,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 								children={<LunaSwitch checked={enabled} loading={loading} onChange={toggleEnabled} />}
 							/>
 						)}
-						<Tooltip title="Reload plugin" children={<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />} />
+						<ReloadButton title="Reload plugin" spin={loading} disabled={disabled} onClick={handleReload} />
 						<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
 						{!isCore && <LunaTrashButton title="Uninstall plugin" onClick={uninstall} />}
 					</>

@@ -25,6 +25,11 @@ export type PluginPackage = {
 	name: string;
 	hash: string;
 	author?: LunaAuthor | string;
+	homepage?: string;
+	repository?: {
+		type?: string;
+		url?: string;
+	};
 	description?: React.ReactNode;
 	version?: string;
 	dependencies?: string[];

@@ -6,19 +6,20 @@ import Typography from "@mui/material/Typography";
 
 import React, { type PropsWithChildren, type ReactNode } from "react";
 
-import { LunaAuthorDisplay } from "../components";
+import { LunaAuthorDisplay, LunaLink } from "../components";
 
 export interface LunaPluginComponentProps extends PropsWithChildren {
 	name: string;
+	link?: string;
 	loadError?: string;
 	author?: LunaAuthor | string;
 	desc?: ReactNode;
 	sx?: BoxProps["sx"];
 }
-export const LunaPluginHeader = React.memo(({ name, loadError, author, desc, children, sx }: LunaPluginComponentProps) => (
+export const LunaPluginHeader = React.memo(({ name, loadError, author, desc, children, sx, link }: LunaPluginComponentProps) => (
 	<Box sx={sx}>
 		<Stack direction="row" spacing={1}>
-			<Box children={<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />} />
+			<LunaLink href={link} children={<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />} />
 			{children}
 			{loadError && (
 				<Typography
