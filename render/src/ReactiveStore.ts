@@ -7,6 +7,10 @@ type StoreReconcileable = AnyRecord | any[];
 
 export class ReactiveStore {
 	public static Storages: Record<string, ReactiveStore> = {};
+	public static getPluginStorage<T extends AnyRecord>(pluginName: string) {
+		const pluginStore = this.getStore(`@luna/pluginStorage`);
+		return pluginStore.getReactive<T>(pluginName);
+	}
 	public static getStore(name: string): ReactiveStore {
 		return (this.Storages[name] ??= new this(name));
 	}
