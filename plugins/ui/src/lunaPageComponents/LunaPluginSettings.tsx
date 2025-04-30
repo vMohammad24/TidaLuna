@@ -3,16 +3,13 @@ import React from "react";
 import { LunaPlugin, unloadSet, type PluginPackage } from "@luna/core";
 import { store as obyStore } from "oby";
 
-import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
 
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-
-import IconButton from "@mui/material/IconButton";
-import { LunaAuthorDisplay, LunaSwitch } from "../components";
+import { LunaSwitch } from "../components";
+import { LunaTrashButton } from "../components/LunaTrashButton";
 import { LiveReloadToggle } from "./LiveReloadToggle";
+import { LunaPluginHeader } from "./LunaPluginHeader";
 import { ReloadButton } from "./ReloadButton";
 
 export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }) => {
@@ -20,6 +17,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const [enabled, setEnabled] = React.useState(plugin.enabled);
 	const [loading, setLoading] = React.useState(plugin.loading._);
 	const [loadError, setLoadError] = React.useState(plugin.loadError._);
+	const [installed, setInstalled] = React.useState(plugin.installed);
 
 	const [pkg, setPackage] = React.useState<PluginPackage>(obyStore.unwrap(plugin.store.package));
 
@@ -32,6 +30,10 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 				() => plugin.store.package,
 				() => setPackage(obyStore.unwrap(plugin.store.package)),
 			),
+			obyStore.on(
+				() => plugin.installed,
+				() => setInstalled(obyStore.unwrap(plugin.store.installed)),
+			),
 		]);
 		return () => {
 			unloadSet(unloads);
@@ -43,7 +45,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const toggleEnabled = React.useCallback((_: unknown, checked: boolean) => (checked ? plugin.enable() : plugin.disable()), [plugin]);
 	const uninstall = React.useCallback(plugin.uninstall.bind(plugin), [plugin]);
 
-	if (pkg === undefined) return null;
+	if (!installed) return null;
 
 	const disabled = !enabled || loading;
 
@@ -68,45 +70,25 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 				paddingBottom: Settings ? 2 : 1,
 			}}
 		>
-			<Box>
-				<Stack direction="row" spacing={1}>
-					<Box sx={{ minWidth: 85 }}>
-						<Typography sx={{ marginTop: 0.5 }} variant="h6" children={name} />
-					</Box>
-					{!isCore && (
-						<Tooltip
-							title={enabled ? `Disable ${name}` : `Enable ${name}`}
-							children={<LunaSwitch checked={enabled} loading={loading} onChange={toggleEnabled} />}
-						/>
-					)}
-					<Tooltip title="Reload plugin" children={<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />} />
-					<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
-					{!isCore && (
-						<Tooltip
-							title="Uninstall plugin (disabled for now)"
-							children={<IconButton disabled={true} color="error" children={<DeleteForeverIcon />} onClick={uninstall} />}
-						/>
-					)}
-					{loadError && (
-						<Typography
-							variant="caption"
-							sx={{
-								color: "white",
-								fontWeight: 500,
-								backgroundColor: "rgba(256, 0, 0, 0.5)",
-								padding: 1,
-								borderRadius: 1,
-								paddingTop: 1.5,
-							}}
-							children={loadError}
-						/>
-					)}
-					<Box sx={{ flexGrow: 1 }} /> {/* This pushes the author section to the right */}
-					{author && <LunaAuthorDisplay author={author} />}
-				</Stack>
-				{desc && <Typography variant="subtitle2" gutterBottom children={desc} />}
-			</Box>
-
+			<LunaPluginHeader
+				name={name}
+				loadError={loadError}
+				author={author}
+				desc={desc}
+				children={
+					<>
+						{!isCore && (
+							<Tooltip
+								title={enabled ? `Disable ${name}` : `Enable ${name}`}
+								children={<LunaSwitch checked={enabled} loading={loading} onChange={toggleEnabled} />}
+							/>
+						)}
+						<Tooltip title="Reload plugin" children={<ReloadButton spin={loading} disabled={disabled} onClick={handleReload} />} />
+						<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
+						{!isCore && <LunaTrashButton title="Uninstall plugin" onClick={uninstall} />}
+					</>
+				}
+			/>
 			{Settings && <Settings />}
 		</Stack>
 	);

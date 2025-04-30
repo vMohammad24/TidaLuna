@@ -3,6 +3,7 @@ import React from "react";
 import { type PluginPackage } from "@luna/core";
 
 import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
@@ -10,7 +11,9 @@ import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 import IconButton from "@mui/material/IconButton";
+
 import { LunaAuthorDisplay } from "../components";
+import { LunaStorePlugin } from "./LunaStorePlugin";
 import { ReloadButton } from "./ReloadButton";
 
 interface StorePackage extends PluginPackage {
@@ -60,8 +63,6 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				backgroundColor: "rgba(0, 0, 0, 0.10)",
 				boxShadow: loadError ? "0 0 10px rgba(255, 0, 0, 0.70)" : "none",
 				padding: 2,
-				paddingTop: 1,
-				paddingBottom: 1,
 			}}
 		>
 			<Box>
@@ -95,6 +96,9 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				</Stack>
 				{desc && <Typography variant="subtitle2" gutterBottom children={desc} />}
 			</Box>
+			<Grid columns={2} spacing={2} container>
+				{pkg?.plugins.map((plugin) => <Grid size={1} children={<LunaStorePlugin url={`${url}/${plugin}`} key={plugin} />} />)}
+			</Grid>
 		</Stack>
 	);
 });

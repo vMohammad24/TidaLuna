@@ -37,6 +37,7 @@ export type LunaPluginStorage = {
 	url: string;
 	package: PluginPackage;
 	enabled: boolean;
+	installed: boolean;
 	liveReload: boolean;
 };
 
@@ -209,6 +210,9 @@ export class LunaPlugin {
 	private set package(value: PluginPackage) {
 		this.store.package = value;
 	}
+	public get installed(): boolean {
+		return this.store.installed;
+	}
 	// #endregion
 
 	// #region load/unload
@@ -228,6 +232,7 @@ export class LunaPlugin {
 		} finally {
 			this.exports = undefined;
 			this.loading._ = false;
+			delete modules[this.name];
 		}
 	}
 	/**
@@ -245,6 +250,7 @@ export class LunaPlugin {
 			this.loading._ = true;
 			await this.loadExports();
 			this._enabled._ = true;
+			this.store.installed = true;
 			// Ensure live reload is running it it should be
 			if (this._liveReload._) this.startReloadLoop();
 		} finally {
@@ -262,21 +268,25 @@ export class LunaPlugin {
 		await this.disable();
 		await this.enable();
 	}
+	// #endregion
 
+	// #region install/uninstall
+	public async install() {
+		this.loading._ = true;
+		this.store.installed = true;
+		await this.enable();
+		coreTrace.msg.log(`Installed plugin ${this.name}`);
+	}
 	public async uninstall() {
 		await this.disable();
 		this.loading._ = true;
-		// Remove from storage
-		await LunaPlugin.pluginStorage.del(this.name);
-		delete LunaPlugin.plugins[this.name];
-		delete modules[this.name];
-		// Effectively uninstall
-		delete (<any>this.store).package;
 		for (const name in LunaPlugin.plugins) {
 			// Just to be safe
 			LunaPlugin.plugins[name].dependents.delete(this);
 		}
+		this.store.installed = false;
 		this.loading._ = false;
+		coreTrace.msg.log(`Uninstalled plugin ${this.name}`);
 	}
 	// #endregion
 
