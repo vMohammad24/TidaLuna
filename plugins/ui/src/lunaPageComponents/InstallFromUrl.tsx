@@ -6,6 +6,7 @@ import { debounce } from "@inrixia/helpers";
 import { LunaPlugin } from "@luna/core";
 
 import { Messager } from "@luna/core";
+import { storeUrls } from "../PluginStoreTab";
 
 const successSx = {
 	"& .MuiOutlinedInput-root:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline": {
@@ -34,10 +35,20 @@ export const InstallFromUrl = React.memo(() => {
 	const loadPlugin = React.useCallback(async (urlValue: string) => {
 		if (urlValue === "") return;
 		try {
-			const url = new URL(urlValue).href;
-			const plugin = await LunaPlugin.fromStorage({ url });
+			let successMessage;
+			if (urlValue.endsWith("/store.json")) {
+				storeUrls.push(urlValue.slice(0, -11));
+				setValue("");
+				successMessage = `Added store ${urlValue}!`;
+				setErr(null);
+				setSuccess(successMessage);
+				Messager.Info(successMessage);
+			} else {
+				const url = new URL(urlValue).href;
+				const plugin = await LunaPlugin.fromStorage({ url });
+				successMessage = `Loaded plugin ${plugin.name}!`;
+			}
 			setValue(""); // Reset input on success
-			const successMessage = `Loaded plugin ${plugin.name}!`;
 			setErr(null);
 			setSuccess(successMessage);
 			// TODO: Clean up this mess

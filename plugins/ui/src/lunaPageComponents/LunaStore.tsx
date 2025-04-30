@@ -71,7 +71,7 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				children={
 					<>
 						<ReloadButton title="Reload store" spin={loading} disabled={disabled} onClick={fetchPackage} />
-						<LunaTrashButton title="Remove store" />
+						<LunaTrashButton title="Remove store" onClick={onRemove} />
 					</>
 				}
 			/>
