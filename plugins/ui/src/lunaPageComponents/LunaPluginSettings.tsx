@@ -20,7 +20,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 	const [loading, setLoading] = React.useState(plugin.loading._);
 	const [loadError, setLoadError] = React.useState(plugin.loadError._);
 	const [installed, setInstalled] = React.useState(plugin.installed);
-	const [showSettings, setShowSettings] = React.useState(true);
+	const [hideSettings, setHideSettings] = React.useState(plugin.store.hideSettings);
 
 	const [pkg, setPackage] = React.useState<PluginPackage>(obyStore.unwrap(plugin.store.package));
 
@@ -92,10 +92,10 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 						<SpinningButton title="Reload plugin" spin={loading} disabled={disabled} onClick={handleReload} />
 						<LiveReloadToggle plugin={plugin} disabled={disabled} sx={{ marginLeft: 1 }} />
 						<SpinningButton
-							title={showSettings ? "Hide settings" : "Show settings"}
+							title={hideSettings ? "Show settings" : "Hide settings"}
 							spin={loading}
 							disabled={disabled || !hasSettings}
-							onClick={() => setShowSettings((prev) => !prev)}
+							onClick={() => setHideSettings((prev) => (plugin.store.hideSettings = !prev))}
 							icon={SettingsIcon}
 							sxColor={grey.A400}
 						/>
@@ -104,7 +104,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 					</>
 				}
 			/>
-			{hasSettings && showSettings && <Settings />}
+			{hasSettings && !hideSettings && <Settings />}
 		</Stack>
 	);
 });

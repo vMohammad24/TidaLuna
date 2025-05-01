@@ -44,6 +44,7 @@ export type LunaPluginStorage = {
 	enabled: boolean;
 	installed: boolean;
 	liveReload: boolean;
+	hideSettings: boolean;
 };
 
 type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
