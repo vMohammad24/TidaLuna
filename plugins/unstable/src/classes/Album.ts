@@ -8,6 +8,7 @@ import { MediaItem } from "./MediaItem/MediaItem";
 
 import { ftch, type Tracer } from "@luna/core";
 import { redux, type ItemId, type TAlbum, type TMediaItem } from "@luna/lib";
+import { TidalApi } from "../tidalApi";
 import { unloads, uTrace } from "../window.unstable";
 import type { MediaCollection } from "./MediaCollection";
 
@@ -25,14 +26,7 @@ export class Album extends ContentBase implements MediaCollection {
 
 	public static async fromId(albumId?: ItemId): Promise<Album | undefined> {
 		if (albumId === undefined) return;
-		const album = super.fromStore(albumId, "albums", this);
-		if (album !== undefined) return album;
-
-		await redux
-			.interceptActionResp(() => redux.actions["content/LOAD_ALBUM"]({ albumId }), unloads, ["content/LOAD_ALBUM_SUCCESS"], [])
-			.catch(Album.trace.warn.withContext("fromId", albumId));
-
-		return super.fromStore(albumId, "albums", this);
+		return super.fromStore(albumId, "albums", this, () => TidalApi.album(albumId));
 	}
 
 	public brainzAlbum: () => Promise<IReleaseMatch | VoidLike> = memoize(async () => {

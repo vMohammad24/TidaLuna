@@ -1,3 +1,4 @@
+import type { MaybePromise } from "@inrixia/helpers";
 import { redux, type ItemId, type TContentState } from "@luna/lib";
 import type { IArtistCredit } from "musicbrainz-api";
 import type { Artist } from "./Artist";
@@ -12,14 +13,15 @@ export type TImageSize = "1280" | "640" | "320" | "160" | "80";
 export class ContentBase {
 	private static readonly _instances: Record<string, Record<ItemId, ContentClass<ContentType>>> = {};
 
-	protected static fromStore<K extends ContentType, C extends ContentClass<K>, I extends InstanceType<C>>(
+	protected static async fromStore<K extends ContentType, C extends ContentClass<K>, I extends InstanceType<C>>(
 		itemId: ItemId,
 		contentType: K,
 		clss: C,
-	): I | undefined {
+		generator?: () => MaybePromise<ContentItem<K> | undefined>,
+	): Promise<I | undefined> {
 		if (this._instances[contentType]?.[itemId] !== undefined) return this._instances[contentType][itemId] as I;
 		const storeContent = redux.store.getState().content;
-		const contentItem = storeContent[contentType][itemId as keyof TContentState[K]] as ContentItem<K>;
+		const contentItem = (storeContent[contentType][itemId as keyof TContentState[K]] as ContentItem<K>) ?? (await generator?.());
 		if (contentItem !== undefined) {
 			this._instances[contentType] ??= {};
 			return (this._instances[contentType][itemId] ??= new clss(itemId, contentItem)) as I;

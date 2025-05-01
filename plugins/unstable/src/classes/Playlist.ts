@@ -20,6 +20,7 @@ export class Playlist extends ContentBase implements MediaCollection {
 
 	public static async fromId(playlistUUID?: ItemId) {
 		if (playlistUUID === undefined) return;
+		// TODO: Add with TidalApi call
 		return super.fromStore(playlistUUID, "playlists", this);
 	}
 
@@ -34,6 +35,7 @@ export class Playlist extends ContentBase implements MediaCollection {
 		return MediaItem.fromTMediaItems(await this.tMediaItems());
 	}
 	public tMediaItems: () => Promise<TMediaItem[]> = asyncDebounce(async () => {
+		// TODO: Replace with TidalApi call
 		const result: any = await redux
 			.interceptActionResp(
 				() => redux.actions["content/LOAD_LIST_ITEMS_PAGE"]({ loadAll: true, listName: `playlists/${this.uuid}`, listType: "mediaItems" }),

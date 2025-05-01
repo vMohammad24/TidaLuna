@@ -1,6 +1,7 @@
 import type { Tracer } from "@luna/core";
-import { redux, type ItemId, type TArtist } from "@luna/lib";
-import { unloads, uTrace } from "../window.unstable";
+import { type ItemId, type TArtist } from "@luna/lib";
+import { TidalApi } from "../tidalApi";
+import { uTrace } from "../window.unstable";
 import { ContentBase, type TImageSize } from "./ContentBase";
 
 export class Artist extends ContentBase {
@@ -15,14 +16,7 @@ export class Artist extends ContentBase {
 
 	public static async fromId(artistId?: ItemId): Promise<Artist | undefined> {
 		if (artistId === undefined) return;
-		const album = super.fromStore(artistId, "artists", this);
-		if (album !== undefined) return album;
-
-		await redux
-			.interceptActionResp(() => redux.actions["content/LOAD_ARTIST"]({ artistId }), unloads, ["content/LOAD_ARTIST_SUCCESS"])
-			.catch(Artist.trace.warn.withContext("fromId", artistId));
-
-		return super.fromStore(artistId, "artists", this);
+		return super.fromStore(artistId, "artists", this, () => TidalApi.artist(artistId));
 	}
 
 	public coverUrl(res?: TImageSize) {

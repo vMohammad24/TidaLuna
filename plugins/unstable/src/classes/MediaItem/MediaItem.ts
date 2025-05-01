@@ -4,7 +4,7 @@ import { ContentBase, type TImageSize } from "../ContentBase";
 import { Quality, type MediaMetadataTag } from "../Quality";
 import { makeTags, MetaTags } from "./MediaItem.tags";
 
-import { fetchIsrcIterable } from "../../tidalApi";
+import { fetchIsrcIterable, TidalApi } from "../../tidalApi";
 
 import type { IRecording, ITrack } from "musicbrainz-api";
 
@@ -32,28 +32,17 @@ export class MediaItem extends ContentBase {
 	// #region Static
 	public static readonly trace: Tracer = uTrace.withSource(".MediaItem").trace;
 
-	private static async tryLoad(itemId: ItemId, contentType: TMediaItem["type"]) {
-		const currentPage = window.location.pathname;
-		// TODO: Replace with web fetch
-		// await redux.actions["router/REPLACE"](`/track/${itemId}`);
-		// await sleep(100);
-		// // If we fail to load the track, maybe its a video, try that instead as a last ditch attempt
-		// if (!loadedTrack && contentType === "video") {
-		// 	await interceptActionResp(() => neptune.actions.router.replace(<any>`/video/${itemId}`), ["page/IS_DONE_LOADING"], []).catch(
-		// 		trace.warn.withContext(`ensure failed to load video`, itemId),
-		// 	);
-		// }
-		// setTimeout(() => neptune.actions.router.replace(<any>currentPage));
+	private static async fetchItem(itemId: ItemId, contentType: TMediaItem["type"]): Promise<TMediaItem | undefined> {
+		// TODO: Implement video fetching
+		if (contentType !== "track") return;
+		const item = await TidalApi.track(itemId);
+		if (item === undefined) return;
+		return { item, type: contentType };
 	}
 
 	public static async fromId(itemId?: ItemId, contentType: TMediaItem["type"] = "track"): Promise<MediaItem | undefined> {
 		if (itemId === undefined) return;
-		const mediaItem = super.fromStore(itemId, "mediaItems", this);
-		if (mediaItem !== undefined) return mediaItem;
-
-		// Try force Tidal client to load mediaItem into store
-		await this.tryLoad(itemId, contentType);
-		return super.fromStore(itemId, "mediaItems", this);
+		return super.fromStore(itemId, "mediaItems", this, () => this.fetchItem(itemId, contentType));
 	}
 	public static async fromPlaybackContext(playbackContext?: PlaybackContext) {
 		// This has to be here to avoid ciclic requirements breaking
@@ -112,7 +101,7 @@ export class MediaItem extends ContentBase {
 		intercept<{ productId: ItemId; productType: TMediaItem["type"] }>(
 			"playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION",
 			unloads,
-			asyncDebounce(async ({ productId, productType }) => {
+			asyncDebounce(async ({ mediaProduct: { productId, productType } }) => {
 				const mediaItem = await this.fromId(productId, productType);
 				if (mediaItem === undefined) return;
 				mediaItem.preload();
@@ -167,15 +156,7 @@ export class MediaItem extends ContentBase {
 		for (const isrc of await this.isrcs()) return isrc;
 	});
 
-	public lyrics: () => Promise<TLyrics | undefined> = memoize(async () => {
-		return undefined;
-		// TODO: replace with web request
-		// interceptActionResp(
-		// 	() => actions.content.loadItemLyrics({ itemId: this.tidalItem.id!, itemType: "track" }),
-		// 	["content/LOAD_ITEM_LYRICS_SUCCESS"],
-		// 	["content/LOAD_ITEM_LYRICS_FAIL"],
-		// ).catch(trace.warn.withContext("loadItemLyrics")),
-	});
+	public lyrics: () => Promise<TLyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
 
 	public brainzItem: () => Promise<ITrack | undefined> = memoize(async () => {
 		const releaseTrackFromRecording = async (recording: IRecording) => {
