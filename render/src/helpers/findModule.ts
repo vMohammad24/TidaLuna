@@ -1,4 +1,4 @@
-import { memoize, type UnknownRecord } from "@inrixia/helpers";
+import { memoize, type AnyRecord } from "@inrixia/helpers";
 import { tidalModules } from "../exposeTidalInternals.js";
 import { coreTrace } from "../trace/Tracer.js";
 
@@ -25,12 +25,15 @@ export const findModuleByProperty = memoize(<T extends object>(propertyName: str
 });
 
 const recursiveSearch = <T>(
-	obj: UnknownRecord,
+	obj: AnyRecord,
 	propertyName: string,
 	propertyType: string,
-	seen = new Set<UnknownRecord>(),
+	seen = new Set<AnyRecord>(),
 	path: (string | symbol)[] = [],
 ): FoundProperty<T> | undefined => {
+	// Ignore window to avoid going out of bounds
+	// Not ideal but this should only be called on module code anyway so blegh
+	if (obj === window) return;
 	if (seen.has(obj)) return;
 	seen.add(obj);
 	for (const key of getKeys(obj)) {
@@ -38,7 +41,7 @@ const recursiveSearch = <T>(
 			const prop = obj[key];
 			const currentPath = [...path, key];
 			if (typeof prop === "object" && prop !== null) {
-				const found = recursiveSearch<T>(<UnknownRecord>prop, propertyName, propertyType, seen, currentPath);
+				const found = recursiveSearch<T>(<AnyRecord>prop, propertyName, propertyType, seen, currentPath);
 				if (found !== undefined) return found;
 			}
 			if (key === propertyName && typeof prop === propertyType) {
@@ -48,7 +51,7 @@ const recursiveSearch = <T>(
 	}
 };
 
-const getKeys = (obj: UnknownRecord) => {
+const getKeys = (obj: AnyRecord) => {
 	const keys = Object.keys(obj);
 	if (keys.length !== 0) return keys;
 	return Reflect.ownKeys(Object.getPrototypeOf(obj) ?? obj);

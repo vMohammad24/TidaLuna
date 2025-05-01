@@ -13,8 +13,8 @@ window.require.cache = modules;
 window.require.main = undefined;
 
 export const reduxStore: Store = findModuleByProperty("replaceReducer", "function")!;
-export const getCredentials = Memo.argless(
-	findModuleProperty<() => Promise<{ token: string; clientId: string }>>("getCredentials", "function")?.value!,
+export const getCredentials = Memo.argless(() =>
+	findModuleProperty<() => Promise<{ token: string; clientId: string }>>("getCredentials", "function")?.value(),
 );
 
 // Expose react
