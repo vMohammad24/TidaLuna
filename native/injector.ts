@@ -143,7 +143,38 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 				options.webPreferences.allowRunningInsecureContent = true;
 			}
 		}
-		return new target(options);
+		const window = new target(options);
+		// Overload console logging to forward to dev-tools
+		const _console = console;
+		const consolePrefix = "[Luna.native]";
+		console = new Proxy(_console, {
+			get(target, prop, receiver) {
+				const originalValue = target[prop as keyof typeof target];
+				if (typeof originalValue === "function") {
+					return (...args: any[]) => {
+						if (args.length > 0) {
+							args = [consolePrefix, ...args];
+						}
+						// Call the original console method
+						(originalValue as Function).apply(target, args);
+						// Send the log data to the renderer process
+						try {
+							// Use prop.toString() in case prop is a Symbol
+							window.webContents.send("__Luna.console", prop.toString(), args);
+						} catch (e) {
+							const args = ["Failed to forward console to renderer", e];
+							_console.error(consolePrefix, ...args);
+							try {
+								window.webContents.send("__Luna.console", "error", args);
+							} catch {}
+						}
+					};
+				}
+				// Return non-function properties directly
+				return Reflect.get(target, prop, receiver);
+			},
+		});
+		return window;
 	},
 });
 
