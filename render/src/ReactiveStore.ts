@@ -41,11 +41,15 @@ export class ReactiveStore {
 		return <T>(this.reactiveCache[key] = reactiveObj);
 	}
 
-	public async ensure<T>(key: string, defaultValue: T | (() => MaybePromise<T>)): Promise<T> {
+	public async ensure<T>(key: string, defaultValue: T | (() => MaybePromise<T>), awaitSet: boolean = false): Promise<T> {
 		const value = await this.get<T>(key);
 		if (value === undefined) {
-			if (defaultValue instanceof Function) return await this.set(key, await defaultValue());
-			return await this.set(key, defaultValue);
+			// Reduce defaultValue to its actual value
+			defaultValue = defaultValue instanceof Function ? await defaultValue() : defaultValue;
+			const setPromise = this.set(key, defaultValue).catch(this.trace.err.withContext(`Failed to set`, key, defaultValue));
+			// Only wait for set to complete if awaitSet is true
+			if (awaitSet) await setPromise;
+			return defaultValue;
 		}
 		return value;
 	}
