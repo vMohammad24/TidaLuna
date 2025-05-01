@@ -8,7 +8,7 @@ export type InterceptPayload<T extends ActionType | ReadonlyArray<ActionType>> =
 			? OutdatedActionPayloads[T] // If yes, get the specific payload
 			: unknown; // Otherwise, the payload is unknown
 
-export type InterceptCallback<T extends ActionType | ActionType[], P = InterceptPayload<T>> = (payload: P) => true | unknown;
+export type InterceptCallback<T extends ActionType | ActionType[], P = InterceptPayload<T>> = (payload: P, type: ActionType) => true | unknown;
 export type LunaInterceptors = {
 	[K in ActionType]?: Set<InterceptCallback<K>>;
 };
@@ -44,9 +44,9 @@ export function intercept<T extends ActionType | ActionType[]>(
 
 	// If once is true then call unIntercept immediately to only run once
 	const intercept = once
-		? (payload: InterceptPayload<T>) => {
+		? (payload: InterceptPayload<T>, type: ActionType) => {
 				unIntercept();
-				return cb(payload);
+				return cb(payload, type);
 			}
 		: cb;
 
