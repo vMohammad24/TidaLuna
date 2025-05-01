@@ -34,10 +34,9 @@ export class ReactiveStore {
 		obyStore.reconcile(reactiveObj, (await idbGet<T>(key, this.idbStore)) ?? defaultValue);
 
 		// Set up a listener to write to the idb store when the object changes
-		obyStore.on(reactiveObj, () => {
-			const unwrappedObj = obyStore.unwrap(reactiveObj);
-			idbSet(key, unwrappedObj, this.idbStore).catch(this.trace.err.withContext(`Failed to write ${key} = `, unwrappedObj));
-		});
+		obyStore.on(reactiveObj, () =>
+			idbSet(key, obyStore.unwrap(reactiveObj), this.idbStore).catch(this.trace.err.withContext(`Failed to set`, key, reactiveObj)),
+		);
 
 		return <T>(this.reactiveCache[key] = reactiveObj);
 	}
@@ -56,12 +55,17 @@ export class ReactiveStore {
 	}
 
 	public async set<T>(key: string, value: T) {
-		await idbSet(key, value, this.idbStore);
-		if (key in this.reactiveCache) {
-			// Reconcile the reactive object with the new value
-			obyStore.reconcile(this.reactiveCache[key], value);
+		try {
+			await idbSet(key, value, this.idbStore);
+			if (key in this.reactiveCache) {
+				// Reconcile the reactive object with the new value
+				obyStore.reconcile(this.reactiveCache[key], value);
+			}
+			return value;
+		} catch (err) {
+			this.trace.err.withContext(`Failed to set`, key, value)(err);
+			throw err;
 		}
-		return value;
 	}
 
 	public del(key: string) {

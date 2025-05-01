@@ -51,10 +51,14 @@ type PartialLunaPluginStorage = Partial<LunaPluginStorage> & { url: string };
 export class LunaPlugin {
 	// #region Static
 	public static fetchPackage(url: string): Promise<PluginPackage> {
-		return ftch.json(`${url}.json`);
+		return ftch.json<PluginPackage>(`${url}.json`).catch((err) => {
+			throw new Error(`Failed to fetch package.json for ${url}: ${err?.message}`);
+		});
 	}
 	public static fetchCode(url: string): Promise<string> {
-		return ftch.text(`${url}.js`);
+		return ftch.text(`${url}.js`).catch((err) => {
+			throw new Error(`Failed to fetch code for ${url}: ${err?.message}`);
+		});
 	}
 
 	// Storage backing for persisting plugin url/enabled/code etc... See LunaPluginStorage
@@ -95,7 +99,7 @@ export class LunaPlugin {
 		storeInit.liveReload ??= false;
 
 		const store = await LunaPlugin.pluginStorage.getReactive<LunaPluginStorage>(name);
-		LunaPlugin.pluginStorage.set(name, { ...store, ...storeInit });
+		Object.assign(store, storeInit);
 
 		const plugin = (this.plugins[name] ??= new this(name, store));
 		return plugin.load();
