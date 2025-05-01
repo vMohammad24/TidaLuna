@@ -1,6 +1,6 @@
 import { Memo } from "@inrixia/helpers";
 import type { Store } from "redux";
-import { findModuleByProperty, findModuleProperty } from "./helpers/findModule.js";
+import { findModuleByProperty, findModuleProperty } from "./helpers/findModule";
 
 export const modules: Record<string, any> = {};
 

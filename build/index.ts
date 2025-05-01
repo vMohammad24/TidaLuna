@@ -3,9 +3,9 @@ import { type BuildOptions, build as esBuild, context as esContext } from "esbui
 import { readFile } from "fs/promises";
 import path from "path";
 
-import { fileUrlPlugin } from "./plugins/fileUrl.js";
-import { lunaNativePlugin } from "./plugins/lunaNativePlugin.js";
-import { writeBundlePlugin } from "./plugins/writeBundlePlugin.js";
+import { fileUrlPlugin } from "./plugins/fileUrl";
+import { lunaNativePlugin } from "./plugins/lunaNativePlugin";
+import { writeBundlePlugin } from "./plugins/writeBundlePlugin";
 
 export const defaultBuildOptions: BuildOptions = {
 	sourcemap: true,

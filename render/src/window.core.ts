@@ -1,4 +1,4 @@
-import { modules } from "./modules.js";
+import { modules } from "./modules";
 
 // Define getters for lib and ui to proxy to modules
 Object.defineProperty(window.luna, "lib", {

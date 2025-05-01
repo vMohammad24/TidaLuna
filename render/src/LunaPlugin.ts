@@ -1,12 +1,12 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
-import { unloadSet } from "./helpers/unloadSet.js";
-import { ReactiveStore } from "./ReactiveStore.js";
+import { unloadSet } from "./helpers/unloadSet";
+import { ReactiveStore } from "./ReactiveStore";
 
 import { type LunaUnload } from "@luna/core";
-import * as ftch from "./helpers/fetch.js";
-import { modules } from "./modules.js";
+import * as ftch from "./helpers/fetch";
+import { modules } from "./modules";
 import { coreTrace, Tracer } from "./trace";
 
 type ModuleExports = {

@@ -1,25 +1,25 @@
 // Always expose internals first
-export { tidalModules } from "./exposeTidalInternals.js";
-export { buildActions, interceptors } from "./exposeTidalInternals.patchAction.js";
+export { tidalModules } from "./exposeTidalInternals";
+export { buildActions, interceptors } from "./exposeTidalInternals.patchAction";
 
-export * as ftch from "./helpers/fetch.js";
-export { findModuleByProperty, findModuleProperty } from "./helpers/findModule.js";
-export { unloadSet, type LunaUnload } from "./helpers/unloadSet.js";
+export * as ftch from "./helpers/fetch";
+export { findModuleByProperty, findModuleProperty } from "./helpers/findModule";
+export { unloadSet, type LunaUnload } from "./helpers/unloadSet";
 
 export { Messager, Tracer } from "./trace";
 
 export { type Store } from "redux";
-export { getCredentials, modules, reduxStore } from "./modules.js";
+export { getCredentials, modules, reduxStore } from "./modules";
 
-export * from "./LunaPlugin.js";
-export * from "./ReactiveStore.js";
+export * from "./LunaPlugin";
+export * from "./ReactiveStore";
 
 export const invoke = lunaNative.invoke;
 
 // Ensure this is loaded
-import "./window.core.js";
+import "./window.core";
 
-import { LunaPlugin } from "./LunaPlugin.js";
+import { LunaPlugin } from "./LunaPlugin";
 
 // Wrap loading of plugins in a timeout so native/preload.ts can populate modules with @luna/core (see native/preload.ts)
 setTimeout(async () => {

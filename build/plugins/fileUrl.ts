@@ -5,7 +5,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 
 import { minify as minifyHtml } from "html-minifier-terser";
-import { buildCache } from "./outputCache.js";
+import { buildCache } from "./outputCache";
 
 // Thx github.com/n1ckoates
 const buildOutput = buildCache(async ({ pluginData: { path, uri } }) => {

@@ -1,6 +1,6 @@
 import { memoize, type AnyRecord } from "@inrixia/helpers";
-import { tidalModules } from "../exposeTidalInternals.js";
-import { coreTrace } from "../trace/Tracer.js";
+import { tidalModules } from "../exposeTidalInternals";
+import { coreTrace } from "../trace/Tracer";
 
 export interface FoundProperty<T> {
 	value: T;

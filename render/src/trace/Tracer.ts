@@ -1,6 +1,6 @@
 import { Signal } from "@inrixia/helpers";
-import { createLogger, type LogConsumer } from "./createLogger.js";
-import { Messager } from "./Messager.js";
+import { createLogger, type LogConsumer } from "./createLogger";
+import { Messager } from "./Messager";
 
 /**
  * @param source Prefixed to every log

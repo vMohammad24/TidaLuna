@@ -1,7 +1,7 @@
 import { build, Plugin } from "esbuild";
-import { defaultBuildOptions, TidalNodeVersion } from "../index.js";
-import { fileUrlPlugin } from "./fileUrl.js";
-import { buildCache } from "./outputCache.js";
+import { defaultBuildOptions, TidalNodeVersion } from "../index";
+import { fileUrlPlugin } from "./fileUrl";
+import { buildCache } from "./outputCache";
 
 const buildOutput = buildCache(async (args) => {
 	const { outputFiles, metafile } = await build({
