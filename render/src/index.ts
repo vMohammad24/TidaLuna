@@ -27,8 +27,11 @@ setTimeout(async () => {
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib" });
 	// Load ui after lib as it depends on it.
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.ui" });
-	// Load unstable api's
-	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.unstable" });
+	// Load other api's
+	await Promise.all([
+		LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.unstable" }),
+		LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.dev" }),
+	]);
 
 	// Load all plugins from storage
 	await LunaPlugin.loadStoredPlugins();

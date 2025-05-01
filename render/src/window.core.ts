@@ -16,6 +16,11 @@ Object.defineProperty(window.luna, "unstable", {
 	enumerable: true,
 	configurable: false,
 });
+Object.defineProperty(window.luna, "dev", {
+	get: () => modules["@luna/dev"],
+	enumerable: true,
+	configurable: false,
+});
 declare global {
 	interface Window {
 		luna: {
@@ -23,11 +28,15 @@ declare global {
 			core?: typeof import("@luna/core");
 			lib?: typeof import("@luna/lib");
 			ui?: typeof import("@luna/ui");
-			// unstable?: typeof import("@luna/unstable");
+			unstable?: typeof import("@luna/unstable");
+			dev?: typeof import("@luna/dev");
 		};
 	}
 	// Define lunaNative exports (see native/preload.ts)
 	const lunaNative: {
-		invoke: (channel: string, ...args: any[]) => Promise<any>;
+		invoke: Electron.IpcRenderer["invoke"];
+		on: Electron.IpcRenderer["on"];
+		once: Electron.IpcRenderer["once"];
+		removeListener: Electron.IpcRenderer["removeListener"];
 	};
 }

@@ -14,7 +14,8 @@
 			"@luna/lib": ["./plugins/lib/src/index.ts"],
 			"@luna/core": ["./render/src/index.ts"],
 			"@luna/ui": ["./plugins/ui/src/index.tsx"],
-			"@luna/unstable": ["./plugins/unstable/src/index.ts"]
+			"@luna/unstable": ["./plugins/unstable/src/index.ts"],
+			"@luna/dev": ["./plugins/dev/src/index.ts"]
 		}
 	}
 }
