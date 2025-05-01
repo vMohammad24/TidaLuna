@@ -30,6 +30,12 @@ importers:
         specifier: ^7.2.0
         version: 7.2.0
     devDependencies:
+      '@types/react':
+        specifier: ^19.1.2
+        version: 19.1.2
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.2)
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
@@ -52,6 +58,12 @@ importers:
       electron:
         specifier: ^35.2.1
         version: 35.2.1
+
+  plugins/dev:
+    dependencies:
+      '@mui/material':
+        specifier: ^7.0.2
+        version: 7.0.2(@emotion/react@11.14.0(@types/react@19.1.2)(react@19.1.0))(@emotion/styled@11.14.0(@emotion/react@11.14.0(@types/react@19.1.2)(react@19.1.0))(@types/react@19.1.2)(react@19.1.0))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
   plugins/lib:
     devDependencies:
@@ -102,12 +114,6 @@ importers:
         specifier: ^2.1.6
         version: 2.1.6
     devDependencies:
-      '@types/react':
-        specifier: ^19.1.2
-        version: 19.1.2
-      '@types/react-dom':
-        specifier: ^19.1.2
-        version: 19.1.2(@types/react@19.1.2)
       oby:
         specifier: ^15.1.2
         version: 15.1.2

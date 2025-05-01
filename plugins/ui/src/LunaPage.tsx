@@ -21,7 +21,7 @@ enum LunaTabs {
 }
 
 const LunaTabPage = React.memo(({ tab, currentTab, children }: { tab: LunaTabs; currentTab: LunaTabs } & PropsWithChildren) => {
-	if (tab !== currentTab) return;
+	if (tab !== currentTab) return null;
 	return <Container sx={{ marginTop: 3, marginLeft: -3 }} children={children} />;
 });
 

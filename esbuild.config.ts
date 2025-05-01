@@ -7,8 +7,9 @@ import { basename, dirname, join } from "path";
 const buildConfigs: BuildOptions[] = [
 	{
 		entryPoints: ["native/injector.ts"],
-		outfile: "dist/injector.js",
-		format: "cjs",
+		outfile: "dist/injector.mjs",
+		target: TidalNodeVersion,
+		format: "esm",
 		platform: "node",
 		external: ["electron", "module"],
 		plugins: [
@@ -27,10 +28,10 @@ const buildConfigs: BuildOptions[] = [
 	},
 	{
 		entryPoints: ["native/preload.ts"],
-		outfile: "dist/preload.js",
+		outfile: "dist/preload.mjs",
 		platform: "node",
 		target: TidalNodeVersion,
-		format: "cjs",
+		format: "esm",
 		external: ["electron"],
 	},
 	{

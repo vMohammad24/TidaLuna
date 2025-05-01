@@ -1,15 +1,9 @@
 import { build, Plugin } from "esbuild";
-import { resolve } from "path";
-import { pathToFileURL } from "url";
 import { defaultBuildOptions, TidalNodeVersion } from "../index.js";
 import { fileUrlPlugin } from "./fileUrl.js";
 import { buildCache } from "./outputCache.js";
 
 const buildOutput = buildCache(async (args) => {
-	// Resolve the absolute path and convert it to a file URL
-	const entryPath = resolve(args.path);
-	const entryUrl = pathToFileURL(entryPath).toString();
-
 	const { outputFiles, metafile } = await build({
 		...defaultBuildOptions,
 		entryPoints: [args.path],
@@ -19,12 +13,8 @@ const buildOutput = buildCache(async (args) => {
 		platform: "node",
 		target: TidalNodeVersion, // Tidal node version
 		format: "esm",
-		external: ["@luna/*", "electron"],
+		external: ["@luna/*", "electron", "../app/*"],
 		plugins: [fileUrlPlugin],
-		banner: {
-			// Support require for native modules
-			js: `import { createRequire } from 'module';const require = createRequire(${JSON.stringify(entryUrl)})`,
-		},
 	});
 
 	const output = Object.values(metafile!.outputs)[0];

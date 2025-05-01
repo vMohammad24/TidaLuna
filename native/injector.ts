@@ -1,13 +1,15 @@
 import electron from "electron";
-import Module from "module";
 
-import { readFile } from "fs/promises";
+import { readFile, rm, writeFile } from "fs/promises";
 import mime from "mime";
 
 import path from "path";
+import { fileURLToPath, pathToFileURL } from "url";
+
+import { createRequire } from "module";
 
 // #region Bundle
-const bundleDir = process.env.TIDALUNA_DIST_PATH ?? __dirname;
+const bundleDir = process.env.TIDALUNA_DIST_PATH ?? path.dirname(fileURLToPath(import.meta.url));
 
 // Safe ipcHandler to ensure no duplicates
 const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) => {
@@ -95,27 +97,7 @@ electron.app.whenReady().then(async () => {
 	});
 });
 
-// #region LunaNative handling
-// Call to register native module
-ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
-	// Load module
-	const exports = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
-	const channel = `__LunaNative.${name}`;
-	// Register handler for calling module exports
-	ipcHandle(channel, async (_, exportName, ...args) => {
-		try {
-			return await exports[exportName](...args);
-		} catch (err: any) {
-			// Set cause to identify native module
-			err.cause = `[Luna.native].${name}.${exportName}`;
-			throw err;
-		}
-	});
-	return channel;
-});
-// #endregion
-
-// #region Override electron.BrowserWindow to allow setting custom options
+// #region Proxied BrowserWindow
 const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 	construct(target, args) {
 		const options = args[0];
@@ -134,7 +116,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
 			// Replace the preload instead of using setPreloads because of some differences in internal behaviour.
 			// Set preload script to Luna's
-			options.webPreferences.preload = path.join(bundleDir, "preload.js");
+			options.webPreferences.preload = path.join(bundleDir, "preload.mjs");
 
 			// TODO: Find why sandboxing has to be disabled
 			options.webPreferences.sandbox = false;
@@ -173,6 +155,17 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 		return window;
 	},
 });
+// #endregion
+
+const tidalAppPath = path.join(process.resourcesPath, "original.asar");
+const tidalPackage = await readFile(path.resolve(path.join(tidalAppPath, "package.json")), "utf8").then(JSON.parse);
+const startPath = path.join(tidalAppPath, tidalPackage.main);
+
+// @ts-expect-error This exists?
+electron.app.setAppPath?.(tidalAppPath);
+electron.app.name = tidalPackage.name;
+
+require = createRequire(tidalAppPath);
 
 // Replace the default electron BrowserWindow with our proxied one
 const electronPath = require.resolve("electron");
@@ -195,15 +188,32 @@ electron.Menu.buildFromTemplate = (template) => {
 // #endregion
 
 // #region Start original app
-const tidalAppPath = path.join(process.resourcesPath, "original.asar");
-const tidalPackage = require(path.resolve(path.join(tidalAppPath, "package.json")));
-const startPath = path.join(tidalAppPath, tidalPackage.main);
+require(startPath);
+// #endregion
 
-require.main!.filename = startPath;
-// @ts-expect-error This exists?
-electron.app.setAppPath?.(tidalAppPath);
-electron.app.name = tidalPackage.name;
-
-// @ts-expect-error Call Module._load instead of require to bypass internal checks
-Module._load(startPath, null, true);
+// #region LunaNative handling
+const requirePrefix = `import { createRequire } from 'module';const require = createRequire(${JSON.stringify(startPath)});`;
+// Call to register native module
+ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
+	const tempPath = path.join(bundleDir, Math.random().toString() + ".mjs");
+	try {
+		await writeFile(tempPath, requirePrefix + code, "utf8");
+		// Load module
+		const exports = await import(pathToFileURL(tempPath).href);
+		const channel = `__LunaNative.${name}`;
+		// Register handler for calling module exports
+		ipcHandle(channel, async (_, exportName, ...args) => {
+			try {
+				return await exports[exportName](...args);
+			} catch (err: any) {
+				// Set cause to identify native module
+				err.cause = `[Luna.native].${name}.${exportName}`;
+				throw err;
+			}
+		});
+		return channel;
+	} finally {
+		await rm(tempPath, { force: true });
+	}
+});
 // #endregion

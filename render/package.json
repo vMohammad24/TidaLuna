@@ -1,9 +1,11 @@
 {
 	"name": "@luna/core",
+	"description": "Luna core code for initalizing render etc",
 	"type": "module",
 	"author": {
 		"name": "Inrixia",
-		"url": "https://github.com/Inrixia"
+		"url": "https://github.com/Inrixia",
+		"avatarUrl": "https://2.gravatar.com/avatar/eeaffef9eb9b436dccc58c6c44c9fe8c3528e83e3bf64e1c736a68dbe8c097d3"
 	},
 	"exports": "./src/index.ts",
 	"dependencies": {
@@ -13,8 +15,6 @@
 	},
 	"devDependencies": {
 		"redux": "^5.0.1",
-		"@types/react": "^19.1.2",
-		"@types/react-dom": "^19.1.2",
 		"oby": "^15.1.2"
 	}
 }

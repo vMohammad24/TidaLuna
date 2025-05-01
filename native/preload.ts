@@ -1,8 +1,12 @@
 import { contextBridge, ipcRenderer, webFrame } from "electron";
+import { createRequire } from "module";
 
 // Allow render side to execute invoke
 contextBridge.exposeInMainWorld("lunaNative", {
 	invoke: ipcRenderer.invoke,
+	on: ipcRenderer.on,
+	once: ipcRenderer.once,
+	removeListener: ipcRenderer.removeListener,
 });
 
 type ConsoleMethodName = {
@@ -22,7 +26,6 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 	await webFrame
 		.executeJavaScript(
 			`(async () => { 
-				
 				try {
 					const renderJs = await lunaNative.invoke("__Luna.renderJs");
 					const renderUrl = URL.createObjectURL(new Blob([renderJs], { type: "text/javascript" }));
@@ -55,4 +58,4 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 })();
 
 // require() the original Tidal preload script
-ipcRenderer.invoke("__Luna.originalPreload").then(require);
+ipcRenderer.invoke("__Luna.originalPreload").then(createRequire(import.meta.url));
