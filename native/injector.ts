@@ -84,6 +84,8 @@ electron.app.whenReady().then(async () => {
 			);
 			return new Response(body, res);
 		}
+		// Fix tidal trying to bypass cors
+		if (req.url.endsWith("?cors")) return fetch(req);
 		// All other requests passthrough
 		return electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
 	});
@@ -136,12 +138,6 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
 			// TODO: Find why sandboxing has to be disabled
 			options.webPreferences.sandbox = false;
-
-			// Allow loading and display of http content if in a dev env
-			if (process.env.TIDALUNA_ALLOW_INSECURE_CONTENT) {
-				options.webPreferences.allowDisplayingInsecureContent = true;
-				options.webPreferences.allowRunningInsecureContent = true;
-			}
 		}
 		const window = new target(options);
 		// Overload console logging to forward to dev-tools
