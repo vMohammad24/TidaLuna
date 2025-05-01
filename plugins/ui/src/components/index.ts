@@ -6,4 +6,5 @@ export * from "./LunaSecureText";
 export * from "./LunaStack";
 export * from "./LunaSwitch";
 export * from "./LunaTitle";
-export * from "./settings/index";
+export * from "./LunaTrashButton";
+export * from "./settings";

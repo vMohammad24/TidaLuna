@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import { LunaTrashButton } from "../components/LunaTrashButton";
 import { LunaPluginHeader } from "./LunaPluginHeader";
 import { LunaStorePlugin } from "./LunaStorePlugin";
-import { ReloadButton } from "./ReloadButton";
+import { SpinningButton } from "./SpinningButton";
 
 interface StorePackage extends PluginPackage {
 	plugins: string[];
@@ -70,7 +70,7 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				desc={desc}
 				children={
 					<>
-						<ReloadButton title="Reload store" spin={loading} disabled={disabled} onClick={fetchPackage} />
+						<SpinningButton title="Reload store" spin={loading} disabled={disabled} onClick={fetchPackage} />
 						<LunaTrashButton title="Remove store" onClick={onRemove} />
 					</>
 				}
