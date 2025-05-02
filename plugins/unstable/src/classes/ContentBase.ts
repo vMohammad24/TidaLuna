@@ -51,7 +51,7 @@ export class ContentBase {
 		return title;
 	}
 
-	protected static formatCoverUrl(uuid?: string, res: TImageSize = "1280") {
+	public static formatCoverUrl(uuid?: string, res: TImageSize = "1280") {
 		if (uuid) return `https://resources.tidal.com/images/${uuid.split("-").join("/")}/${res}x${res}.jpg`;
 	}
 
