@@ -4,7 +4,7 @@ import { ContentBase, type TImageSize } from "../ContentBase";
 import { Quality, type MediaMetadataTag } from "../Quality";
 import { makeTags, MetaTags } from "./MediaItem.tags";
 
-import { fetchIsrcIterable, TidalApi } from "../../tidalApi";
+import { TidalApi } from "../../tidalApi";
 
 import type { IRecording, ITrack } from "musicbrainz-api";
 
@@ -37,6 +37,7 @@ export class MediaItem extends ContentBase {
 		if (contentType !== "track") return;
 		const item = await TidalApi.track(itemId);
 		if (item === undefined) return;
+		(item as any).contentType = contentType;
 		return { item, type: contentType };
 	}
 
@@ -143,17 +144,24 @@ export class MediaItem extends ContentBase {
 		return (await this.album())?.artists() ?? [];
 	});
 
-	public isrcs: () => Promise<Set<string>> = memoize(async () => {
-		const isrcs = new Set<string>();
+	public async *isrcs(): AsyncIterable<string> {
+		const seen = new Set<string>();
+		if (this.tidalItem.isrc) {
+			yield this.tidalItem.isrc;
+			seen.add(this.tidalItem.isrc);
+		}
+
 		const brainzItem = await this.brainzItem();
-		if (brainzItem?.recording.isrcs) isrcs.add(brainzItem.recording.isrcs[brainzItem.recording.isrcs.length - 1]);
-
-		if (this.tidalItem.isrc) isrcs.add(this.tidalItem.isrc);
-
-		return isrcs;
-	});
+		if (brainzItem?.recording.isrcs) {
+			for (const isrc of brainzItem.recording.isrcs) {
+				if (seen.has(isrc)) continue;
+				yield isrc;
+				seen.add(isrc);
+			}
+		}
+	}
 	public isrc: () => Promise<string | undefined> = memoize(async () => {
-		for (const isrc of await this.isrcs()) return isrc;
+		for await (const isrc of this.isrcs()) return isrc;
 	});
 
 	public lyrics: () => Promise<TLyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
@@ -276,7 +284,7 @@ export class MediaItem extends ContentBase {
 
 	public static fromIsrc: (isrc: string) => Promise<MediaItem | undefined> = memoize(async (isrc) => {
 		let bestMediaItem: MediaItem | undefined = undefined;
-		for await (const track of fetchIsrcIterable(isrc)) {
+		for await (const track of TidalApi.isrc(isrc)) {
 			// If quality is higher than current best, set as best
 			const maxTrackQuality = Quality.max(...Quality.fromMetaTags(track.attributes.mediaTags as MediaMetadataTag[]));
 			if (maxTrackQuality > (bestMediaItem?.bestQuality ?? Quality.Lowest)) {
@@ -289,11 +297,8 @@ export class MediaItem extends ContentBase {
 	public max: () => Promise<MediaItem | undefined> = memoize(async () => {
 		if (this.bestQuality >= Quality.Max) return;
 
-		const isrcs = await this.isrcs();
-		if (isrcs.size === 0) return;
-
 		let bestMediaItem: MediaItem = this;
-		for (const isrc of isrcs) {
+		for await (const isrc of this.isrcs()) {
 			const mediaItem = await MediaItem.fromIsrc(isrc);
 			if (mediaItem && mediaItem?.bestQuality > bestMediaItem.bestQuality) {
 				bestMediaItem = mediaItem;

@@ -71,10 +71,7 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 
 	tags.musicbrainz_trackid = await mediaItem.brainzId();
 
-	for (const isrc of await mediaItem.isrcs()) {
-		tags.isrc = isrc;
-		break;
-	}
+	tags.isrc = await mediaItem.isrc();
 
 	const album = await mediaItem.album();
 	if (album) {
