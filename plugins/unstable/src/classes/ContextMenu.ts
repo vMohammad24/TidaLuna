@@ -13,8 +13,10 @@ export class ContextMenu {
 	private static async getContextMenu() {
 		const contextMenu = await observePromise<ExtendedElem>(`[data-type="list-container__context-menu"]`, 1000);
 		if (contextMenu !== null) {
+			const templateButton = Array.from(contextMenu.children).find((child) => child.querySelector("a"));
 			contextMenu.addButton = (text, onClick) => {
-				const newButton = <Element>contextMenu.children[0].cloneNode(true);
+				if (templateButton === undefined) throw new Error("No buttons to clone off contextMenu found!");
+				const newButton = templateButton.cloneNode(true) as Element;
 				newButton.querySelector<HTMLAnchorElement>("a")!.href = "";
 				const span = newButton.querySelector<HTMLSpanElement>("span")!;
 				span.innerText = text;

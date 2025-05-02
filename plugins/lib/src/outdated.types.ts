@@ -8,6 +8,7 @@ export type {
 	ContentStateFields as TContentState,
 	MediaItem as TMediaItem,
 	Playlist as TPlaylist,
+	PlayQueueItem as TPlayQueueItem,
 	TrackItem as TTrackItem,
 	VideoItem as TVideoItem,
 } from "neptune-types/tidal";
