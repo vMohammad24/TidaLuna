@@ -1,12 +1,24 @@
+import type { AnyFn } from "@inrixia/helpers";
 import { contextBridge, ipcRenderer, webFrame } from "electron";
 import { createRequire } from "module";
 
 // Allow render side to execute invoke
-contextBridge.exposeInMainWorld("lunaNative", {
+contextBridge.exposeInMainWorld("ipcRenderer", {
 	invoke: ipcRenderer.invoke,
-	on: ipcRenderer.on,
-	once: ipcRenderer.once,
-	removeListener: ipcRenderer.removeListener,
+	on: (channel: string, listener: AnyFn) => {
+		const ipcListener = (_: Electron.IpcRendererEvent, ...args: any[]) => listener(...args);
+		ipcRenderer.on(channel, ipcListener);
+		const unload = () => ipcRenderer.removeListener(channel, ipcListener);
+		unload.source = `ipcRenderer.on("${channel}")`;
+		return unload;
+	},
+	once: (channel: string, listener: AnyFn) => {
+		const ipcListener = (_: Electron.IpcRendererEvent, ...args: any[]) => listener(...args);
+		ipcRenderer.once(channel, ipcListener);
+		const unload = () => ipcRenderer.removeListener(channel, ipcListener);
+		unload.source = `ipcRenderer.once("${channel}")`;
+		return unload;
+	},
 });
 
 type ConsoleMethodName = {
@@ -27,7 +39,7 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 		.executeJavaScript(
 			`(async () => { 
 				try {
-					const renderJs = await lunaNative.invoke("__Luna.renderJs");
+					const renderJs = await ipcRenderer.invoke("__Luna.renderJs");
 					const renderUrl = URL.createObjectURL(new Blob([renderJs], { type: "text/javascript" }));
 					window.luna ??= {};
 					window.luna.core = await import(renderUrl);

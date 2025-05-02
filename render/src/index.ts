@@ -14,8 +14,6 @@ export { getCredentials, modules, reduxStore } from "./modules";
 export * from "./LunaPlugin";
 export * from "./ReactiveStore";
 
-export const invoke = lunaNative.invoke;
-
 // Ensure this is loaded
 import "./window.core";
 

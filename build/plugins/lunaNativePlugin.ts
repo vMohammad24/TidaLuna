@@ -25,12 +25,12 @@ const buildOutput = buildCache(async (args) => {
 	return {
 		contents: `
 		// Register the native module code, see native/injector.ts
-		const channel = await lunaNative.invoke("__Luna.registerNative", "${entryPoint}", ${JSON.stringify(outputFiles![0].text)});
+		const channel = await ipcRenderer.invoke("__Luna.registerNative", "${entryPoint}", ${JSON.stringify(outputFiles![0].text)});
 
 		// Expose built exports to plugin
 		${output.exports
 			.map((_export) => {
-				return `export ${_export === "default" ? "default" : `const ${_export}`} = (...args) => lunaNative.invoke(channel, "${_export}", ...args);`;
+				return `export ${_export === "default" ? "default" : `const ${_export}`} = (...args) => ipcRenderer.invoke(channel, "${_export}", ...args);`;
 			})
 			.join("\n")}
 	`,

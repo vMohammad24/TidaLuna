@@ -1,7 +1,8 @@
-import type { VoidFn } from "@inrixia/helpers";
+import type { MaybePromise } from "@inrixia/helpers";
 import { coreTrace } from "../trace";
 
-export interface LunaUnload extends VoidFn {
+type UnloadFn = () => MaybePromise<any>;
+export interface LunaUnload extends UnloadFn {
 	source?: string;
 }
 

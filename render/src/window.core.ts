@@ -1,3 +1,5 @@
+import type { AnyFn } from "@inrixia/helpers";
+import type { LunaUnload } from "./helpers/unloadSet";
 import { modules } from "./modules";
 
 // Define getters for lib and ui to proxy to modules
@@ -32,11 +34,10 @@ declare global {
 			dev?: typeof import("@luna/dev");
 		};
 	}
-	// Define lunaNative exports (see native/preload.ts)
-	const lunaNative: {
+	// Define ipcRenderer exports (see native/preload.ts)
+	const ipcRenderer: {
 		invoke: Electron.IpcRenderer["invoke"];
-		on: Electron.IpcRenderer["on"];
-		once: Electron.IpcRenderer["once"];
-		removeListener: Electron.IpcRenderer["removeListener"];
+		on: (channel: string, listener: AnyFn) => LunaUnload;
+		once: (channel: string, listener: AnyFn) => LunaUnload;
 	};
 }
