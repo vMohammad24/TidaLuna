@@ -9,9 +9,7 @@ import { ReactiveStore } from "@luna/core";
 import { LunaStore } from "./lunaPageComponents/LunaStore";
 
 const pluginStores = ReactiveStore.getStore("@luna/pluginStores");
-export const storeUrls = await pluginStores.getReactive<string[]>("storeUrls", ["http://127.0.0.1:3000"]);
-
-if (!storeUrls.includes("http://127.0.0.1:3000")) storeUrls.push("http://127.0.0.1:3000");
+export const storeUrls = await pluginStores.getReactive<string[]>("storeUrls", []);
 
 export const PluginStoreTab = React.memo(() => {
 	const [_storeUrls, setPluginStores] = useState<string[]>(obyStore.unwrap(storeUrls));
@@ -25,6 +23,7 @@ export const PluginStoreTab = React.memo(() => {
 	return (
 		<Stack spacing={2}>
 			<InstallFromUrl />
+			<LunaStore url={"http://127.0.0.1:3000"} onRemove={() => {}} />
 			{_storeUrls.map((store) => (
 				<LunaStore key={store} url={store} onRemove={() => onRemove(store)} />
 			))}

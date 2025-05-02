@@ -37,6 +37,10 @@ export const InstallFromUrl = React.memo(() => {
 		try {
 			let successMessage;
 			if (urlValue.endsWith("/store.json")) {
+				if (storeUrls.includes(urlValue)) {
+					setErr("Store already added");
+					return;
+				}
 				storeUrls.push(urlValue.slice(0, -11));
 				setValue("");
 				successMessage = `Added store ${urlValue}!`;

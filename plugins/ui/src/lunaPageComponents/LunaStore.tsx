@@ -44,13 +44,16 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 	}, [fetchPackage]); // Depend on the memoized fetch function
 
 	if (pkg === undefined && !loading && !loadError) return null; // Don't render anything until initial load attempt
-	if (loading && !pkg) return <Typography>Loading store...</Typography>; // Show loading indicator if still loading initially
+	if (loading && !pkg) return <Typography>Loading store {url}...</Typography>; // Show loading indicator if still loading initially
 
 	const name = pkg?.name ?? "Unknown Store";
 	const author = pkg?.author;
 	const desc = pkg?.description;
 
 	const link = pkg?.homepage ?? pkg?.repository?.url ?? url;
+
+	// Don't show error for local dev store
+	if (loadError && url === "http://127.0.0.1:3000") return null;
 
 	return (
 		<Stack
