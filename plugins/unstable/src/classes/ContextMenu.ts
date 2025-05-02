@@ -6,7 +6,7 @@ import { Album } from "./Album";
 import { MediaItems } from "./MediaCollection";
 import { Playlist } from "./Playlist";
 
-type ExtendedElem = Element & { addButton: (text: string, onClick: (this: GlobalEventHandlers, ev: MouseEvent) => unknown) => HTMLSpanElement };
+type ExtendedElem = Element & { addButton: (text: string, onClick: (ev: MouseEvent) => unknown) => HTMLSpanElement };
 export class ContextMenu {
 	public static readonly trace: Tracer = uTrace.withSource(".ContextMenu").trace;
 
@@ -20,7 +20,10 @@ export class ContextMenu {
 				newButton.querySelector<HTMLAnchorElement>("a")!.href = "";
 				const span = newButton.querySelector<HTMLSpanElement>("span")!;
 				span.innerText = text;
-				span.onclick = onClick;
+				span.onclick = (e) => {
+					e.preventDefault();
+					onClick(e);
+				};
 				contextMenu.appendChild(newButton);
 				return span;
 			};
