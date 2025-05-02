@@ -12,6 +12,6 @@ listen(buildConfigs);
 
 // Quick export of plugins for store functionality
 const pkg = JSON.parse(await readFile(join(process.cwd(), "./package.json"), "utf8"));
-pkg.plugins ??= pluginFolders;
+pkg.plugins ??= buildConfigs.map((config) => config.outfile?.replace("./dist/", ""));
 await mkdir(join(process.cwd(), "./dist"), { recursive: true });
 await writeFile(join(process.cwd(), "./dist/store.json"), JSON.stringify(pkg));
