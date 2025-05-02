@@ -38,6 +38,6 @@ export const LunaPluginHeader = React.memo(({ name, loadError, author, desc, chi
 			<Box sx={{ flexGrow: 1 }} /> {/* This pushes the author section to the right */}
 			{author && <LunaAuthorDisplay author={author} />}
 		</Stack>
-		{desc && <Typography variant="subtitle2" gutterBottom children={desc} />}
+		{desc && <Typography variant="subtitle2" gutterBottom dangerouslySetInnerHTML={{ __html: desc }} />}
 	</Box>
 ));
