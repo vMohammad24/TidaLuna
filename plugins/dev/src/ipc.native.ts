@@ -1,10 +1,8 @@
-// const RepeatModeEnum: Promise<Record<string, string>> = importNative("../original.asar/app/shared/playback/RepeatModeEnum.js").then(_default);
-// const clientDispatcher: Promise<Record<string, string>> = importNative("../original.asar/app/main/client/clientDispatcher.js").then(_default);
-
 const ClientMessageChannelEnum: Record<string, string> = require("../app/shared/client/ClientMessageChannelEnum.js").default;
-export const getClientMessageChannelEnum = () => ClientMessageChannelEnum;
+export const getNativeIPCEvents = () => ClientMessageChannelEnum;
 
 const AppEventEnum: Record<string, string> = require("../app/shared/AppEventEnum.js").default;
+export const getRenderIPCEvents = () => AppEventEnum;
 
 import { ipcMain } from "electron";
 
