@@ -27,7 +27,7 @@ const patchAction = (_Obj: { _: Function }) => {
 					// Call interceptorSet's callbacks with the args, dont dispatch if any return true
 					for (const interceptor of interceptorsSet) {
 						try {
-							const result = interceptor(...args, type);
+							const result = interceptor(args[0], type);
 							if (result === true) shouldDispatch = false;
 							else if (result instanceof Promise) result.catch(onCeptErr);
 						} catch (err) {
