@@ -1,4 +1,4 @@
-import { asyncDebounce, memoize } from "@inrixia/helpers";
+import { asyncDebounce, memoize, sleep } from "@inrixia/helpers";
 
 import { ContentBase, type TImageSize } from "../ContentBase";
 import { Quality, type MediaMetadataTag } from "../Quality";
@@ -72,6 +72,13 @@ export class MediaItem extends ContentBase {
 			if (mediaItem !== undefined) yield mediaItem;
 		}
 	}
+
+	public ensureLoaded = asyncDebounce(async () => {
+		const loadItem = () => redux.actions["content/LOAD_SINGLE_MEDIA_ITEM"]({ id: this.id, itemType: this.tidalItem.contentType });
+		await redux.interceptActionResp(loadItem, unloads, ["content/LOAD_SINGLE_MEDIA_ITEM_SUCCESS"], ["content/LOAD_SINGLE_MEDIA_ITEM_FAIL"]);
+		// Idk I hate this but its the only thing that works
+		await sleep(50);
+	});
 
 	// Listeners
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
