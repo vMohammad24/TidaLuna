@@ -7,6 +7,7 @@ import { startRenderIpcLog, stopRenderIpcLog } from "./ipc.native";
 
 import TextField from "@mui/material/TextField";
 
+import { grey } from "@mui/material/colors";
 import React from "react";
 
 export const Settings = () => {
@@ -21,33 +22,16 @@ export const Settings = () => {
 	const nativeDebugging = debugPort !== undefined;
 	return (
 		<>
-			<LunaSettings title="Event Log" desc="Logs IPC and Redux events to console">
-				<LunaSwitchSetting
-					title="Native IPC"
-					desc="Log Native -> Render IPC events"
-					checked={logIPCFromNative}
-					onChange={async (_, checked) => {
-						if (checked) await startNativeIPCLog().catch(trace.err.withContext("Failed to start native IPC logging").throw);
-						else await stopNativeIPCLog().catch(trace.err.withContext("Failed to stop native IPC logging").throw);
-						setLogIPCFromNative((storage.logIPCFromNative = checked));
-					}}
-				/>
-				<LunaSwitchSetting
-					title="Render IPC"
-					desc="Log Render -> Native IPC events"
-					checked={logIPCFromRender}
-					onChange={async (_, checked) => {
-						if (checked) await startRenderIpcLog().catch(trace.err.withContext("Failed to start render IPC logging").throw);
-						else await stopRenderIpcLog().catch(trace.err.withContext("Failed to stop render IPC logging").throw);
-						setLogIPCFromRender((storage.logIPCFromRender = checked));
-					}}
-				/>
-				<LunaSetting title="Render redux events" desc="Log Render redux events via intercepts">
+			<LunaSettings title="Redux Logging">
+				<LunaSetting title="Render redux events" desc="Log Redux dispatch events to console">
 					<TextField
 						label="Event regex filter"
 						placeholder=".*"
 						size="small"
 						sx={{ flexGrow: 1, marginLeft: 10, marginRight: 10, marginTop: 0.5 }}
+						slotProps={{
+							htmlInput: { style: { color: grey.A400 } },
+						}}
 						value={logInterceptsRegex}
 						onChange={(e) => {
 							setLogInterceptsRegex((storage.logInterceptsRegex = e.target.value));
@@ -67,11 +51,45 @@ export const Settings = () => {
 					/>
 				</LunaSetting>
 			</LunaSettings>
+			<LunaSettings title="IPC Logging" desc="Logs IPC events between Render & Native to console">
+				<LunaSwitchSetting
+					title="Native IPC"
+					desc={
+						<>
+							Log <b>Native {">"} Render</b> IPC events
+						</>
+					}
+					checked={logIPCFromNative}
+					onChange={async (_, checked) => {
+						if (checked) await startNativeIPCLog().catch(trace.err.withContext("Failed to start native IPC logging").throw);
+						else await stopNativeIPCLog().catch(trace.err.withContext("Failed to stop native IPC logging").throw);
+						setLogIPCFromNative((storage.logIPCFromNative = checked));
+					}}
+				/>
+				<LunaSwitchSetting
+					title="Render IPC"
+					desc={
+						<>
+							Log <b>Render {">"} Native</b> IPC events
+						</>
+					}
+					checked={logIPCFromRender}
+					onChange={async (_, checked) => {
+						if (checked) await startRenderIpcLog().catch(trace.err.withContext("Failed to start render IPC logging").throw);
+						else await stopRenderIpcLog().catch(trace.err.withContext("Failed to stop render IPC logging").throw);
+						setLogIPCFromRender((storage.logIPCFromRender = checked));
+					}}
+				/>
+			</LunaSettings>
 			<br />
-			<LunaSettings title="Remote Debugging" desc="Toggles for triggering debugging">
+			<LunaSettings title="Debugging" desc="Toggles for triggering debugging">
 				<LunaButtonSetting
 					title="Native debugger"
-					desc="Enables native side debugger, disabling requires a client restart"
+					desc={
+						<>
+							Enables native side debugger, disabling requires a client restart. Access via <b>chrome://inspect</b>
+						</>
+					}
 					onClick={() => startNativeDebugging().then(setDebugPort)}
 					disabled={nativeDebugging}
 					sx={{

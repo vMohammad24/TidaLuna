@@ -325,7 +325,12 @@ export class LunaPlugin {
 		return false;
 	}
 	public async code() {
-		return (this.package!.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.js`);
+		this.fetching._ = true;
+		try {
+			return (this.package!.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.js`);
+		} finally {
+			this.fetching._ = false;
+		}
 	}
 	// #endregion
 

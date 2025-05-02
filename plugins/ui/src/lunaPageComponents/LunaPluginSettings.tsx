@@ -72,7 +72,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 				boxShadow: loadError ? "0 0 10px rgba(255, 0, 0, 0.70)" : "none",
 				padding: 2,
 				paddingTop: 1,
-				paddingBottom: hasSettings ? 2 : 1,
+				paddingBottom: hasSettings || hideSettings ? 2 : 1,
 			}}
 		>
 			<LunaPluginHeader
@@ -94,7 +94,7 @@ export const LunaPluginSettings = React.memo(({ plugin }: { plugin: LunaPlugin }
 						<SpinningButton
 							title={hideSettings ? "Show settings" : "Hide settings"}
 							spin={loading}
-							disabled={disabled || !hasSettings}
+							disabled={!enabled || !hasSettings}
 							onClick={() => setHideSettings((prev) => (plugin.store.hideSettings = !prev))}
 							icon={SettingsIcon}
 							sxColor={grey.A400}
