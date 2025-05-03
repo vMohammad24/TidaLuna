@@ -1,7 +1,7 @@
-const ClientMessageChannelEnum: Record<string, string> = require("../app/shared/client/ClientMessageChannelEnum.js").default;
+const ClientMessageChannelEnum: Record<string, string> = require("./original.asar/app/shared/client/ClientMessageChannelEnum.js").default;
 export const getNativeIPCEvents = () => ClientMessageChannelEnum;
 
-const AppEventEnum: Record<string, string> = require("../app/shared/AppEventEnum.js").default;
+const AppEventEnum: Record<string, string> = require("./original.asar/app/shared/AppEventEnum.js").default;
 export const getRenderIPCEvents = () => AppEventEnum;
 
 import { ipcMain } from "electron";

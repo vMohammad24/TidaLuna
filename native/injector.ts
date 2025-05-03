@@ -192,7 +192,7 @@ require(startPath);
 // #endregion
 
 // #region LunaNative handling
-const requirePrefix = `import { createRequire } from 'module';const require = createRequire(${JSON.stringify(startPath)});`;
+const requirePrefix = `import { createRequire } from 'module';const require = createRequire(${JSON.stringify(pathToFileURL(process.resourcesPath + "/").href)});`;
 // Call to register native module
 ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
 	const tempPath = path.join(bundleDir, Math.random().toString() + ".mjs");

@@ -13,7 +13,7 @@ const buildOutput = buildCache(async (args) => {
 		platform: "node",
 		target: TidalNodeVersion, // Tidal node version
 		format: "esm",
-		external: ["@luna/*", "electron", "../app/*"],
+		external: ["@luna/*", "electron", "./original.asar/*"],
 		plugins: [fileUrlPlugin],
 	});
 
