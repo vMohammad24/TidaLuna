@@ -12,20 +12,21 @@ window.require = <NodeJS.Require>((moduleName: string) => {
 window.require.cache = modules;
 window.require.main = undefined;
 
-export const reduxStore: Store = findModuleByProperty("replaceReducer", "function")!;
+export const reduxStore: Store = findModuleByProperty((key, value) => key === "replaceReducer" && typeof value === "function")!;
 export const getCredentials = Memo.argless(() =>
-	findModuleProperty<() => Promise<{ token: string; clientId: string }>>("getCredentials", "function")!.value!(),
+	findModuleProperty<() => Promise<{ token: string; clientId: string }>>((key, value) => key === "getCredentials" && typeof value === "function")!
+		.value!(),
 );
 
 // Expose react
-modules["react"] = findModuleByProperty("createElement", "function");
+modules["react"] = findModuleByProperty((key, value) => key === "createElement" && typeof value === "function");
 modules["react"].default ??= modules["react"];
 
-modules["react/jsx-runtime"] = findModuleByProperty("jsx", "function");
+modules["react/jsx-runtime"] = findModuleByProperty((key, value) => key === "jsx" && typeof value === "function");
 modules["react/jsx-runtime"].default ??= modules["react/jsx-runtime"];
 
 // Expose react-dom
-modules["react-dom/client"] = findModuleByProperty("createRoot", "function");
+modules["react-dom/client"] = findModuleByProperty((key, value) => key === "createRoot" && typeof value === "function");
 modules["react-dom/client"].default ??= modules["react-dom/client"];
 
 modules["oby"] = await import("oby");

@@ -3,7 +3,7 @@ export { tidalModules } from "./exposeTidalInternals";
 export { buildActions, interceptors } from "./exposeTidalInternals.patchAction";
 
 export * as ftch from "./helpers/fetch";
-export { findModuleByProperty, findModuleProperty } from "./helpers/findModule";
+export { findModuleByProperty, findModuleProperty, recursiveSearch } from "./helpers/findModule";
 export { unloadSet, type LunaUnload } from "./helpers/unloadSet";
 
 export { Messager, Tracer } from "./trace";
