@@ -83,7 +83,7 @@ export class MediaItem extends ContentBase {
 	// Listeners
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept<{ productId?: string; productType?: "track" | "video" }>("player/PRELOAD_ITEM", unloads, async (item) => {
-			if (item.productId === undefined) return MediaItem.trace.warn("player/PRELOAD_ITEM intercepted without productId!", item);
+			if (item?.productId === undefined) return MediaItem.trace.warn("player/PRELOAD_ITEM intercepted without productId!", item);
 			const mediaItem = await this.fromId(item.productId, item.productType);
 			if (mediaItem === undefined) return;
 			mediaItem.preload();
