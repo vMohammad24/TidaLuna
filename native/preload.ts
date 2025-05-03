@@ -5,6 +5,7 @@ import { createRequire } from "module";
 // Allow render side to execute invoke
 contextBridge.exposeInMainWorld("ipcRenderer", {
 	invoke: ipcRenderer.invoke,
+	send: ipcRenderer.send,
 	on: (channel: string, listener: AnyFn) => {
 		const ipcListener = (_: Electron.IpcRendererEvent, ...args: any[]) => listener(...args);
 		ipcRenderer.on(channel, ipcListener);

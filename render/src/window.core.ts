@@ -37,6 +37,7 @@ declare global {
 	// Define ipcRenderer exports (see native/preload.ts)
 	const ipcRenderer: {
 		invoke: Electron.IpcRenderer["invoke"];
+		send: Electron.IpcRenderer["send"];
 		on: (channel: string, listener: AnyFn) => LunaUnload;
 		once: (channel: string, listener: AnyFn) => LunaUnload;
 	};
