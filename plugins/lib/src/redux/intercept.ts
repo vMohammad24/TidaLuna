@@ -63,8 +63,9 @@ export function intercept<T extends ActionType | ActionType[]>(
 	for (const actionType of actionTypeArray) {
 		interceptors[actionType] ??= new Set<InterceptCallback<T>>();
 		interceptors[actionType].add(intercept);
-		unloads?.add(unIntercept);
 	}
+
+	unloads?.add(unIntercept);
 	return unIntercept;
 }
 
