@@ -1,4 +1,4 @@
-import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
+import { registerEmitter, type AddReceiver, type MaybePromise, type VoidLike } from "@inrixia/helpers";
 import { unloads, uTrace } from "../window.unstable";
 
 import { MediaItem } from "./MediaItem/MediaItem";
@@ -37,6 +37,9 @@ export class PlayState {
 	public static get playbackControls(): PlaybackControl {
 		return redux.store.getState().playbackControls;
 	}
+	public static get playQueue(): OutdatedStoreState["playQueue"] {
+		return redux.store.getState().playQueue;
+	}
 
 	public static get playbackContext(): PlaybackContext {
 		return this.playbackControls.playbackContext;
@@ -52,9 +55,48 @@ export class PlayState {
 	public static get paused(): boolean {
 		return this.desiredState !== "PLAYING";
 	}
+	public static get shuffle(): boolean {
+		return this.playQueue.shuffleModeEnabled;
+	}
 
 	public static get latestCurrentTime() {
 		return this.playbackControls.latestCurrentTime;
+	}
+
+	public static setShuffle(shuffle: false, unshuffleItems?: boolean): void;
+	public static setShuffle(shuffle: true, shuffleItems?: boolean): void;
+	public static setShuffle(shuffle: boolean, shuffleItems: boolean = false): MaybePromise<VoidLike> {
+		if (shuffleItems)
+			return shuffle
+				? redux.actions["playQueue/ENABLE_SHUFFLE_MODE_AND_SHUFFLE_ITEMS"]()
+				: redux.actions["playQueue/DISABLE_SHUFFLE_MODE_AND_UNSHUFFLE_ITEMS"]();
+
+		if (shuffle !== this.shuffle) shuffle ? redux.actions["playQueue/ENABLE_SHUFFLE_MODE"]() : redux.actions["playQueue/DISABLE_SHUFFLE_MODE"]();
+	}
+
+	public static setRepeatMode(repeatMode: "off" | "one" | "all"): void {
+		switch (repeatMode.toLowerCase()) {
+			case "off":
+				redux.actions["playQueue/SET_REPEAT_MODE"](0);
+				break;
+			case "all":
+				redux.actions["playQueue/SET_REPEAT_MODE"](1);
+				break;
+			case "one":
+				redux.actions["playQueue/SET_REPEAT_MODE"](2);
+				break;
+		}
+	}
+
+	public static play() {
+		redux.actions["playbackControls/PLAY"]();
+	}
+	public static pause() {
+		redux.actions["playbackControls/PAUSE"]();
+	}
+
+	public static seek(time: number) {
+		redux.actions["playbackControls/SEEK"](time);
 	}
 
 	static {

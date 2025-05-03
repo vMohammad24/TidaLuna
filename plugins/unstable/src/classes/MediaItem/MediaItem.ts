@@ -80,6 +80,16 @@ export class MediaItem extends ContentBase {
 		await sleep(50);
 	});
 
+	public async play() {
+		await this.ensureLoaded();
+		redux.actions["playQueue/ADD_NOW"]({
+			context: {},
+			fromIndex: 0,
+			mediaItemIds: [this.id],
+			overwritePlayQueue: true,
+		});
+	}
+
 	// Listeners
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept<{ productId?: string; productType?: "track" | "video" }>("player/PRELOAD_ITEM", unloads, async (item) => {
