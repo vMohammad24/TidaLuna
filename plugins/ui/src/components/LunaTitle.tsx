@@ -5,6 +5,7 @@ import React, { type ReactNode } from "react";
 export type LunaTitleValues = {
 	title: ReactNode;
 	desc?: ReactNode;
+	variant?: TypographyProps["variant"];
 };
 export type LunaTitleProps = BoxProps & TypographyProps & LunaTitleValues;
 export const LunaTitle = React.memo((props: LunaTitleProps) => {
