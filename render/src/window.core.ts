@@ -1,5 +1,5 @@
 import type { AnyFn } from "@inrixia/helpers";
-import type { LunaUnload, LunaUnloads } from "./helpers/unloadSet";
+import type { LunaUnloads } from "./helpers/unloadSet";
 import { modules } from "./modules";
 
 // Define getters for lib and ui to proxy to modules
@@ -38,7 +38,7 @@ declare global {
 	const ipcRenderer: {
 		invoke: Electron.IpcRenderer["invoke"];
 		send: Electron.IpcRenderer["send"];
-		on: (channel: string, unloads: LunaUnloads, listener: AnyFn) => LunaUnload;
-		once: (channel: string, unloads: LunaUnloads, listener: AnyFn) => LunaUnload;
+		on: (unloads: LunaUnloads, channel: string, listener: AnyFn) => void;
+		once: (unloads: LunaUnloads, channel: string, listener: AnyFn) => void;
 	};
 }

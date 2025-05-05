@@ -1,12 +1,9 @@
-import type { MaybePromise } from "@inrixia/helpers";
+import type { NullishUnloadFnSet, UnloadFn, UnloadFnSet } from "@inrixia/helpers";
 import { coreTrace } from "../trace";
 
-type UnloadFn = () => MaybePromise<any>;
-export interface LunaUnload extends UnloadFn {
-	source?: string;
-}
-export type LunaUnloads = Set<LunaUnload>;
-export type NullishLunaUnloads = LunaUnloads | null;
+export type LunaUnload = UnloadFn;
+export type LunaUnloads = UnloadFnSet;
+export type NullishLunaUnloads = NullishUnloadFnSet;
 
 export const unloadSet = async (unloads?: NullishLunaUnloads): Promise<void> => {
 	if (unloads === undefined || unloads === null || unloads.size === 0) return;

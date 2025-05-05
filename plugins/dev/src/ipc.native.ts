@@ -9,8 +9,6 @@ import { ipcMain } from "electron";
 const ipcListeners: Record<string, (_: any, ...args: any[]) => void> = {};
 export const startRenderIpcLog = async () => {
 	for (const eventName of Object.values(await AppEventEnum)) {
-		// I dont want this spam when testing
-		if (eventName === "playback.current.time") continue;
 		ipcListeners[eventName] = (_, ...args) => console.log("[@luna/dev.native]", "Render -> Native", eventName, ...args);
 		ipcMain.on(eventName, ipcListeners[eventName]);
 	}
