@@ -9,11 +9,12 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import SettingsIcon from "@mui/icons-material/Settings";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 
+import { Signal } from "@inrixia/helpers";
 import { PluginsTab } from "./PluginsTab";
 import { PluginStoreTab } from "./PluginStoreTab";
 import { SettingsTab } from "./SettingsTab";
 
-enum LunaTabs {
+export enum LunaTabs {
 	Plugins = "Plugins",
 	PluginStore = "Plugin Store",
 	Settings = "Settings",
@@ -25,11 +26,18 @@ const LunaTabPage = React.memo(({ tab, currentTab, children }: { tab: LunaTabs; 
 	return <Container sx={{ marginTop: 3, marginLeft: -3 }} children={children} />;
 });
 
+export const currentSettingsTab = new Signal(LunaTabs.Plugins);
 export const LunaPage = React.memo(() => {
-	const [currentTab, setCurrentTab] = React.useState(LunaTabs.Plugins);
+	const [currentTab, setCurrentTab] = React.useState(currentSettingsTab._);
+	React.useEffect(() => {
+		const unload = currentSettingsTab.onValue((tab) => setCurrentTab(tab));
+		return () => {
+			unload();
+		};
+	}, []);
 	return (
 		<Container maxWidth="md" sx={{ padding: 0, marginBottom: 10, flexGrow: 1 }}>
-			<Tabs value={currentTab} onChange={(_, tab) => setCurrentTab(tab)}>
+			<Tabs value={currentTab} onChange={(_, tab) => (currentSettingsTab._ = tab)}>
 				<Tab iconPosition="start" icon={<ExtensionIcon />} value={LunaTabs.Plugins} label={LunaTabs.Plugins} />
 				<Tab iconPosition="start" icon={<StorefrontIcon />} value={LunaTabs.PluginStore} label={LunaTabs.PluginStore} />
 				<Tab iconPosition="start" icon={<PaletteIcon />} value={LunaTabs.Themes} label={LunaTabs.Themes} />

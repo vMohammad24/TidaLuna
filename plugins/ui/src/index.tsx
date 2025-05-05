@@ -1,14 +1,15 @@
 import React from "react";
 
 import type { LunaUnload } from "@luna/core";
-import { ContextMenu } from "@luna/lib";
+import { ContextMenu, ipcRenderer } from "@luna/lib";
 
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Page } from "./classes/Page";
 
-import { LunaPage } from "./LunaPage";
+import { currentSettingsTab, LunaPage, LunaTabs } from "./LunaPage";
 import { lunaMuiTheme } from "./lunaTheme";
+import { storeUrls } from "./PluginStoreTab";
 
 export const unloads = new Set<LunaUnload>();
 
@@ -26,10 +27,25 @@ ContextMenu.onOpen(unloads, ({ event, contextMenu }) => {
 	if (event.type === "USER_PROFILE") {
 		contextMenu.addButton("Luna Settings", (e) => {
 			e.preventDefault();
-			settingsPage.render(<ThemeProvider theme={lunaMuiTheme} children={<LunaPage />} />);
-			settingsPage.open();
+			settingsPage.open(<ThemeProvider theme={lunaMuiTheme} children={<LunaPage />} />);
 		}).style.color = "#31d8ff";
 	}
+});
+
+ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
+	const url = URL.parse(reqUrl.toLowerCase());
+	if (url?.protocol !== "tidaluna:") return;
+	switch (url.pathname) {
+		case "//settings/store":
+			currentSettingsTab._ = LunaTabs.PluginStore;
+			const newStoreUrl = url.searchParams.get("installfromurl");
+			if (newStoreUrl !== null && !storeUrls.includes(newStoreUrl)) storeUrls.push(newStoreUrl);
+			break;
+		case "//settings/plugins":
+			currentSettingsTab._ = LunaTabs.Plugins;
+			break;
+	}
+	if (url.pathname.startsWith("//settings")) settingsPage.open(<ThemeProvider theme={lunaMuiTheme} children={<LunaPage />} />);
 });
 
 export * from "./components";

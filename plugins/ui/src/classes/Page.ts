@@ -43,14 +43,6 @@ export class Page {
 		if (location.search === `?${this.name}`) this.addtoDOM();
 	}
 
-	render(component: React.ReactNode) {
-		if (this.reactRoot === undefined) {
-			this.reactRoot = createRoot(this.root);
-			this.unloads.add(this.reactRoot.unmount.bind(this.reactRoot));
-		}
-		this.reactRoot.render(component);
-	}
-
 	private removeFromDOM() {
 		// Reset the parentElement styles to default
 		if (this.root.parentElement) this.root.parentElement.removeAttribute("style");
@@ -87,7 +79,12 @@ export class Page {
 		});
 	}
 
-	open() {
+	open(component?: React.ReactNode) {
+		if (this.reactRoot === undefined) {
+			this.reactRoot = createRoot(this.root);
+			this.unloads.add(this.reactRoot.unmount.bind(this.reactRoot));
+			this.reactRoot.render(component);
+		}
 		redux.actions["router/PUSH"]({
 			pathname: "/not-found",
 			search: this.name,

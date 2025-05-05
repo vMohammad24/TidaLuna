@@ -53,7 +53,8 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 	const link = pkg?.homepage ?? pkg?.repository?.url ?? url;
 
 	// Don't show error for local dev store
-	if (loadError && url === "http://127.0.0.1:3000") return null;
+	const isLocalDevStore = url === "http://127.0.0.1:3000";
+	if (loadError && isLocalDevStore) return null;
 
 	return (
 		<Stack
@@ -74,7 +75,7 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				children={
 					<>
 						<SpinningButton title="Reload store" spin={loading} disabled={disabled} onClick={fetchPackage} />
-						<LunaTrashButton title="Remove store" onClick={onRemove} />
+						<LunaTrashButton disabled={isLocalDevStore} title="Remove store" onClick={onRemove} />
 					</>
 				}
 			/>
