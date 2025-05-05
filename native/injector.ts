@@ -122,6 +122,16 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 			options.webPreferences.sandbox = false;
 		}
 		const window = new target(options);
+
+		// #region Open from link
+		// MacOS
+		electron.app.setAsDefaultProtocolClient("tidaLuna");
+		electron.app.on("open-url", (_, url) => window.webContents.send("__Luna.openUrl", url));
+		// Windows/Linux
+		electron.app.on("second-instance", (_, argv) => window.webContents.send("__Luna.openUrl", argv[argv.length - 1]));
+		// #endregion
+
+		// #region Native console logging
 		// Overload console logging to forward to dev-tools
 		const _console = console;
 		const consolePrefix = "[Luna.native]";
@@ -152,6 +162,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 				return Reflect.get(target, prop, receiver);
 			},
 		});
+		// #endregion
 		return window;
 	},
 });

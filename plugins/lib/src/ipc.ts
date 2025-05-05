@@ -13,3 +13,4 @@ export const once = (unloads: LunaUnloads, channel: string, listener: AnyFn) => 
 	unloads.add(unload);
 	return unload;
 };
+export const onOpenUrl = (unloads: LunaUnloads, listener: (url: string) => any) => on(unloads, "__Luna.openUrl", listener);
