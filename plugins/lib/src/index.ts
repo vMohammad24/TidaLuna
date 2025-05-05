@@ -4,6 +4,7 @@ export * from "./classes/ContextMenu";
 export * from "./classes/StyleTag";
 
 export * from "./helpers";
+export * as ipcRenderer from "./ipc";
 export * from "./outdated.types";
 export * as redux from "./redux";
 

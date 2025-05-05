@@ -1,4 +1,5 @@
 import { unloadSet, type LunaUnloads } from "@luna/core";
+import { ipcRenderer } from "@luna/lib";
 import { trace } from ".";
 import { getNativeIPCEvents } from "./ipc.native";
 

@@ -1,20 +1,15 @@
-import { emitterWithUnloads, type AnyFn } from "@inrixia/helpers";
-import type { LunaUnloads } from "@luna/core";
+import { unloadableEmitter, type AnyFn } from "@inrixia/helpers";
 import { contextBridge, ipcRenderer, webFrame } from "electron";
 import { createRequire } from "module";
 
-const ipcRendererUnloadable = emitterWithUnloads(ipcRenderer, null, "ipcRenderer");
+const ipcRendererUnloadable = unloadableEmitter(ipcRenderer, null, "ipcRenderer");
 
 // Allow render side to execute invoke
-contextBridge.exposeInMainWorld("ipcRenderer", {
+contextBridge.exposeInMainWorld("__ipcRenderer", {
 	invoke: ipcRenderer.invoke,
 	send: ipcRenderer.send,
-	on: (unloads: LunaUnloads, channel: string, listener: AnyFn) => {
-		ipcRendererUnloadable.on(unloads, channel, (_, ...args) => listener(...args));
-	},
-	once: (unloads: LunaUnloads, channel: string, listener: AnyFn) => {
-		ipcRendererUnloadable.once(unloads, channel, (_, ...args) => listener(...args));
-	},
+	on: (channel: string, listener: AnyFn) => ipcRendererUnloadable.onU(null, channel, (_, ...args) => listener(...args)),
+	once: (channel: string, listener: AnyFn) => ipcRendererUnloadable.onceU(null, channel, (_, ...args) => listener(...args)),
 });
 
 type ConsoleMethodName = {
@@ -30,12 +25,12 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 
 // Load the luna.js renderer code and store it in window.luna.core
 (async () => {
-	const originalConsole = { ...console };
 	await webFrame
 		.executeJavaScript(
-			`(async () => { 
+			`(async () => {
+				const originalConsole = { ...console };
 				try {
-					const renderJs = await ipcRenderer.invoke("__Luna.renderJs");
+					const renderJs = await __ipcRenderer.invoke("__Luna.renderJs");
 					const renderUrl = URL.createObjectURL(new Blob([renderJs], { type: "text/javascript" }));
 					window.luna ??= {};
 					window.luna.core = await import(renderUrl);
@@ -51,7 +46,11 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 							<span>\${err.stack}</span>\`;
 						}
 					});
-					throw err;
+					console.error(err);
+					throw new Error("[Luna.preload] Failed to load luna.js");
+				} finally {
+				 	// Undo any console fuckery that tidal does
+					window.console = globalThis.console = console = originalConsole;
 				}
 			})()`,
 			true,
@@ -60,8 +59,6 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 			console.error(`[Luna.preload] luna.js failed to load!`, err);
 			throw err;
 		});
-	// Undo any console fuckery that tidal does
-	console = originalConsole;
 	console.log(`[Luna.preload] luna.js loaded!`);
 })();
 
