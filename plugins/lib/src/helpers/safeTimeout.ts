@@ -1,7 +1,6 @@
-import type { LunaUnload } from "@luna/core";
-import type { NullishUnloads } from "../redux";
+import type { LunaUnload, LunaUnloads } from "@luna/core";
 
-export const safeTimeout = (unloads: NullishUnloads, cb: () => void, delay?: number): LunaUnload => {
+export const safeTimeout = (unloads: LunaUnloads, cb: () => void, delay?: number): LunaUnload => {
 	const timeout = setTimeout(cb, delay);
 	const unload: LunaUnload = () => clearTimeout(timeout);
 	unloads?.add(unload);
@@ -9,7 +8,7 @@ export const safeTimeout = (unloads: NullishUnloads, cb: () => void, delay?: num
 	return unload;
 };
 
-export const safeInterval = (unloads: NullishUnloads, cb: () => void, delay?: number): LunaUnload => {
+export const safeInterval = (unloads: LunaUnloads, cb: () => void, delay?: number): LunaUnload => {
 	const interval = setInterval(cb, delay);
 	const unload: LunaUnload = () => clearInterval(interval);
 	unloads?.add(unload);

@@ -1,7 +1,7 @@
 export * from "./index.safe";
 
-export { ContextMenu } from "./classes/ContextMenu";
-export { StyleTag } from "./classes/StyleTag";
+export * from "./classes/ContextMenu";
+export * from "./classes/StyleTag";
 
 export * from "./helpers";
 export * from "./outdated.types";

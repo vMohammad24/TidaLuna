@@ -1,4 +1,5 @@
 import type { AnyFn } from "@inrixia/helpers";
+import type { LunaUnloads } from "@luna/core";
 import { contextBridge, ipcRenderer, webFrame } from "electron";
 import { createRequire } from "module";
 
@@ -6,18 +7,20 @@ import { createRequire } from "module";
 contextBridge.exposeInMainWorld("ipcRenderer", {
 	invoke: ipcRenderer.invoke,
 	send: ipcRenderer.send,
-	on: (channel: string, listener: AnyFn) => {
+	on: (channel: string, unloads: LunaUnloads, listener: AnyFn) => {
 		const ipcListener = (_: Electron.IpcRendererEvent, ...args: any[]) => listener(...args);
 		ipcRenderer.on(channel, ipcListener);
 		const unload = () => ipcRenderer.removeListener(channel, ipcListener);
 		unload.source = `ipcRenderer.on("${channel}")`;
+		unloads.add(unload);
 		return unload;
 	},
-	once: (channel: string, listener: AnyFn) => {
+	once: (channel: string, unloads: LunaUnloads, listener: AnyFn) => {
 		const ipcListener = (_: Electron.IpcRendererEvent, ...args: any[]) => listener(...args);
 		ipcRenderer.once(channel, ipcListener);
 		const unload = () => ipcRenderer.removeListener(channel, ipcListener);
 		unload.source = `ipcRenderer.once("${channel}")`;
+		unloads.add(unload);
 		return unload;
 	},
 });

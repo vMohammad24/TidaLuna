@@ -1,9 +1,9 @@
 import { Semaphore } from "@inrixia/helpers";
 
-import { unloadSet, type LunaUnload } from "@luna/core";
+import { unloadSet, type LunaUnload, type LunaUnloads } from "@luna/core";
 
 import { safeTimeout } from "../helpers";
-import { interceptPromise, type InterceptPayload, type NullishUnloads } from "./intercept";
+import { interceptPromise, type InterceptPayload } from "./intercept";
 import type { ActionType } from "./intercept.actionTypes";
 
 const intercepts: Record<ActionType, Semaphore> = {} as Record<ActionType, Semaphore>;
@@ -17,7 +17,7 @@ const intercepts: Record<ActionType, Semaphore> = {} as Record<ActionType, Semap
  */
 export const interceptActionResp = async <RESAT extends ActionType, REJAT extends ActionType, RES extends InterceptPayload<RESAT>>(
 	trigger: Function,
-	unloads: NullishUnloads,
+	unloads: LunaUnloads,
 	resActionTypes: RESAT[],
 	rejActionTypes?: REJAT[],
 	{ timeoutMs, cancel }: { timeoutMs?: number; cancel?: true } = {},
@@ -35,7 +35,9 @@ export const interceptActionResp = async <RESAT extends ActionType, REJAT extend
 		safeTimeout(_unloads, () => rej(`[interceptActionResp.TIMEOUT] ${JSON.stringify([resActionTypes, rejActionTypes])}`), timeoutMs),
 	);
 	// We dont worry about removing from _unloads as all unloads here are idempotent
-	for (const unload of _unloads) unloads?.add(unload);
+	if (unloads !== null) {
+		for (const unload of _unloads) unloads.add(unload);
+	}
 	const promise = Promise.race([...resPromises, ...rejPromises, rejTimeout]).finally(() => unloadSet(_unloads));
 	// Queue our action to the eventLoop
 	setTimeout(trigger);

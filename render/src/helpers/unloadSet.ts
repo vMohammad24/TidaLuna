@@ -5,9 +5,11 @@ type UnloadFn = () => MaybePromise<any>;
 export interface LunaUnload extends UnloadFn {
 	source?: string;
 }
+export type LunaUnloads = Set<LunaUnload>;
+export type NullishLunaUnloads = LunaUnloads | null;
 
-export const unloadSet = async (unloads?: Set<LunaUnload>): Promise<void> => {
-	if (unloads === undefined || unloads.size === 0) return;
+export const unloadSet = async (unloads?: NullishLunaUnloads): Promise<void> => {
+	if (unloads === undefined || unloads === null || unloads.size === 0) return;
 	const toUnload: LunaUnload[] = [];
 	for (const unload of unloads) toUnload.push(unload);
 

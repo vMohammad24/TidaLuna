@@ -1,7 +1,7 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, Signal } from "@inrixia/helpers";
 import quartz from "@uwu/quartz";
-import { unloadSet } from "./helpers/unloadSet";
+import { unloadSet, type LunaUnloads } from "./helpers/unloadSet";
 import { ReactiveStore } from "./ReactiveStore";
 
 import { type LunaUnload } from "@luna/core";
@@ -10,7 +10,7 @@ import { modules } from "./modules";
 import { coreTrace, Tracer } from "./trace";
 
 type ModuleExports = {
-	unloads?: Set<LunaUnload>;
+	unloads?: LunaUnloads;
 	onUnload?: LunaUnload;
 	Settings?: React.FC;
 	errSignal?: Signal<string | undefined>;
@@ -204,7 +204,7 @@ export class LunaPlugin {
 		}
 		modules[this.name] = exports;
 	}
-	private readonly _unloads: Set<LunaUnload> = new Set();
+	private readonly _unloads: LunaUnloads = new Set();
 	private get unloads() {
 		return this.exports?.unloads ?? this._unloads;
 	}

@@ -1,4 +1,4 @@
-import type { LunaUnload } from "@luna/core";
+import type { LunaUnloads } from "@luna/core";
 import { redux } from "@luna/lib";
 
 import { store as obyStore } from "oby";
@@ -9,7 +9,7 @@ import { unloads } from "..";
 export class Page {
 	private static openPage?: Page;
 	private static readonly pages: Record<string, Page> = {};
-	public static register(name: string, unloads: Set<LunaUnload>) {
+	public static register(name: string, unloads: LunaUnloads) {
 		return (this.pages[name] ??= new this(name, unloads));
 	}
 
@@ -21,7 +21,7 @@ export class Page {
 
 	private constructor(
 		public readonly name: string,
-		private readonly unloads: Set<LunaUnload>,
+		private readonly unloads: LunaUnloads,
 	) {
 		this.rootId = `luna-page-${this.name}`;
 		this.root = <HTMLDivElement>document.getElementById(this.rootId) ?? document.createElement("div");
