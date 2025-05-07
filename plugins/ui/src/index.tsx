@@ -7,9 +7,9 @@ import { ThemeProvider } from "@mui/material/styles";
 
 import { Page } from "./classes/Page";
 
-import { currentSettingsTab, LunaPage, LunaTabs } from "./LunaPage";
 import { lunaMuiTheme } from "./lunaTheme";
-import { storeUrls } from "./PluginStoreTab";
+import { currentSettingsTab, LunaPage, LunaTabs } from "./SettingsPage";
+import { storeUrls } from "./SettingsPage/PluginStoreTab";
 
 export const unloads = new Set<LunaUnload>();
 

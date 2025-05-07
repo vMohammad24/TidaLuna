@@ -6,7 +6,7 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { LunaTrashButton } from "../components/LunaTrashButton";
+import { LunaTrashButton } from "../../components/LunaTrashButton";
 import { LunaPluginHeader } from "./LunaPluginHeader";
 import { LunaStorePlugin } from "./LunaStorePlugin";
 import { SpinningButton } from "./SpinningButton";

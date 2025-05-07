@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 
 import React, { type PropsWithChildren, type ReactNode } from "react";
 
-import { LunaAuthorDisplay, LunaLink } from "../components";
+import { LunaAuthorDisplay, LunaLink } from "../../components";
 
 export interface LunaPluginComponentProps extends PropsWithChildren {
 	name: string;

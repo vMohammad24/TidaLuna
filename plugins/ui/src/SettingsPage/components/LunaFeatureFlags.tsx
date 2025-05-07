@@ -1,6 +1,6 @@
 import { redux } from "@luna/lib";
 import React from "react";
-import { LunaSwitchSetting, LunaTitle, settingsSx } from "./components";
+import { LunaSwitchSetting, LunaTitle, settingsSx } from "../../components";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";

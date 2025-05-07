@@ -3,7 +3,7 @@ import React from "react";
 import Stack from "@mui/material/Stack";
 
 import { LunaPlugin } from "@luna/core";
-import { LunaPluginSettings } from "./lunaPageComponents/LunaPluginSettings";
+import { LunaPluginSettings } from "./components/LunaPluginSettings";
 
 export const PluginsTab = React.memo(() => {
 	const plugins = [];

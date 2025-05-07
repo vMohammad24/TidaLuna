@@ -1,11 +1,11 @@
 import Stack from "@mui/material/Stack";
 import React from "react";
 
-import { LunaSettings } from "./components";
+import { LunaSettings } from "../components";
 
 import { LunaPlugin } from "@luna/core";
-import { LunaFeatureFlags } from "./LunaFeatureFlags";
-import { LunaPluginSettings } from "./lunaPageComponents/LunaPluginSettings";
+import { LunaFeatureFlags } from "./components/LunaFeatureFlags";
+import { LunaPluginSettings } from "./components/LunaPluginSettings";
 
 export const SettingsTab = React.memo(() => {
 	const corePlugins = [];
