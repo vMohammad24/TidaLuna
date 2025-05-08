@@ -7,7 +7,7 @@ export const writeBundlePlugin = (pluginPackagePath?: string): Plugin => ({
 	name: "writeBundlePlugin",
 	setup(build) {
 		build.onEnd(async (result) => {
-			if (result.errors.length > 0) throw new Error(JSON.stringify(result.errors, null, 2));
+			if (result.errors.length > 0) return;
 
 			let writePackageJson = false;
 			for (const outputFile of result.outputFiles ?? []) {
