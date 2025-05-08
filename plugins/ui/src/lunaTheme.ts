@@ -122,5 +122,19 @@ export const lunaMuiTheme = createTheme({
 				},
 			},
 		},
+		MuiSelect: {
+			styleOverrides: {
+				select: {
+					backgroundColor: "rgba(0, 0, 0, 0.20)",
+				},
+			},
+		},
+		MuiMenu: {
+			styleOverrides: {
+				paper: {
+					backgroundColor: grey[900],
+				},
+			},
+		},
 	},
 });
