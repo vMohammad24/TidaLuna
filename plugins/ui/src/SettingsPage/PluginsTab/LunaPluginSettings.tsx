@@ -6,10 +6,9 @@ import { store as obyStore } from "oby";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 
-import { LunaSwitch, LunaTrashButton } from "../../components";
+import { LunaSwitch, LunaTrashButton, SpinningButton } from "../../components";
 import { LiveReloadToggle } from "./LiveReloadToggle";
 import { LunaPluginHeader } from "./LunaPluginHeader";
-import { SpinningButton } from "./SpinningButton";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import { grey } from "@mui/material/colors";

@@ -7,7 +7,7 @@ import Grid from "@mui/material/Grid";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import { grey } from "@mui/material/colors";
-import { SpinningButton } from "./SpinningButton";
+import { SpinningButton } from "../../components/SpinningButton";
 
 type FeatureFlag<K extends string = string> = {
 	created: number;

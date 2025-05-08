@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import { store as obyStore } from "oby";
 
-import Stack from "@mui/material/Stack";
-import { InstallFromUrl } from "./components/InstallFromUrl";
-
 import { ReactiveStore } from "@luna/core";
-import { LunaStore } from "./components/LunaStore";
+
+import Stack from "@mui/material/Stack";
+
+import { InstallFromUrl } from "./InstallFromUrl";
+import { LunaStore } from "./LunaStore";
 
 const pluginStores = ReactiveStore.getStore("@luna/pluginStores");
 export const storeUrls = await pluginStores.getReactive<string[]>("storeUrls", []);

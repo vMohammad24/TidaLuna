@@ -2,7 +2,7 @@ import { LunaPlugin } from "@luna/core";
 
 import React, { useEffect, useState } from "react";
 
-import { LunaPluginHeader } from "./LunaPluginHeader";
+import { LunaPluginHeader } from "../PluginsTab/LunaPluginHeader";
 
 import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";

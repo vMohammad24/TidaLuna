@@ -6,7 +6,7 @@ import { debounce } from "@inrixia/helpers";
 import { LunaPlugin } from "@luna/core";
 
 import { Messager } from "@luna/core";
-import { storeUrls } from "../PluginStoreTab";
+import { storeUrls } from ".";
 
 const successSx = {
 	"& .MuiOutlinedInput-root:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline": {
