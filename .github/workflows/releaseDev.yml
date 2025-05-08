@@ -26,8 +26,8 @@ jobs:
 
    - name: Get version from package.json
      run: |
-      VERSION=$(jq -r .version package.json)
-      echo "VERSION=${VERSION}-dev" >> $GITHUB_ENV
+      VERSION=$(jq -r .version ./dist/package.json)
+      echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
    - name: Publish dev release on GitHub
      uses: marvinpinto/action-automatic-releases@latest
