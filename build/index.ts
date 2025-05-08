@@ -3,6 +3,7 @@ import { type BuildOptions, build as esBuild, context as esContext } from "esbui
 import { readFile } from "fs/promises";
 import path from "path";
 
+import { dynamicExternalsPlugin } from "./plugins/dynamicExternals";
 import { fileUrlPlugin } from "./plugins/fileUrl";
 import { lunaNativePlugin } from "./plugins/lunaNativePlugin";
 import { writeBundlePlugin } from "./plugins/writeBundlePlugin";
@@ -33,7 +34,13 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.mjs")],
 		...opts,
 		external: [...(opts?.external ?? []), ...externals],
-		plugins: [...(opts?.plugins ?? []), fileUrlPlugin, lunaNativePlugin, writeBundlePlugin(path.join(pluginPath, "package.json"))],
+		plugins: [
+			...(opts?.plugins ?? []),
+			dynamicExternalsPlugin("luna?.core?.modules"),
+			fileUrlPlugin,
+			lunaNativePlugin,
+			writeBundlePlugin(path.join(pluginPath, "package.json")),
+		],
 	};
 };
 

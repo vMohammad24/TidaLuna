@@ -1,6 +1,5 @@
 // Ensure that @triton/lib is loaded onto window for plugins to use shared memory space
 import { Semaphore, Signal } from "@inrixia/helpers";
-import quartz from "@uwu/quartz";
 import { unloadSet, type LunaUnloads } from "./helpers/unloadSet";
 import { ReactiveStore } from "./ReactiveStore";
 
@@ -351,21 +350,11 @@ export class LunaPlugin {
 			// Ensure we unload if previously loaded
 			await this.unload();
 
-			// Transforms are done at build so dont need quartz here (for now :3)
-			this.exports = await quartz(code, {
-				plugins: [
-					{
-						resolve: ({ name }) => {
-							if (modules[name] === undefined) {
-								this.trace.msg.err.throw(`Failed to load, module ${name} not found!`);
-							}
-							// Add this plugin to the dependents of the module if its a plugin and thus unloadable
-							LunaPlugin.plugins[name]?.dependents.add(this);
-							return `luna.core.modules["${name}"]`;
-						},
-					},
-				],
-			});
+			const blobURL = URL.createObjectURL(new Blob([code], { type: "text/javascript" }));
+			this.exports = await import(blobURL);
+			if (this.exports === undefined) return this.trace.err.throw(`Failed to load. Module exports undefined!`);
+
+			// todo RETURN LunaPlugin.plugins[name]?.dependents.add(this);
 
 			// Ensure loadError is cleared
 			this.loadError._ = undefined;
