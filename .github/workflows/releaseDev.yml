@@ -15,6 +15,8 @@ jobs:
  Release:
   name: Release dev on GitHub
   needs: Build
+  env:
+   VERSION: ${{ needs.Build.outputs.version }}
   runs-on: ubuntu-latest
 
   steps:
@@ -23,11 +25,6 @@ jobs:
      with:
       name: luna-artifacts
       path: ./dist/
-
-   - name: Get version from package.json
-     run: |
-      VERSION=$(jq -r .version ./dist/package.json)
-      echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
    - name: Publish dev release on GitHub
      uses: marvinpinto/action-automatic-releases@latest

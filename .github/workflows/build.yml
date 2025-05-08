@@ -36,3 +36,8 @@ jobs:
      with:
       name: luna-artifacts
       path: ./luna.zip
+
+   - name: Get version from package.json
+     run: |
+      VERSION=$(jq -r .version ./dist/package.json)
+      echo "VERSION=${VERSION}" >> $GITHUB_ENV
