@@ -1,8 +1,17 @@
-import { type BuildOptions } from "esbuild";
+import { type BuildOptions, type PluginBuild } from "esbuild";
 import { listen, TidalNodeVersion } from "luna/build";
 
-import { mkdir, writeFile } from "fs/promises";
-import { basename, dirname, join } from "path";
+import { mkdir, readFile, writeFile } from "fs/promises";
+
+const packageJsonPlugin = {
+	name: "write-package-json",
+	setup(build: PluginBuild) {
+		build.onEnd(async () => {
+			await mkdir("./dist", { recursive: true });
+			await writeFile("./dist/package.json", await readFile("./package.json", "utf-8"));
+		});
+	},
+};
 
 const buildConfigs: BuildOptions[] = [
 	{
@@ -12,19 +21,7 @@ const buildConfigs: BuildOptions[] = [
 		format: "esm",
 		platform: "node",
 		external: ["electron", "module"],
-		plugins: [
-			{
-				name: "write-package-json",
-				setup(build) {
-					build.onEnd(async ({ outputFiles }) => {
-						const path = outputFiles![1].path;
-						const outDir = dirname(path);
-						await mkdir(outDir, { recursive: true });
-						await writeFile(join(outDir, "package.json"), JSON.stringify({ main: basename(path) }));
-					});
-				},
-			},
-		],
+		plugins: [packageJsonPlugin],
 	},
 	{
 		entryPoints: ["native/preload.ts"],
@@ -33,10 +30,11 @@ const buildConfigs: BuildOptions[] = [
 		target: TidalNodeVersion,
 		format: "esm",
 		external: ["electron"],
+		plugins: [packageJsonPlugin],
 	},
 	{
 		entryPoints: ["render/src/index.ts"],
-		outfile: "dist/luna.js",
+		outfile: "dist/luna.mjs",
 		target: TidalNodeVersion,
 		platform: "browser",
 		format: "esm",

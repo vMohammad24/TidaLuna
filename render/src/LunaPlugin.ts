@@ -57,7 +57,7 @@ export class LunaPlugin {
 		});
 	}
 	public static fetchCode(url: string): Promise<string> {
-		return ftch.text(`${url}.js`).catch((err) => {
+		return ftch.text(`${url}.mjs`).catch((err) => {
 			throw new Error(`Failed to fetch code for ${url}: ${err?.message}`);
 		});
 	}
@@ -89,7 +89,7 @@ export class LunaPlugin {
 	 */
 	public static async fromStorage(storeInit: PartialLunaPluginStorage): Promise<LunaPlugin> {
 		// Ensure the url is sanitized incase users paste a link to the actual file
-		storeInit.url = storeInit.url.replace(/(\.js|\.json|\.js.map)$/, "");
+		storeInit.url = storeInit.url.replace(/(\.mjs|\.json|\.mjs.map)$/, "");
 
 		storeInit.package ??= await this.fetchPackage(storeInit.url);
 		const name = storeInit.package.name;
@@ -327,7 +327,7 @@ export class LunaPlugin {
 	public async code() {
 		this.fetching._ = true;
 		try {
-			return (this.package!.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.js`);
+			return (this.package!.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.mjs`);
 		} finally {
 			this.fetching._ = false;
 		}

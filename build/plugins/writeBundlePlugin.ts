@@ -15,10 +15,10 @@ export const writeBundlePlugin = (pluginPackagePath?: string): Plugin => ({
 				await mkdir(outDir, { recursive: true });
 
 				await writeFile(outputFile.path, outputFile.contents);
-				if (pluginPackagePath && !writePackageJson && outputFile.path.endsWith(".js")) {
+				if (pluginPackagePath && !writePackageJson && outputFile.path.endsWith(".mjs")) {
 					const pluginPackage = await readFile(pluginPackagePath, "utf8").then(JSON.parse);
 					await writeFile(
-						outputFile.path.replace(/\.js$/, ".json"),
+						outputFile.path.replace(/\.mjs$/, ".json"),
 						JSON.stringify({
 							...pluginPackage,
 							hash: outputFile.hash,

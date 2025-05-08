@@ -29,7 +29,7 @@ const bundleFile = async (url: string): Promise<[Buffer, ResponseInit]> => {
 	let content = await readFile(filePath);
 
 	// If JS file, check for .map and append if exists
-	if (fileName.endsWith(".js")) {
+	if (fileName.endsWith(".mjs")) {
 		const mapPath = filePath + ".map";
 		try {
 			// Append base64 encoded source map to the end of the file
@@ -44,7 +44,7 @@ const bundleFile = async (url: string): Promise<[Buffer, ResponseInit]> => {
 };
 
 // Preload bundle files for https://luna/
-const lunaBundle = bundleFile("https://luna/luna.js").then(([content]) => content);
+const lunaBundle = bundleFile("https://luna/luna.mjs").then(([content]) => content);
 ipcHandle("__Luna.renderJs", () => lunaBundle);
 
 // #region CSP/Script Prep

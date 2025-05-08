@@ -10,6 +10,8 @@
     "type": "git",
     "url": "https://github.com/Inrixia/TidaLuna.git"
   },
+  "type": "module",
+  "main": "./injector.mjs",
   "exports": {
     ".": {
       "types": "./luna.d.ts"
@@ -18,7 +20,6 @@
     "./buildPlugins": "./build/buildPlugins.ts",
     "./tsconfig.json": "./tsconfig.json"
   },
-  "type": "module",
   "scripts": {
     "format": "prettier -wc ./src",
     "watch": "rimraf ./dist && tsx ./esbuild.config.ts --watch",
