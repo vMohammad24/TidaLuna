@@ -9,8 +9,9 @@ export type LunaButtonProps = ButtonProps & {
 };
 
 export const LunaButton = React.memo((props: LunaButtonProps) => {
+	const title = (props.tooltip ?? props.title ?? typeof props.children === "string") ? props.children : undefined;
 	return (
-		<Tooltip sx={{ marginRight: "auto" }} title={props.tooltip ?? props.title}>
+		<Tooltip sx={{ marginRight: "auto" }} title={title}>
 			<Button
 				loadingIndicator={<CircularProgress color="warning" size={16} />}
 				variant={props.variant ?? "contained"}

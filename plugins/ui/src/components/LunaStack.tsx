@@ -6,15 +6,15 @@ import type { StackProps } from "@mui/material/Stack";
 import Stack from "@mui/material/Stack";
 import { LunaTitle, type LunaTitleValues } from "./LunaTitle";
 
-export type LunaStackProps = StackProps & Partial<LunaTitleValues> & { variant?: TypographyProps["variant"] };
+export type LunaStackProps = StackProps & Partial<LunaTitleValues> & { variant?: TypographyProps["variant"]; titleChildren?: React.ReactNode };
 
 export const LunaStack = React.memo((props: LunaStackProps) => {
 	const { title, desc, variant } = props;
 	delete props.title;
 	return (
 		<Box>
-			{title && <LunaTitle variant={variant} title={title} desc={desc} />}
-			<Stack spacing={1} {...props} />
+			{title && <LunaTitle variant={variant} title={title} desc={desc} children={props.titleChildren} />}
+			<Stack display="flex" spacing={1} {...props} />
 		</Box>
 	);
 });

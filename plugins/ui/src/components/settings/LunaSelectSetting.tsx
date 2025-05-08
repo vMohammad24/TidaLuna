@@ -1,7 +1,6 @@
 import { type SelectProps } from "@mui/material";
 import React from "react";
 
-import Box from "@mui/material/Box";
 import Select from "@mui/material/Select";
 
 import { type LunaTitleValues } from "../LunaTitle";
@@ -13,9 +12,7 @@ function _LunaSelectSetting<T = unknown>(props: LunaSelectSettingProps<T>) {
 	const { title, desc, ...selectProps } = props;
 	return (
 		<LunaSetting spacing={8} title={title} desc={desc}>
-			<Box flexGrow={1}>
-				<Select<T> {...selectProps} />
-			</Box>
+			<Select<T> fullWidth {...selectProps} />
 		</LunaSetting>
 	);
 }

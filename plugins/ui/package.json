@@ -12,5 +12,8 @@
 		"@emotion/styled": "^11.14.0",
 		"@mui/icons-material": "^7.0.2",
 		"@mui/material": "^7.0.2"
+	},
+	"devDependencies": {
+		"@octokit/openapi-types": "^25.0.0"
 	}
 }
