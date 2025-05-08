@@ -1,6 +1,6 @@
 import type { Plugin } from "esbuild";
 
-export const dynamicExternalsPlugin = (globalStore: string): Plugin => ({
+export const dynamicExternalsPlugin = (resolveModuleContents: (module: string) => string): Plugin => ({
 	name: "dynamicExternals",
 	setup(build) {
 		const externalsRegex = build.initialOptions.external
@@ -12,11 +12,7 @@ export const dynamicExternalsPlugin = (globalStore: string): Plugin => ({
 			namespace: "dynamicExternals",
 		}));
 		build.onLoad({ filter: /.*/, namespace: "dynamicExternals" }, (args) => ({
-			contents: `
-				const imp = ${globalStore}?.["${args.path}"];
-				if (imp === undefined) throw new Error("Cannot find module '${args.path}' in ${globalStore}'");
-				module.exports = imp;
-			`,
+			contents: resolveModuleContents(args.path),
 		}));
 	},
 });

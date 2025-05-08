@@ -354,8 +354,6 @@ export class LunaPlugin {
 			this.exports = await import(blobURL);
 			if (this.exports === undefined) return this.trace.err.throw(`Failed to load. Module exports undefined!`);
 
-			// todo RETURN LunaPlugin.plugins[name]?.dependents.add(this);
-
 			// Ensure loadError is cleared
 			this.loadError._ = undefined;
 

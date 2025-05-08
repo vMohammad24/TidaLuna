@@ -23,7 +23,8 @@ const externals = ["@luna/*", "oby", "react", "react-dom/client", "react/jsx-run
 export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions) => {
 	const pluginPackage = await readFile(path.join(pluginPath, "package.json"), "utf8").then(JSON.parse);
 	// Sanitize pluginPackage.name, remove @, replace / with .
-	const safeName = pluginPackage.name.replace(/@/g, "").replace(/\//g, ".");
+	const pkgName = pluginPackage.name;
+	const safeName = pkgName.replace(/@/g, "").replace(/\//g, ".");
 	return <BuildOptions>{
 		...defaultBuildOptions,
 		write: false,
@@ -36,7 +37,15 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		external: [...(opts?.external ?? []), ...externals],
 		plugins: [
 			...(opts?.plugins ?? []),
-			dynamicExternalsPlugin("luna?.core?.modules"),
+			dynamicExternalsPlugin(
+				(module: string) => `
+				const imp = luna?.core?.modules?.["${module}"];
+				if (imp === undefined) throw new Error("Cannot find module ${module} in luna.core.modules");
+				// Icky but it works
+				luna.core.LunaPlugin.plugins["${module}"]?.dependents.add(luna.core.LunaPlugin.plugins["${pkgName}"]);
+				module.exports = imp;
+			`,
+			),
 			fileUrlPlugin,
 			lunaNativePlugin,
 			writeBundlePlugin(path.join(pluginPath, "package.json")),
