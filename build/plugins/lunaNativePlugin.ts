@@ -18,7 +18,7 @@ export const lunaNativePlugin = (pluginEntryPoint: string, pkgName: string): Plu
 				platform: "node",
 				target: TidalNodeVersion, // Tidal node version
 				format: "esm",
-				external: ["@luna/*", "electron", "./original.asar/*"],
+				external: ["@luna/*", "electron", "./app/package.json", "./original.asar/*"],
 				plugins: [
 					fileUrlPlugin,
 					dynamicExternalsPlugin({
@@ -44,17 +44,18 @@ export const lunaNativePlugin = (pluginEntryPoint: string, pkgName: string): Plu
 
 			return {
 				contents: `
-				// Register the native module code, see native/injector.ts
-				const channel = await __ipcRenderer.invoke("__Luna.registerNative", "${entryPoint}", ${JSON.stringify(outputFiles![0].text)});
-				if (channel === undefined) throw new Error("Failed to register native module ${entryPoint}");
+					// Register the native module code, see native/injector.ts
+					const channel = await __ipcRenderer.invoke("__Luna.registerNative", "${entryPoint}", ${JSON.stringify(outputFiles![0].text)});
+					if (channel === undefined) throw new Error("Failed to register native module ${entryPoint}");
 
-				// Expose built exports to plugin
-				${output.exports
-					.map((_export) => {
-						return `export ${_export === "default" ? "default" : `const ${_export}`} = (...args) => __ipcRenderer.invoke(channel, "${_export}", ...args);`;
-					})
-					.join("\n")}
-			`,
+					// Expose built exports to plugin
+					${output.exports
+						.map((_export) => {
+							return `export ${_export === "default" ? "default" : `const ${_export}`} = (...args) => __ipcRenderer.invoke(channel, "${_export}", ...args);`;
+						})
+						.join("\n")}
+				`,
+				watchFiles: Object.keys(output.inputs),
 			};
 		});
 	},
