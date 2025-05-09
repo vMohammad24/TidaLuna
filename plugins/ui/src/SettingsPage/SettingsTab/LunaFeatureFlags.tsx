@@ -1,8 +1,7 @@
 import { redux } from "@luna/lib";
 import React from "react";
-import { LunaSwitchSetting, LunaTitle, settingsSx } from "../../components";
+import { LunaSettings, LunaSwitchSetting } from "../../components";
 
-import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -30,17 +29,15 @@ export const LunaFeatureFlags = React.memo(() => {
 		setFeatureFlags(getFeatureFlags());
 	}, []);
 	return (
-		<Box>
-			<LunaTitle
-				sx={{ marginBottom: 0 }}
-				title="Feature flags"
-				desc="Feature flags & experiments currently in the Tidal desktop app. These are internal from Tidal and not Luna features"
-				children={
-					<SpinningButton title={hide ? "Show flags" : "Hide flags"} onClick={() => setHidden(!hide)} icon={SettingsIcon} sxColor={grey.A400} />
-				}
-			/>
+		<LunaSettings
+			title="Feature flags"
+			desc="Feature flags & experiments currently in the Tidal desktop app. These are internal from Tidal and not Luna features"
+			titleChildren={
+				<SpinningButton title={hide ? "Show flags" : "Hide flags"} onClick={() => setHidden(!hide)} icon={SettingsIcon} sxColor={grey.A400} />
+			}
+		>
 			{!hide && (
-				<Grid spacing={2} container sx={settingsSx}>
+				<Grid spacing={2} container>
 					{Object.values(featureFlags.flags)
 						.sort((a, b) => a.name.localeCompare(b.name))
 						.map((flag) => (
@@ -60,6 +57,6 @@ export const LunaFeatureFlags = React.memo(() => {
 						))}
 				</Grid>
 			)}
-		</Box>
+		</LunaSettings>
 	);
 });

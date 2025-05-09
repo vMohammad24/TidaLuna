@@ -136,5 +136,12 @@ export const lunaMuiTheme = createTheme({
 				},
 			},
 		},
+		MuiPaper: {
+			styleOverrides: {
+				root: {
+					backgroundColor: grey[900],
+				},
+			},
+		},
 	},
 });

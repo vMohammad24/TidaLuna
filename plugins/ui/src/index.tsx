@@ -1,3 +1,4 @@
+import { ConfirmProvider } from "material-ui-confirm";
 import React from "react";
 
 import type { LunaUnload } from "@luna/core";
@@ -23,11 +24,19 @@ radial-gradient(ellipse at top right, rgba(139, 203, 235, 0.5), transparent 70%)
 radial-gradient(ellipse at center right, rgba(98, 103, 145, 0.5), transparent 70%),
 radial-gradient(ellipse at bottom right, rgba(47, 48, 78, 0.5), transparent 70%)`;
 
+const settingsPageComponent = (
+	<ThemeProvider theme={lunaMuiTheme}>
+		<ConfirmProvider>
+			<LunaPage />
+		</ConfirmProvider>
+	</ThemeProvider>
+);
+
 ContextMenu.onOpen(unloads, ({ event, contextMenu }) => {
 	if (event.type === "USER_PROFILE") {
 		contextMenu.addButton("Luna Settings", (e) => {
 			e.preventDefault();
-			settingsPage.open(<ThemeProvider theme={lunaMuiTheme} children={<LunaPage />} />);
+			settingsPage.open(settingsPageComponent);
 		}).style.color = "#31d8ff";
 	}
 });
@@ -45,7 +54,7 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 			currentSettingsTab._ = LunaTabs.Plugins;
 			break;
 	}
-	if (url.pathname.startsWith("//settings")) settingsPage.open(<ThemeProvider theme={lunaMuiTheme} children={<LunaPage />} />);
+	if (url.pathname.startsWith("//settings")) settingsPage.open(settingsPageComponent);
 });
 
 export * from "./components";
