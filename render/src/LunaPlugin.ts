@@ -81,6 +81,15 @@ export class LunaPlugin {
 				});
 			}
 		});
+		__ipcRenderer.on("__Luna.LunaPlugin.addDependant", (pluginName, dependantName) => {
+			const plugin = LunaPlugin.plugins[pluginName];
+			const dependantPlugin = LunaPlugin.plugins[dependantName];
+			const errTrace = coreTrace.msg.err.withContext(`__ipcRenderer.on("__Luna.LunaPlugin.addDependant")`);
+			if (plugin === undefined) return errTrace.throw(`Plugin ${pluginName} not found!`);
+			if (dependantPlugin === undefined) return errTrace.throw(`Dependancy ${dependantName} of ${pluginName} not found!`);
+
+			plugin.addDependant(dependantPlugin);
+		});
 	}
 
 	/**
@@ -184,7 +193,12 @@ export class LunaPlugin {
 	}
 	// #endregion
 
-	public readonly dependents: Set<LunaPlugin> = new Set();
+	// #region Dependants
+	public readonly dependants: Set<LunaPlugin> = new Set();
+	public addDependant(plugin: LunaPlugin) {
+		if (!(plugin instanceof LunaPlugin)) throw new Error("Cannot add dependancy to non plugin!");
+		this.dependants.add(plugin);
+	}
 
 	// #region _exports
 	public get exports(): ModuleExports | undefined {
@@ -233,7 +247,7 @@ export class LunaPlugin {
 		try {
 			this.loading._ = true;
 			// Unload dependants before unloading this plugin
-			for (const dependant of this.dependents) {
+			for (const dependant of this.dependants) {
 				this.trace.log(`Unloading dependant ${dependant.name}`);
 				await dependant.unload();
 			}
@@ -291,7 +305,7 @@ export class LunaPlugin {
 		this.loading._ = true;
 		for (const name in LunaPlugin.plugins) {
 			// Just to be safe
-			LunaPlugin.plugins[name].dependents.delete(this);
+			LunaPlugin.plugins[name].dependants.delete(this);
 		}
 		this.store.installed = false;
 		this.loading._ = false;
@@ -376,7 +390,7 @@ export class LunaPlugin {
 
 			this.trace.log(`Loaded`);
 			// Make sure we load any enabled dependants, this is mostly to facilitate live reloading dependency trees
-			for (const dependant of this.dependents) {
+			for (const dependant of this.dependants) {
 				this.trace.log(`Loading dependant ${dependant.name}`);
 				dependant.load().catch(this.trace.err.withContext(`Failed to load dependant ${dependant.name} of plugin ${this.name}`));
 			}

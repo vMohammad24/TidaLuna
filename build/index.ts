@@ -21,10 +21,12 @@ export const TidalChromeVersion = "chrome126"; // Tidal target version
 const externals = ["@luna/*", "oby", "react", "react-dom/client", "react/jsx-runtime", "electron"];
 
 export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions) => {
-	const pluginPackage = await readFile(path.join(pluginPath, "package.json"), "utf8").then(JSON.parse);
+	const pkgPath = path.join(pluginPath, "package.json");
+	const pluginPackage = await readFile(pkgPath, "utf8").then(JSON.parse);
 	// Sanitize pluginPackage.name, remove @, replace / with .
 	const pkgName = pluginPackage.name;
 	const safeName = pkgName.replace(/@/g, "").replace(/\//g, ".");
+	const entryPoint = path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.mjs");
 	return <BuildOptions>{
 		...defaultBuildOptions,
 		write: false,
@@ -32,23 +34,22 @@ export const pluginBuildOptions = async (pluginPath: string, opts?: BuildOptions
 		target: TidalChromeVersion,
 		format: "esm",
 		outfile: `./dist/${safeName}.mjs`,
-		entryPoints: ["./" + path.join(pluginPath, pluginPackage.main ?? pluginPackage.exports ?? "index.mjs")],
+		entryPoints: ["./" + entryPoint],
 		...opts,
 		external: [...(opts?.external ?? []), ...externals],
 		plugins: [
 			...(opts?.plugins ?? []),
-			dynamicExternalsPlugin(
-				(module: string) => `
-				const imp = luna?.core?.modules?.["${module}"];
-				if (imp === undefined) throw new Error("Cannot find module ${module} in luna.core.modules");
-				// Icky but it works
-				luna.core.LunaPlugin.plugins["${module}"]?.dependents.add(luna.core.LunaPlugin.plugins["${pkgName}"]);
-				module.exports = imp;
-			`,
-			),
+			dynamicExternalsPlugin({
+				moduleContents: (module: string) => `
+					module.exports = luna?.core?.modules?.["${module}"];
+					if (module.exports === undefined) throw new Error("Cannot find module ${module} in luna.core.modules");
+					// Icky but it works
+					luna.core.LunaPlugin.plugins["${module}"]?.addDependant(luna.core.LunaPlugin.plugins["${pkgName}"]);
+				`,
+			}),
 			fileUrlPlugin,
-			lunaNativePlugin,
-			writeBundlePlugin(path.join(pluginPath, "package.json")),
+			lunaNativePlugin(entryPoint, pkgName),
+			writeBundlePlugin(pkgPath),
 		],
 	};
 };

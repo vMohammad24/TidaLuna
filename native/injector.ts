@@ -18,6 +18,17 @@ const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) =>
 };
 // #endregion
 
+// Define globalThis.luna
+declare global {
+	var luna: {
+		modules: Record<string, any>;
+		tidalWindow?: Electron.BrowserWindow;
+	};
+}
+globalThis.luna = {
+	modules: {},
+};
+
 // Allow debugging from remote origins (e.g., Chrome DevTools over localhost)
 // Requires starting client with --remote-debugging-port=9222
 electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:9222");
@@ -121,7 +132,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 			// TODO: Find why sandboxing has to be disabled
 			options.webPreferences.sandbox = false;
 		}
-		const window = new target(options);
+		const window = (luna.tidalWindow = new target(options));
 
 		// #region Open from link
 		// MacOS
@@ -198,19 +209,19 @@ electron.Menu.buildFromTemplate = (template) => {
 };
 // #endregion
 
-// #region Start original app
+// #region Start app
 require(startPath);
 // #endregion
 
-// #region LunaNative handling
+// #region LunaNative
 const requirePrefix = `import { createRequire } from 'module';const require = createRequire(${JSON.stringify(pathToFileURL(process.resourcesPath + "/").href)});`;
 // Call to register native module
-ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
+ipcHandle("__Luna.registerNative", async (_, name: string, code: string) => {
 	const tempPath = path.join(bundleDir, Math.random().toString() + ".mjs");
 	try {
 		await writeFile(tempPath, requirePrefix + code, "utf8");
 		// Load module
-		const exports = await import(pathToFileURL(tempPath).href);
+		const exports = (globalThis.luna.modules[name] = await import(pathToFileURL(tempPath).href));
 		const channel = `__LunaNative.${name}`;
 		// Register handler for calling module exports
 		ipcHandle(channel, async (_, exportName, ...args) => {
@@ -218,7 +229,7 @@ ipcHandle("__Luna.registerNative", async (ev, name: string, code: string) => {
 				return await exports[exportName](...args);
 			} catch (err: any) {
 				// Set cause to identify native module
-				err.cause = `[Luna.native].${name}.${exportName}`;
+				err.cause = `[Luna.native] (${name}).${exportName}`;
 				throw err;
 			}
 		});
