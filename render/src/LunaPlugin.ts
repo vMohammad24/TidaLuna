@@ -230,6 +230,9 @@ export class LunaPlugin {
 	public get package(): PluginPackage | undefined {
 		return this.store.package;
 	}
+	public get code(): string | undefined {
+		return this.package?.code;
+	}
 	private set package(value: PluginPackage) {
 		this.store.package = value;
 	}
@@ -288,8 +291,8 @@ export class LunaPlugin {
 		this.loadError._ = undefined;
 	}
 	public async reload() {
-		await this.disable();
-		await this.enable();
+		// LoadExports will handle unloading etc and ensure code is live
+		await this.loadExports(true);
 	}
 	// #endregion
 
@@ -323,12 +326,17 @@ export class LunaPlugin {
 			const newPackage = await LunaPlugin.fetchPackage(this.url);
 			// Delete this just to be safe
 			delete newPackage.code;
-			const codeChanged = this.package?.hash !== newPackage.hash;
+
 			// If hash hasnt changed then just reuse stored code
-			// If it has then next time this.code() is called it will fetch the new code as newPackage.code is undefined
+			const codeChanged = this.package?.hash !== newPackage.hash;
+			// If code hasnt changed then just reuse stored code
 			if (!codeChanged) newPackage.code = this.package?.code;
-			// Only update this.package if its actually changed
-			if (JSON.stringify(newPackage) !== JSON.stringify(this.package)) this.package = newPackage;
+
+			this.package = newPackage;
+
+			// Ensure that code is fetched if its changed or undefined
+			this.package.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.mjs`;
+
 			return codeChanged;
 		} catch {
 			// Fail silently if we cant fetch
@@ -337,34 +345,26 @@ export class LunaPlugin {
 		}
 		return false;
 	}
-	public async code() {
-		this.fetching._ = true;
-		try {
-			return (this.package!.code ??= `${await LunaPlugin.fetchCode(this.url)}\n//# sourceURL=${this.url}.mjs`);
-		} finally {
-			this.fetching._ = false;
-		}
-	}
 	// #endregion
 
 	// #region Load
 	private readonly loadSemaphore: Semaphore = new Semaphore(1);
-	private async loadExports(): Promise<void> {
+	private async loadExports(reload?: true): Promise<void> {
 		// Ensure we cant start loading midway through loading
 		const release = await this.loadSemaphore.obtain();
 		try {
 			// If code hasnt changed and we have already loaded exports we are done
-			if (!(await this.fetchPackage()) && this.exports !== undefined) return;
+			const codeChanged = await this.fetchPackage();
+			if (!reload && !codeChanged && this.exports !== undefined) return;
 
-			const code = await this.code();
 			// If code failed to fetch then nothing we can do
-			if (code === undefined) return;
+			if (this.code === undefined) return;
 			this.loading._ = true;
 
 			// Ensure we unload if previously loaded
 			await this.unload();
 
-			const blobURL = URL.createObjectURL(new Blob([code], { type: "text/javascript" }));
+			const blobURL = URL.createObjectURL(new Blob([this.code], { type: "text/javascript" }));
 			this.exports = await import(blobURL);
 			if (this.exports === undefined) return this.trace.err.throw(`Failed to load. Module exports undefined!`);
 
@@ -391,6 +391,8 @@ export class LunaPlugin {
 			this.trace.log(`Loaded`);
 			// Make sure we load any enabled dependants, this is mostly to facilitate live reloading dependency trees
 			for (const dependant of this.dependants) {
+				// Remove dependant, dependant.load() will add it back if its still a dependant
+				this.dependants.delete(dependant);
 				this.trace.log(`Loading dependant ${dependant.name}`);
 				dependant.load().catch(this.trace.err.withContext(`Failed to load dependant ${dependant.name} of plugin ${this.name}`));
 			}
