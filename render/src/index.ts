@@ -22,6 +22,7 @@ import { LunaPlugin } from "./LunaPlugin";
 // Wrap loading of plugins in a timeout so native/preload.ts can populate modules with @luna/core (see native/preload.ts)
 setTimeout(async () => {
 	// Load lib
+	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib.native" });
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib" });
 	// Load ui after lib as it depends on it.
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.ui" });
