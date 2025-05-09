@@ -4,7 +4,7 @@ import { redux } from "@luna/lib";
 import { store as obyStore } from "oby";
 import { createRoot, type Root } from "react-dom/client";
 
-import { unloads } from "..";
+import { unloads } from "../index.safe";
 
 export class Page {
 	private static openPage?: Page;
@@ -79,12 +79,16 @@ export class Page {
 		});
 	}
 
-	open(component?: React.ReactNode) {
+	render(component?: React.ReactNode) {
 		if (this.reactRoot === undefined) {
 			this.reactRoot = createRoot(this.root);
 			this.unloads.add(this.reactRoot.unmount.bind(this.reactRoot));
 			this.reactRoot.render(component);
 		}
+	}
+
+	open(component?: React.ReactNode) {
+		this.render(component);
 		redux.actions["router/PUSH"]({
 			pathname: "/not-found",
 			search: this.name,

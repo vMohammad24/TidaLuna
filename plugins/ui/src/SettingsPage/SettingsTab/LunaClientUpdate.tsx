@@ -12,7 +12,8 @@ import { getPackage, updateLuna } from "@luna/lib.native";
 import { useConfirm } from "material-ui-confirm";
 import { LunaButton, LunaSettings, SpinningButton } from "../../components";
 
-const pkg = await getPackage();
+export const pkg = await getPackage();
+export const fetchReleases = () => ftch.json<GitHubRelease[]>("https://api.github.com/repos/Inrixia/TidaLuna/releases");
 
 export const LunaClientUpdate = React.memo(() => {
 	const confirm = useConfirm();
@@ -20,15 +21,15 @@ export const LunaClientUpdate = React.memo(() => {
 	const [loading, setLoading] = React.useState(false);
 	const [selectedRelease, setSelectedRelease] = React.useState<string>(pkg.version);
 
-	const fetchReleases = async () => {
+	const updateReleases = async () => {
 		setLoading(true);
-		const releases = await ftch.json<GitHubRelease[]>("https://api.github.com/repos/Inrixia/TidaLuna/releases").finally(() => setLoading(false));
+		const releases = await fetchReleases().finally(() => setLoading(false));
 		setReleases(releases);
-		if (selectedRelease === null && releases.length > 0) setSelectedRelease(releases[0].tag_name);
+		setSelectedRelease(releases[0].tag_name);
 	};
 
 	React.useEffect(() => {
-		fetchReleases();
+		updateReleases();
 	}, []);
 
 	let action;
@@ -45,7 +46,7 @@ export const LunaClientUpdate = React.memo(() => {
 		<LunaSettings
 			title="Client Updates"
 			desc="Select release tag & update client"
-			titleChildren={<SpinningButton title="Fetch releases" loading={loading} onClick={fetchReleases} />}
+			titleChildren={<SpinningButton title="Fetch releases" loading={loading} onClick={updateReleases} />}
 			direction="row"
 			alignItems="center"
 		>

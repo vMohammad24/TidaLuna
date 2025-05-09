@@ -1,18 +1,19 @@
 import { ConfirmProvider } from "material-ui-confirm";
 import React from "react";
 
-import type { LunaUnload } from "@luna/core";
 import { ContextMenu, ipcRenderer } from "@luna/lib";
 
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Page } from "./classes/Page";
 
+import { confirm } from "./helpers/confirm";
 import { lunaMuiTheme } from "./lunaTheme";
 import { currentSettingsTab, LunaPage, LunaTabs } from "./SettingsPage";
 import { storeUrls } from "./SettingsPage/PluginStoreTab";
+import { fetchReleases, pkg } from "./SettingsPage/SettingsTab/LunaClientUpdate";
 
-export const unloads = new Set<LunaUnload>();
+import { unloads } from "./index.safe";
 
 const settingsPage = Page.register("LunaSettings", unloads);
 // thx @n1ckoates re CoverTheme <3
@@ -55,6 +56,25 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 			break;
 	}
 	if (url.pathname.startsWith("//settings")) settingsPage.open(settingsPageComponent);
+});
+
+setTimeout(async () => {
+	const latestReleaseTag = (await fetchReleases()).map((rel) => rel.tag_name).sort()[0];
+	if (latestReleaseTag !== pkg.version) {
+		const res = await confirm({
+			title: (
+				<>
+					New version available! <b>{latestReleaseTag}</b>
+				</>
+			),
+			description: "There is a new TidaLuna client version available. Open settings to update?",
+			confirmationText: "Open Settings",
+			cancellationText: "Close",
+		});
+		if (!res.confirmed) return;
+		currentSettingsTab._ = LunaTabs.Settings;
+		settingsPage.open(settingsPageComponent);
+	}
 });
 
 export * from "./components";
