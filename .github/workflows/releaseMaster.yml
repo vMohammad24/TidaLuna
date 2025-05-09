@@ -24,11 +24,16 @@ jobs:
       name: luna-artifacts
       path: ./dist/
 
-   - name: Publish latest release on GitHub
+   - name: Get version from package.json
+     run: |
+      VERSION=$(jq -r .version ./dist/package.json)
+      echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+   - name: Publish dev release on GitHub
      uses: marvinpinto/action-automatic-releases@latest
      with:
       repo_token: ${{ secrets.GITHUB_TOKEN }}
-      automatic_release_tag: latest
+      automatic_release_tag: ${{ env.VERSION }}
       prerelease: false
-      title: Latest Release
+      title: Release ${{ env.VERSION }}
       files: ./dist/luna.zip
