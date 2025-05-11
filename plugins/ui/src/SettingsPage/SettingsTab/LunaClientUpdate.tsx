@@ -45,7 +45,7 @@ export const LunaClientUpdate = React.memo(() => {
 	return (
 		<LunaSettings
 			title="Client Updates"
-			desc="Select release tag & update client"
+			desc={`Current Version: ${pkg.version}`}
 			titleChildren={<SpinningButton title="Fetch releases" loading={loading} onClick={updateReleases} />}
 			direction="row"
 			alignItems="center"
