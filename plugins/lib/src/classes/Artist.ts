@@ -1,7 +1,9 @@
 import type { Tracer } from "@luna/core";
-import { TidalApi, type ItemId, type TArtist } from "@luna/lib";
-import { uTrace } from "../window.unstable";
+
+import { libTrace } from "../index.safe";
+import type { ItemId, TArtist } from "../outdated.types";
 import { ContentBase, type TImageSize } from "./ContentBase";
+import { TidalApi } from "./TidalApi";
 
 export class Artist extends ContentBase {
 	constructor(
@@ -11,7 +13,7 @@ export class Artist extends ContentBase {
 		super();
 	}
 
-	public static readonly trace: Tracer = uTrace.withSource(".Artist").trace;
+	public static readonly trace: Tracer = libTrace.withSource(".Artist").trace;
 
 	public static async fromId(artistId?: ItemId): Promise<Artist | undefined> {
 		if (artistId === undefined) return;

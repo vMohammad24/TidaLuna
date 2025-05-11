@@ -13,11 +13,6 @@ Object.defineProperty(window.luna, "ui", {
 	enumerable: true,
 	configurable: false,
 });
-Object.defineProperty(window.luna, "unstable", {
-	get: () => modules["@luna/unstable"],
-	enumerable: true,
-	configurable: false,
-});
 Object.defineProperty(window.luna, "dev", {
 	get: () => modules["@luna/dev"],
 	enumerable: true,
@@ -30,7 +25,6 @@ declare global {
 			core?: typeof import("@luna/core");
 			lib?: typeof import("@luna/lib");
 			ui?: typeof import("@luna/ui");
-			unstable?: typeof import("@luna/unstable");
 			dev?: typeof import("@luna/dev");
 		};
 	}

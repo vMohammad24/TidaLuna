@@ -2,14 +2,16 @@ import { memoize, type VoidLike } from "@inrixia/helpers";
 
 import type { IRelease, IReleaseMatch } from "musicbrainz-api";
 
+import { ftch, type Tracer } from "@luna/core";
+
+import { libTrace, unloads } from "../index.safe";
+import type { ItemId, TAlbum, TMediaItem } from "../outdated.types";
+import * as redux from "../redux";
 import { Artist } from "./Artist";
 import { ContentBase, type TImageSize } from "./ContentBase";
-import { MediaItem } from "./MediaItem/MediaItem";
-
-import { ftch, type Tracer } from "@luna/core";
-import { redux, TidalApi, type ItemId, type TAlbum, type TMediaItem } from "@luna/lib";
-import { unloads, uTrace } from "../window.unstable";
 import type { MediaCollection } from "./MediaCollection";
+import { MediaItem } from "./MediaItem";
+import { TidalApi } from "./TidalApi";
 
 export class Album extends ContentBase implements MediaCollection {
 	public readonly trace: Tracer;
@@ -21,13 +23,16 @@ export class Album extends ContentBase implements MediaCollection {
 		this.trace = Album.trace.withSource(`[${this.tidalAlbum.title ?? id}]`).trace;
 	}
 
-	public static readonly trace: Tracer = uTrace.withSource(".Album").trace;
+	public static readonly trace: Tracer = libTrace.withSource(".Album").trace;
 
 	public static async fromId(albumId?: ItemId): Promise<Album | undefined> {
 		if (albumId === undefined) return;
 		return super.fromStore(albumId, "albums", this, () => TidalApi.album(albumId));
 	}
 
+	/**
+	 * MusicBrainz Album from `https://musicbrainz.org/ws/2/release/?query=barcode:${this.tidalAlbum.upc}`
+	 */
 	public brainzAlbum: () => Promise<IReleaseMatch | VoidLike> = memoize(async () => {
 		if (this.tidalAlbum.upc === undefined) return;
 
@@ -50,6 +55,9 @@ export class Album extends ContentBase implements MediaCollection {
 		if (brainzAlbum !== undefined) this.trace.warn("Invalid Tidal UPC for album!", brainzAlbum, this, brainzUrl);
 	});
 
+	/**
+	 * MusicBrainz Album with additional release info from `https://musicbrainz.org/ws/2/release/${this.brainzAlbum.id}?inc=recordings+isrcs+artist-credits`
+	 */
 	public brainzRelease: () => Promise<IRelease | VoidLike> = memoize(async () => {
 		const brainzAlbum = await this.brainzAlbum();
 		if (brainzAlbum === undefined) return;
@@ -66,11 +74,8 @@ export class Album extends ContentBase implements MediaCollection {
 		return this.tidalAlbum.artists?.map((artist) => Artist.fromId(artist.id)) ?? [];
 	});
 
-	public async mediaItemsCount() {
-		return (await this.tMediaItems()).length;
-	}
-	public async mediaItems() {
-		return MediaItem.fromTMediaItems(await this.tMediaItems());
+	public async count() {
+		return this.tidalAlbum.numberOfTracks!;
 	}
 	public tMediaItems: () => Promise<TMediaItem[]> = memoize(async () => {
 		const result = await redux
@@ -85,6 +90,9 @@ export class Album extends ContentBase implements MediaCollection {
 		if (tMediaItems === undefined) return [];
 		return Array.from(tMediaItems);
 	});
+	public async mediaItems() {
+		return MediaItem.fromTMediaItems(await this.tMediaItems());
+	}
 
 	public coverUrl(res?: TImageSize) {
 		if (this.tidalAlbum.cover === undefined) return;

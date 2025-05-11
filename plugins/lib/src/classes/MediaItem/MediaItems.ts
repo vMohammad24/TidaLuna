@@ -1,11 +1,7 @@
-import type { ItemId } from "@luna/lib";
-import { MediaItem, type TMediaItemBase } from "./MediaItem/MediaItem";
-
-export interface MediaCollection {
-	mediaItemsCount(): Promise<number>;
-	mediaItems(): Promise<AsyncGenerator<MediaItem, unknown, unknown>>;
-	title(): Promise<string | undefined>;
-}
+import type { ItemId } from "neptune-types/tidal";
+import type { MediaCollection } from "../MediaCollection";
+import type { TMediaItemBase } from "./MediaItem";
+import { MediaItem } from "./MediaItem";
 
 export class MediaItems implements MediaCollection {
 	private constructor(public readonly tMediaItems: TMediaItemBase[]) {}
@@ -23,7 +19,7 @@ export class MediaItems implements MediaCollection {
 		}
 	}
 
-	public async mediaItemsCount() {
+	public async count() {
 		return this.tMediaItems.length;
 	}
 	public async mediaItems() {

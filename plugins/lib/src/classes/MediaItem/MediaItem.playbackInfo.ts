@@ -1,26 +1,34 @@
-import { parseDasha } from "./streaming/dasha.native";
+import { parseDasha, type DashManifest } from "./dasha.native";
 
-import { getCredentials } from "@luna/lib";
 import type { MediaItemAudioQuality } from "../Quality";
+import { TidalApi } from "../TidalApi";
+import type { PlaybackInfoResponse } from "../TidalApi/types/PlaybackInfo";
 import type { MediaItem } from "./MediaItem";
-import { PlaybackInfo, PlaybackInfoResponse, TidalManifest } from "./MediaItem.playbackInfo.types";
+
+interface PlaybackInfoBase extends Omit<PlaybackInfoResponse, "manifest"> {
+	mimeType: string;
+}
+
+export type TidalManifest = {
+	mimeType: string;
+	codecs: string;
+	encryptionType: string;
+	keyId: string;
+	urls: string[];
+};
+interface TidalPlaybackInfo extends PlaybackInfoBase {
+	manifestMimeType: "application/vnd.tidal.bts";
+	manifest: TidalManifest;
+}
+interface DashPlaybackInfo extends PlaybackInfoBase {
+	manifestMimeType: "application/dash+xml";
+	manifest: DashManifest;
+}
+export type PlaybackInfo = DashPlaybackInfo | TidalPlaybackInfo;
 
 export const getPlaybackInfo = async (mediaItem: MediaItem, audioQuality: MediaItemAudioQuality): Promise<PlaybackInfo> => {
 	try {
-		const url = `https://desktop.tidal.com/v1/tracks/${mediaItem.id}/playbackinfo?audioquality=${audioQuality}&playbackmode=STREAM&assetpresentation=FULL`;
-
-		const { clientId, token } = await getCredentials();
-		const playbackInfo: PlaybackInfoResponse = await fetch(url, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"x-tidal-token": clientId,
-			},
-		}).then((r) => {
-			if (r.status === 401) {
-				mediaItem.trace.err.withContext("fetchPlaybackIinfo").throw(new Error("Invalid OAuth Access Token!"));
-			}
-			return r.json();
-		});
+		const playbackInfo = await TidalApi.playbackInfo(mediaItem.id, audioQuality);
 
 		switch (playbackInfo.manifestMimeType) {
 			case "application/vnd.tidal.bts": {

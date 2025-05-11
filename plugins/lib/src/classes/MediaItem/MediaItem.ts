@@ -1,19 +1,18 @@
-import { asyncDebounce, memoize, sleep } from "@inrixia/helpers";
-
-import { ContentBase, type TImageSize } from "../ContentBase";
-import { Quality, type MediaMetadataTag } from "../Quality";
-import { makeTags, MetaTags } from "./MediaItem.tags";
-
+import { asyncDebounce, memoize, registerEmitter, sleep, type AddReceiver } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
-import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { ftch, type Tracer } from "@luna/core";
-import { redux, TidalApi, unloads, type ItemId, type TLyrics, type TMediaItem } from "@luna/lib";
-import { intercept } from "plugins/lib/src/redux";
-import { uTrace } from "../../window.unstable";
+
+import { libTrace, unloads } from "../../index.safe";
+import type { ItemId, TLyrics, TMediaItem } from "../../outdated.types";
+import * as redux from "../../redux";
 import { Album } from "../Album";
 import { Artist } from "../Artist";
+import { ContentBase, type TImageSize } from "../ContentBase";
 import { type PlaybackContext } from "../PlayState";
+import { Quality, type MediaMetadataTag } from "../Quality";
+import { TidalApi } from "../TidalApi";
+import { makeTags, MetaTags } from "./MediaItem.tags";
 
 type MediaFormat = {
 	bitDepth?: number;
@@ -28,7 +27,7 @@ export type TMediaItemBase = { item: { id?: ItemId }; type?: TMediaItem["type"] 
 
 export class MediaItem extends ContentBase {
 	// #region Static
-	public static readonly trace: Tracer = uTrace.withSource(".MediaItem").trace;
+	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
 
 	private static async fetchItem(itemId: ItemId, contentType: TMediaItem["type"]): Promise<TMediaItem | undefined> {
 		// TODO: Implement video fetching
@@ -99,7 +98,7 @@ export class MediaItem extends ContentBase {
 		}),
 	);
 	public static onMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
-		intercept<{ playbackContext: PlaybackContext }>(
+		redux.intercept<{ playbackContext: PlaybackContext }>(
 			"playbackControls/MEDIA_PRODUCT_TRANSITION",
 			unloads,
 			asyncDebounce(async ({ playbackContext }) => {
@@ -114,7 +113,7 @@ export class MediaItem extends ContentBase {
 
 	/** Warning! Not always called, dont rely on this over onMediaTransition */
 	public static onPreMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
-		intercept<{ productId: ItemId; productType: TMediaItem["type"] }>(
+		redux.intercept<{ productId: ItemId; productType: TMediaItem["type"] }>(
 			"playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION",
 			unloads,
 			asyncDebounce(async ({ mediaProduct: { productId, productType } }) => {

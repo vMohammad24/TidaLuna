@@ -17,9 +17,16 @@ export class StyleTag {
 		if (this.id) styleTag.id = this.id;
 		return styleTag;
 	}
+
+	/**
+	 * Remove style from document
+	 */
 	public remove() {
 		this.styleTag.remove();
 	}
+	/**
+	 * Add style to document
+	 */
 	public add() {
 		document.head.appendChild(this.styleTag);
 	}

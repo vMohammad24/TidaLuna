@@ -1,6 +1,8 @@
 import type { MaybePromise } from "@inrixia/helpers";
-import { redux, type ItemId, type TContentState } from "@luna/lib";
 import type { IArtistCredit } from "musicbrainz-api";
+
+import type { ItemId, TContentState } from "../outdated.types";
+import * as redux from "../redux";
 import type { Artist } from "./Artist";
 
 type ContentType = keyof TContentState;

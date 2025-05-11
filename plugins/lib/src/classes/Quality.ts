@@ -1,12 +1,13 @@
-// // Dont show MQA as a option as if HiRes is avalible itl always be served even if MQA is requested.
-// export const validQualitiesSettings: PlaybackAudioQuality[] = [PlaybackAudioQuality.HiRes, PlaybackAudioQuality.High, PlaybackAudioQuality.Low, PlaybackAudioQuality.Lowest];
-
 export type MediaMetadataTag = "LOSSLESS" | "SONY_360RA" | "DOLBY_ATMOS" | "HIRES_LOSSLESS" | "MQA";
 export type MediaItemAudioQuality = "HI_RES_LOSSLESS" | "HI_RES" | "LOSSLESS" | "HIGH" | "LOW";
 
 export class Quality {
 	private static readonly idxLookup: Record<number, Quality> = {};
-	private constructor(private readonly idx: number, public readonly name: string, public readonly color: string) {
+	private constructor(
+		private readonly idx: number,
+		public readonly name: string,
+		public readonly color: string,
+	) {
 		Quality.idxLookup[idx] = this;
 	}
 	public static readonly Lowest = new Quality(0, "Lowest", "#b9b9b9");
@@ -50,10 +51,17 @@ export class Quality {
 		return this.idxLookup[idx] ?? this.Lowest;
 	}
 
+	/**
+	 * Convert Tidal `mediaItem.mediaMetadata?.tags` to Quality
+	 */
 	public static fromMetaTags(qualityTags?: MediaMetadataTag[]): Quality[] {
 		if (!qualityTags) return [];
 		return qualityTags.map((tag) => this.lookups.metadataTags[tag]);
 	}
+
+	/**
+	 * Convert Tidal `mediaItem.audioQuality` to Quality
+	 */
 	public static fromAudioQuality(audioQuality?: MediaItemAudioQuality) {
 		if (audioQuality === undefined) return undefined;
 		return this.lookups.audioQuality[audioQuality];
@@ -66,9 +74,16 @@ export class Quality {
 		return Quality.fromIdx(Math.max(...(qualities as unknown as number[])));
 	}
 
+	/**
+	 * Get in Tidal `mediaItem.audioQuality` format
+	 */
 	public get audioQuality(): MediaItemAudioQuality {
 		return Quality.lookups.audioQuality[this.idx];
 	}
+
+	/**
+	 * Get in Tidal `mediaItem.mediaMetadata?.tags` format
+	 */
 	public get metadataTag(): MediaMetadataTag {
 		return Quality.lookups.metadataTags[this.idx];
 	}
