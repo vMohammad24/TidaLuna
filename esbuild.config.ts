@@ -1,5 +1,5 @@
 import { type BuildOptions, type PluginBuild } from "esbuild";
-import { listen, TidalNodeVersion } from "luna/build";
+import { defaultBuildOptions, listen, TidalNodeVersion } from "luna/build";
 
 import { mkdir, readFile, writeFile } from "fs/promises";
 
@@ -15,6 +15,7 @@ const packageJsonPlugin = {
 
 const buildConfigs: BuildOptions[] = [
 	{
+		...defaultBuildOptions,
 		entryPoints: ["native/injector.ts"],
 		outfile: "dist/injector.mjs",
 		target: TidalNodeVersion,
@@ -24,6 +25,7 @@ const buildConfigs: BuildOptions[] = [
 		plugins: [packageJsonPlugin],
 	},
 	{
+		...defaultBuildOptions,
 		entryPoints: ["native/preload.ts"],
 		outfile: "dist/preload.mjs",
 		platform: "node",
@@ -33,6 +35,7 @@ const buildConfigs: BuildOptions[] = [
 		plugins: [packageJsonPlugin],
 	},
 	{
+		...defaultBuildOptions,
 		entryPoints: ["render/src/index.ts"],
 		outfile: "dist/luna.mjs",
 		target: TidalNodeVersion,

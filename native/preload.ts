@@ -25,8 +25,8 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 
 // Load the luna.js renderer code and store it in window.luna.core
 (async () => {
-	await webFrame
-		.executeJavaScript(
+	try {
+		await webFrame.executeJavaScript(
 			`(async () => {
 				const originalConsole = { ...console };
 				try {
@@ -46,19 +46,21 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 							<span>\${err.stack}</span>\`;
 						}
 					});
+					err.message = "[Luna.preload] Failed to load luna.js: " + err.message;
 					console.error(err);
-					throw new Error("[Luna.preload] Failed to load luna.js");
+					throw err;
 				} finally {
 				 	// Undo any console fuckery that tidal does
 					window.console = globalThis.console = console = originalConsole;
 				}
 			})()`,
 			true,
-		)
-		.catch((err) => {
-			console.error(`[Luna.preload] luna.js failed to load!`, err);
-			throw err;
-		});
+		);
+	} catch (err) {
+		ipcRenderer.invoke("__Luna.nativeLog", err);
+		alert(err);
+		throw err;
+	}
 	console.log(`[Luna.preload] luna.js loaded!`);
 })();
 
