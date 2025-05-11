@@ -14,7 +14,12 @@ import { storeUrls } from "./SettingsPage/PluginStoreTab";
 import { fetchReleases, pkg } from "./SettingsPage/SettingsTab/LunaClientUpdate";
 
 import { unloads } from "./index.safe";
-export { unloads };
+
+export * from "./classes";
+export * from "./components";
+export * from "./helpers";
+
+export { lunaMuiTheme, unloads };
 
 const settingsPage = Page.register(
 	"LunaSettings",
@@ -77,6 +82,3 @@ setTimeout(async () => {
 		settingsPage.open();
 	}
 });
-
-export * from "./components";
-export { lunaMuiTheme, Page };
