@@ -8,8 +8,6 @@ import { lunaMuiTheme } from "../lunaTheme";
 
 import { unloads } from "../index.safe";
 
-const confirmPage = Page.register("@luna/ui-confirm", unloads);
-
 // I hate this but it works and gives use a nice usable confirm anywhere so
 let confirmImpl: (options: ConfirmOptions) => Promise<ConfirmResult>;
 const ExfilConfirm = () => {
@@ -19,11 +17,15 @@ const ExfilConfirm = () => {
 	}, []);
 	return null;
 };
-confirmPage.render(
+
+Page.register(
+	"@luna/ui-confirm",
+	unloads,
 	<ThemeProvider theme={lunaMuiTheme}>
 		<ConfirmProvider>
 			<ExfilConfirm />
 		</ConfirmProvider>
 	</ThemeProvider>,
 );
+
 export const confirm = (options: ConfirmOptions) => confirmImpl(options);

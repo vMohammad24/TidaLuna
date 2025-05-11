@@ -9,8 +9,8 @@ import { unloads } from "../index.safe";
 export class Page {
 	private static openPage?: Page;
 	private static readonly pages: Record<string, Page> = {};
-	public static register(name: string, unloads: LunaUnloads) {
-		return (this.pages[name] ??= new this(name, unloads));
+	public static register(name: string, unloads: LunaUnloads, component?: React.ReactNode) {
+		return (this.pages[name] ??= new this(name, unloads, component));
 	}
 
 	public readonly root: HTMLDivElement;
@@ -22,6 +22,7 @@ export class Page {
 	private constructor(
 		public readonly name: string,
 		private readonly unloads: LunaUnloads,
+		private readonly component?: React.ReactNode,
 	) {
 		this.rootId = `luna-page-${this.name}`;
 		this.root = <HTMLDivElement>document.getElementById(this.rootId) ?? document.createElement("div");
@@ -59,7 +60,19 @@ export class Page {
 			mainContainer.removeAttribute("style");
 			Object.assign(mainContainer!.style, this.pageStyles);
 			Page.openPage = this;
+			this.render();
 		}
+	}
+
+	/**
+	 * Creates the react root and renders the component
+	 */
+	public render() {
+		if (this.component === undefined) return;
+		if (this.reactRoot !== undefined) return;
+		this.reactRoot = createRoot(this.root);
+		this.unloads.add(this.reactRoot.unmount.bind(this.reactRoot));
+		this.reactRoot.render(this.component);
 	}
 
 	static {
@@ -79,16 +92,7 @@ export class Page {
 		});
 	}
 
-	render(component?: React.ReactNode) {
-		if (this.reactRoot === undefined) {
-			this.reactRoot = createRoot(this.root);
-			this.unloads.add(this.reactRoot.unmount.bind(this.reactRoot));
-			this.reactRoot.render(component);
-		}
-	}
-
-	open(component?: React.ReactNode) {
-		this.render(component);
+	open() {
 		redux.actions["router/PUSH"]({
 			pathname: "/not-found",
 			search: this.name,

@@ -16,7 +16,15 @@ import { fetchReleases, pkg } from "./SettingsPage/SettingsTab/LunaClientUpdate"
 import { unloads } from "./index.safe";
 export { unloads };
 
-const settingsPage = Page.register("LunaSettings", unloads);
+const settingsPage = Page.register(
+	"LunaSettings",
+	unloads,
+	<ThemeProvider theme={lunaMuiTheme}>
+		<ConfirmProvider>
+			<LunaPage />
+		</ConfirmProvider>
+	</ThemeProvider>,
+);
 // thx @n1ckoates re CoverTheme <3
 settingsPage.pageStyles.background = `
 radial-gradient(ellipse at top left, rgba(88, 10, 82, 0.5), transparent 70%),
@@ -26,19 +34,11 @@ radial-gradient(ellipse at top right, rgba(139, 203, 235, 0.5), transparent 70%)
 radial-gradient(ellipse at center right, rgba(98, 103, 145, 0.5), transparent 70%),
 radial-gradient(ellipse at bottom right, rgba(47, 48, 78, 0.5), transparent 70%)`;
 
-const settingsPageComponent = (
-	<ThemeProvider theme={lunaMuiTheme}>
-		<ConfirmProvider>
-			<LunaPage />
-		</ConfirmProvider>
-	</ThemeProvider>
-);
-
 ContextMenu.onOpen(unloads, ({ event, contextMenu }) => {
 	if (event.type === "USER_PROFILE") {
 		contextMenu.addButton("Luna Settings", (e) => {
 			e.preventDefault();
-			settingsPage.open(settingsPageComponent);
+			settingsPage.open();
 		}).style.color = "#31d8ff";
 	}
 });
@@ -56,7 +56,7 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 			currentSettingsTab._ = LunaTabs.Plugins;
 			break;
 	}
-	if (url.pathname.startsWith("//settings")) settingsPage.open(settingsPageComponent);
+	if (url.pathname.startsWith("//settings")) settingsPage.open();
 });
 
 setTimeout(async () => {
@@ -74,7 +74,7 @@ setTimeout(async () => {
 		});
 		if (!res.confirmed) return;
 		currentSettingsTab._ = LunaTabs.Settings;
-		settingsPage.open(settingsPageComponent);
+		settingsPage.open();
 	}
 });
 
