@@ -1,3 +1,3 @@
 {
-	"exportall.config.folderListener": ["/plugins/ui/src/components", "/plugins/ui/src/components/settings"]
+	"exportall.config.folderListener": ["/plugins/ui/src/components", "/plugins/ui/src/components/settings", "/plugins/lib/src/helpers"]
 }

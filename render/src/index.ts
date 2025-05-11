@@ -9,7 +9,7 @@ export { unloadSet, type LunaUnload, type LunaUnloads, type NullishLunaUnloads }
 export { Messager, Tracer } from "./trace";
 
 export { type Store } from "redux";
-export { getCredentials, modules, reduxStore } from "./modules";
+export { modules, reduxStore } from "./modules";
 
 export * from "./LunaPlugin";
 export * from "./ReactiveStore";

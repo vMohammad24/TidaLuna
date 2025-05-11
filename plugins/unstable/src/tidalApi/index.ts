@@ -1,5 +1,5 @@
-import { ftch, getCredentials, type Tracer } from "@luna/core";
-import { redux, type ItemId, type TAlbum, type TArtist, type TLyrics, type TTrackItem } from "@luna/lib";
+import { ftch, type Tracer } from "@luna/core";
+import { getCredentials, redux, type ItemId, type TAlbum, type TArtist, type TLyrics, type TTrackItem } from "@luna/lib";
 
 import { Memo, memoize, type Memoized, type VoidLike } from "@inrixia/helpers";
 

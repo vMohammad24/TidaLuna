@@ -1,6 +1,6 @@
 import { parseDasha } from "./streaming/dasha.native";
 
-import { getCredentials } from "@luna/core";
+import { getCredentials } from "@luna/lib";
 import type { MediaItemAudioQuality } from "../Quality";
 import type { MediaItem } from "./MediaItem";
 import { PlaybackInfo, PlaybackInfoResponse, TidalManifest } from "./MediaItem.playbackInfo.types";
@@ -17,8 +17,6 @@ export const getPlaybackInfo = async (mediaItem: MediaItem, audioQuality: MediaI
 			},
 		}).then((r) => {
 			if (r.status === 401) {
-				// Invalid token, try clearing the memo on getCredentials
-				getCredentials.clear();
 				mediaItem.trace.err.withContext("fetchPlaybackIinfo").throw(new Error("Invalid OAuth Access Token!"));
 			}
 			return r.json();
