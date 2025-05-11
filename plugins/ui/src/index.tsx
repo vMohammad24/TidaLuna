@@ -59,7 +59,7 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 });
 
 setTimeout(async () => {
-	const latestReleaseTag = (await fetchReleases()).map((rel) => rel.tag_name).sort()[0];
+	const latestReleaseTag = (await fetchReleases()).map((rel) => rel.tag_name)[0];
 	if (latestReleaseTag !== pkg.version) {
 		const res = await confirm({
 			title: (
