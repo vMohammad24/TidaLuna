@@ -19,14 +19,14 @@ export const createLogger = <T extends LogConsumer>(source: string, logConsumer:
 		logWithContext.throw = (...data: any[]) => {
 			logWithContext(...data);
 			if (data?.[0] instanceof Error) throw data?.[0];
-			throw new Error(sanitizeData(source, ...data));
+			throw new Error(sanitizeData(source, ...context, ...data), { cause: source });
 		};
 		return logWithContext;
 	};
 	logger.throw = (...data: any[]) => {
 		logger(...data);
 		if (data?.[0] instanceof Error) throw data?.[0];
-		throw new Error(sanitizeData(source, ...data));
+		throw new Error(sanitizeData(source, ...data), { cause: source });
 	};
 	return logger;
 };
