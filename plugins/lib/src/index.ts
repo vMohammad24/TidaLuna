@@ -1,11 +1,10 @@
 export * from "./index.safe";
 
-export * from "./classes/ContextMenu";
-export * from "./classes/StyleTag";
-
+export * from "./classes";
 export * from "./helpers";
-export * as ipcRenderer from "./ipc";
 export * from "./outdated.types";
+
+export * as ipcRenderer from "./ipc";
 export * as redux from "./redux";
 
 import { observePromise } from "./helpers/observable";

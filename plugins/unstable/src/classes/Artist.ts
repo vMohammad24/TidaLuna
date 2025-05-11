@@ -1,6 +1,5 @@
 import type { Tracer } from "@luna/core";
-import { type ItemId, type TArtist } from "@luna/lib";
-import { TidalApi } from "../tidalApi";
+import { TidalApi, type ItemId, type TArtist } from "@luna/lib";
 import { uTrace } from "../window.unstable";
 import { ContentBase, type TImageSize } from "./ContentBase";
 

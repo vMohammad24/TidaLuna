@@ -1,15 +1,19 @@
 import { ftch, type Tracer } from "@luna/core";
-import { getCredentials, redux, type ItemId, type TAlbum, type TArtist, type TLyrics, type TTrackItem } from "@luna/lib";
 
 import { Memo, memoize, type Memoized, type VoidLike } from "@inrixia/helpers";
 
-import { uTrace } from "../window.unstable";
 import type { TApiTrack, TApiTracks } from "./types/Tracks";
+
+import { getCredentials } from "../../helpers";
+import { libTrace } from "../../index.safe";
+import * as redux from "../../redux";
+
+import type { ItemId, TAlbum, TArtist, TLyrics, TTrackItem } from "../../outdated.types";
 
 export * from "./types";
 
 export class TidalApi {
-	public static trace: Tracer = uTrace.withSource("TidalApi").trace;
+	public static trace: Tracer = libTrace.withSource("TidalApi").trace;
 
 	public static async getAuthHeaders() {
 		const { clientId, token } = await getCredentials();

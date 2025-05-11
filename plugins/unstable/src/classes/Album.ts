@@ -7,8 +7,7 @@ import { ContentBase, type TImageSize } from "./ContentBase";
 import { MediaItem } from "./MediaItem/MediaItem";
 
 import { ftch, type Tracer } from "@luna/core";
-import { redux, type ItemId, type TAlbum, type TMediaItem } from "@luna/lib";
-import { TidalApi } from "../tidalApi";
+import { redux, TidalApi, type ItemId, type TAlbum, type TMediaItem } from "@luna/lib";
 import { unloads, uTrace } from "../window.unstable";
 import type { MediaCollection } from "./MediaCollection";
 

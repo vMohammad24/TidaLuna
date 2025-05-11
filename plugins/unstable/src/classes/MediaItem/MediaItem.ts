@@ -4,13 +4,11 @@ import { ContentBase, type TImageSize } from "../ContentBase";
 import { Quality, type MediaMetadataTag } from "../Quality";
 import { makeTags, MetaTags } from "./MediaItem.tags";
 
-import { TidalApi } from "../../tidalApi";
-
 import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import { ftch, type Tracer } from "@luna/core";
-import { redux, unloads, type ItemId, type TLyrics, type TMediaItem } from "@luna/lib";
+import { redux, TidalApi, unloads, type ItemId, type TLyrics, type TMediaItem } from "@luna/lib";
 import { intercept } from "plugins/lib/src/redux";
 import { uTrace } from "../../window.unstable";
 import { Album } from "../Album";
