@@ -26,6 +26,6 @@ Page.register(
 			<ExfilConfirm />
 		</ConfirmProvider>
 	</ThemeProvider>,
-);
+).render();
 
 export const confirm = (options: ConfirmOptions) => confirmImpl(options);

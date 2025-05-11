@@ -68,8 +68,7 @@ export class Page {
 	 * Creates the react root and renders the component
 	 */
 	public render() {
-		if (this.component === undefined) return;
-		if (this.reactRoot !== undefined) return;
+		if (this.component === undefined || this.reactRoot !== undefined) return;
 		this.reactRoot = createRoot(this.root);
 		this.unloads.add(this.reactRoot.unmount.bind(this.reactRoot));
 		this.reactRoot.render(this.component);
