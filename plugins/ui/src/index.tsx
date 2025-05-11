@@ -14,6 +14,7 @@ import { storeUrls } from "./SettingsPage/PluginStoreTab";
 import { fetchReleases, pkg } from "./SettingsPage/SettingsTab/LunaClientUpdate";
 
 import { unloads } from "./index.safe";
+export { unloads };
 
 const settingsPage = Page.register("LunaSettings", unloads);
 // thx @n1ckoates re CoverTheme <3
