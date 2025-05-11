@@ -1,7 +1,8 @@
+export const statusOK = (status: number): boolean => status !== undefined && status >= 200 && status < 300;
+
 export const rejectNotOk = (res: Response): Response => {
-	const OK = res.status !== undefined && res.status >= 200 && res.status < 300;
-	if (!OK) throw new Error(`${res.status} ${res.statusText}`);
-	return res;
+	if (statusOK(res.status)) return res;
+	throw new Error(`${res.status} ${res.statusText}`);
 };
 
 export const toJson = <T>(res: Response): Promise<T> => res.json();

@@ -22,10 +22,13 @@ export class TidalApi {
 		const store = redux.store.getState();
 		return `countryCode=${store.session.countryCode}&deviceType=DESKTOP&locale=${store.settings.language}`;
 	});
-	public static fetch = memoize(async <T>(url: string): Promise<T> => {
-		return ftch.json<T>(url, {
+	public static fetch = memoize(async <T>(url: string): Promise<T | undefined> => {
+		const res = await fetch(url, {
 			headers: await this.getAuthHeaders(),
 		});
+		if (ftch.statusOK(res.status)) return res.json();
+		if (res.status === 404) return undefined;
+		this.trace.err.withContext(url).throw(`${res.status} ${res.statusText}`);
 	});
 
 	public static async track(trackId: ItemId) {
