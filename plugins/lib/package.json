@@ -8,7 +8,6 @@
 	},
 	"exports": "./src/index.ts",
 	"dependencies": {
-		"flac-stream-tagger": "^1.0.10",
 		"dasha": "3.1.6",
 		"music-metadata": "^11.2.1"
 	},

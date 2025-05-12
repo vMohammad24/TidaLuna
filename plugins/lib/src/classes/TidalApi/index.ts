@@ -1,6 +1,6 @@
 import { type Tracer } from "@luna/core";
 
-import { memoize, memoizeArgless, statusOK, type Memoized, type VoidLike } from "@inrixia/helpers";
+import { memoize, memoizeArgless, Semaphore, statusOK, type Memoized, type VoidLike } from "@inrixia/helpers";
 
 import type { TApiTrack, TApiTracks } from "./types/Tracks";
 
@@ -40,9 +40,14 @@ export class TidalApi {
 	public static async track(trackId: ItemId) {
 		return this.fetch<TTrackItem>(`https://desktop.tidal.com/v1/tracks/${trackId}?${this.queryArgs()}`);
 	}
+
+	// Lock to two concurrent requests
+	private static readonly playbackInfoSemaphore = new Semaphore(2);
 	public static playbackInfo(trackId: ItemId, audioQuality: MediaItemAudioQuality) {
-		return this.fetch<PlaybackInfoResponse>(
-			`https://desktop.tidal.com/v1/tracks/${trackId}/playbackinfo?audioquality=${audioQuality}&playbackmode=STREAM&assetpresentation=FULL`,
+		return this.playbackInfoSemaphore.with(() =>
+			this.fetch<PlaybackInfoResponse>(
+				`https://desktop.tidal.com/v1/tracks/${trackId}/playbackinfo?audioquality=${audioQuality}&playbackmode=STREAM&assetpresentation=FULL`,
+			),
 		);
 	}
 
