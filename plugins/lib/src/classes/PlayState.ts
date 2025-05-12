@@ -24,6 +24,7 @@ export type PlaybackContext = {
 };
 
 export type PlaybackControl = OutdatedStoreState["playbackControls"] & { playbackContext: PlaybackContext };
+export type PlayQueue = OutdatedStoreState["playQueue"];
 export type RepeatMode = "off" | "one" | "all";
 
 export class PlayState {
@@ -53,7 +54,7 @@ export class PlayState {
 	public static get playbackControls(): PlaybackControl {
 		return redux.store.getState().playbackControls;
 	}
-	public static get playQueue(): OutdatedStoreState["playQueue"] {
+	public static get playQueue(): PlayQueue {
 		return redux.store.getState().playQueue;
 	}
 	public static get playbackContext(): PlaybackContext {
@@ -162,6 +163,15 @@ export class PlayState {
 	public static playNext(mediaItemIds: ItemId | ItemId[]) {
 		mediaItemIds = Array.isArray(mediaItemIds) ? mediaItemIds : [mediaItemIds];
 		redux.actions["playQueue/ADD_NEXT"]({ mediaItemIds, context: { type: "UNKNOWN" } });
+	}
+	/**
+	 * Updeates PlayState.playQueue, note this may cause playback to restart
+	 */
+	public static updatePlayQueue(playQueue: Partial<PlayQueue>) {
+		redux.actions["playQueue/RESET"]({
+			...PlayState.playQueue,
+			...playQueue,
+		});
 	}
 	// #endregion
 
