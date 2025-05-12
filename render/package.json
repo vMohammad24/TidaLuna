@@ -10,11 +10,11 @@
 	"exports": "./src/index.ts",
 	"dependencies": {
 		"@uwu/quartz": "^1.5.3",
-		"idb-keyval": "^6.2.1",
+		"idb-keyval": "^6.2.2",
 		"spitroast": "^2.1.6"
 	},
 	"devDependencies": {
-		"redux": "^5.0.1",
-		"oby": "^15.1.2"
+		"oby": "^15.1.2",
+		"redux": "^5.0.1"
 	}
 }
