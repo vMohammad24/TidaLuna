@@ -25,3 +25,4 @@ modules["react-dom/client"] = findModuleByProperty((key, value) => key === "crea
 modules["react-dom/client"].default ??= modules["react-dom/client"];
 
 modules["oby"] = await import("oby");
+modules["path"] = path;

@@ -2,6 +2,8 @@ import { unloadableEmitter, type AnyFn } from "@inrixia/helpers";
 import { contextBridge, ipcRenderer, webFrame } from "electron";
 import { createRequire } from "module";
 
+import path from "path";
+
 const ipcRendererUnloadable = unloadableEmitter(ipcRenderer, null, "ipcRenderer");
 
 // Allow render side to execute invoke
@@ -11,6 +13,8 @@ contextBridge.exposeInMainWorld("__ipcRenderer", {
 	on: (channel: string, listener: AnyFn) => ipcRendererUnloadable.onU(null, channel, (_, ...args) => listener(...args)),
 	once: (channel: string, listener: AnyFn) => ipcRendererUnloadable.onceU(null, channel, (_, ...args) => listener(...args)),
 });
+// Expose path module
+contextBridge.exposeInMainWorld("path", path);
 
 type ConsoleMethodName = {
 	[K in keyof Console]: Console[K] extends (...args: any[]) => any ? K : never;

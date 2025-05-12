@@ -39,4 +39,5 @@ declare global {
 		//** Dont use this! Use @luna/lib ipcRenderer */
 		once: (channel: string, listener: AnyFn) => LunaUnload;
 	};
+	const path: typeof import("path");
 }
