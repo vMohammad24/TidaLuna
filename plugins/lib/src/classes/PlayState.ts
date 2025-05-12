@@ -200,22 +200,27 @@ export class PlayState {
 		});
 	}
 
+	private static currentMediaItem?: MediaItem;
 	/**
 	 * `onScrobble` called with `MediaItem` when a track should be scrobbled according to `MIN_SCROBBLE_DURATION` and `MIN_SCROBBLE_PERCENTAGE`
 	 */
-	public static onScrobble: AddReceiver<MediaItem> = registerEmitter((onScrobble) =>
+	public static onScrobble: AddReceiver<MediaItem> = registerEmitter(async (onScrobble) => {
+		this.currentMediaItem = await MediaItem.fromPlaybackContext();
 		MediaItem.onMediaTransition(unloads, (mediaItem) => {
-			if (mediaItem.duration === undefined) return;
-			if (this.lastPlayStart !== undefined) this.cumulativePlaytime += Date.now() - this.lastPlayStart;
-			const longerThan4min = this.cumulativePlaytime >= this.MIN_SCROBBLE_DURATION;
-			const minPlayTime = mediaItem.duration * this.MIN_SCROBBLE_PERCENTAGE * 1000;
-			const moreThan50Percent = this.cumulativePlaytime >= minPlayTime;
-			if (longerThan4min || moreThan50Percent) onScrobble(mediaItem, this.trace.err.withContext("onScrobble"));
-
+			// Dont use mediaItem as its the NEXT track not the one we just finished listening to
+			if (this.currentMediaItem !== undefined && this.currentMediaItem.id !== mediaItem.id) {
+				if (this.currentMediaItem.duration === undefined) return;
+				if (this.lastPlayStart !== undefined) this.cumulativePlaytime += Date.now() - this.lastPlayStart;
+				const longerThan4min = this.cumulativePlaytime >= this.MIN_SCROBBLE_DURATION;
+				const minPlayTime = this.currentMediaItem.duration * this.MIN_SCROBBLE_PERCENTAGE * 1000;
+				const moreThan50Percent = this.cumulativePlaytime >= minPlayTime;
+				if (longerThan4min || moreThan50Percent) onScrobble(this.currentMediaItem, this.trace.err.withContext("onScrobble"));
+			}
+			this.currentMediaItem = mediaItem;
 			// reset as we started playing a new one
 			this.cumulativePlaytime = 0;
-		}),
-	);
+		});
+	});
 
 	public static onState: AddReceiver<PlaybackState> = registerEmitter((onState) =>
 		redux.intercept<PlaybackState>("playbackControls/SET_PLAYBACK_STATE", unloads, (playbackState) =>

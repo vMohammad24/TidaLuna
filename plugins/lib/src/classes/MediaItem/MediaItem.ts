@@ -75,7 +75,7 @@ export class MediaItem extends ContentBase {
 	});
 	public static async fromPlaybackContext(playbackContext?: PlaybackContext) {
 		// This has to be here to avoid ciclic requirements breaking
-		playbackContext ??= redux.store.getState().playbackControls.playbackContext;
+		playbackContext ??= PlayState.playbackContext;
 		if (playbackContext?.actualProductId === undefined) return undefined;
 		const mediaItem = await this.fromId(playbackContext.actualProductId, playbackContext.actualVideoQuality === null ? "track" : "video");
 		// mediaItem?.setFormatAttrs({
