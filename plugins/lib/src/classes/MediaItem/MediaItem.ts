@@ -1,7 +1,7 @@
 import { asyncDebounce, memoize, registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
-import { ftch, type Tracer } from "@luna/core";
+import { ftch, ReactiveStore, type Tracer } from "@luna/core";
 
 import { libTrace, unloads } from "../../index.safe";
 import type { ItemId, TLyrics, TMediaItem } from "../../outdated.types";
@@ -22,6 +22,9 @@ type MediaFormat = {
 	bytes?: number;
 	bitrate?: number;
 };
+type MediaItemCache = {
+	format?: { [K in MediaItemAudioQuality]?: MediaFormat };
+};
 
 export type MediaItemType = "track" | "video";
 export type TMediaItemBase = { item: { id?: ItemId }; type?: MediaItemType };
@@ -30,23 +33,45 @@ export class MediaItem extends ContentBase {
 	// #region Static
 	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
 
+	private static cache = ReactiveStore.getStore("@luna/MediaItemCache");
+
+	private static async fetchMediaItem(itemId: ItemId, contentType: MediaItemType) {
+		// Supress missing content warning when programatically loading mediaItems
+		const clearWarnCatch = redux.intercept("message/MESSAGE_WARN", unloads, (message) => {
+			if (message?.message === "The content is no longer available") return true;
+		});
+		const { mediaItem } = await redux.interceptActionResp(
+			() => redux.actions["content/LOAD_SINGLE_MEDIA_ITEM"]({ id: itemId, itemType: contentType }),
+			unloads,
+			["content/LOAD_SINGLE_MEDIA_ITEM_SUCCESS"],
+			["content/LOAD_SINGLE_MEDIA_ITEM_FAIL"],
+		);
+		clearWarnCatch();
+		return mediaItem;
+	}
+
+	// #region Static Construction
 	public static async fromId(itemId?: ItemId, contentType: MediaItemType = "track"): Promise<MediaItem | undefined> {
 		if (itemId === undefined) return;
-		return super.fromStore(itemId, "mediaItems", this, async () => {
-			// Supress missing content warning when programatically loading mediaItems
-			const clearWarnCatch = redux.intercept("message/MESSAGE_WARN", unloads, (message) => {
-				if (message?.message === "The content is no longer available") return true;
-			});
-			const { mediaItem } = await redux.interceptActionResp(
-				() => redux.actions["content/LOAD_SINGLE_MEDIA_ITEM"]({ id: itemId, itemType: contentType }),
-				unloads,
-				["content/LOAD_SINGLE_MEDIA_ITEM_SUCCESS"],
-				["content/LOAD_SINGLE_MEDIA_ITEM_FAIL"],
-			);
-			clearWarnCatch();
-			return mediaItem;
+		// Prefetch mediaItemCache while constructing
+		const mediaItemCache = MediaItem.cache.getReactive<MediaItemCache>(String(itemId), { format: {} });
+		return super.fromStore(itemId, "mediaItems", async (mediaItem) => {
+			mediaItem = mediaItem ??= await this.fetchMediaItem(itemId, contentType);
+			return new MediaItem(itemId, mediaItem, await mediaItemCache);
 		});
 	}
+	public static fromIsrc: (isrc: string) => Promise<MediaItem | undefined> = memoize(async (isrc) => {
+		let bestMediaItem: MediaItem | undefined = undefined;
+		for await (const track of TidalApi.isrc(isrc)) {
+			// If quality is higher than current best, set as best
+			const maxTrackQuality = Quality.max(...Quality.fromMetaTags(track.attributes.mediaTags as MediaMetadataTag[]));
+			if (maxTrackQuality > (bestMediaItem?.bestQuality ?? Quality.Lowest)) {
+				bestMediaItem = (await MediaItem.fromId(track.id)) ?? bestMediaItem;
+				if ((bestMediaItem?.bestQuality ?? Quality.Lowest) >= Quality.Max) return bestMediaItem;
+			}
+		}
+		return bestMediaItem;
+	});
 	public static async fromPlaybackContext(playbackContext?: PlaybackContext) {
 		// This has to be here to avoid ciclic requirements breaking
 		playbackContext ??= redux.store.getState().playbackControls.playbackContext;

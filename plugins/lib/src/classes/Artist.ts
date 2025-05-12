@@ -17,7 +17,11 @@ export class Artist extends ContentBase {
 
 	public static async fromId(artistId?: ItemId): Promise<Artist | undefined> {
 		if (artistId === undefined) return;
-		return super.fromStore(artistId, "artists", this, () => TidalApi.artist(artistId));
+		return super.fromStore(artistId, "artists", async (artist) => {
+			artist = artist ??= await TidalApi.artist(artistId);
+			if (artist === undefined) return;
+			return new Artist(artistId, artist);
+		});
 	}
 
 	public coverUrl(res?: TImageSize) {

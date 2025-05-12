@@ -26,7 +26,11 @@ export class Album extends ContentBase implements MediaCollection {
 
 	public static async fromId(albumId?: ItemId): Promise<Album | undefined> {
 		if (albumId === undefined) return;
-		return super.fromStore(albumId, "albums", this, () => TidalApi.album(albumId));
+		return super.fromStore(albumId, "albums", async (album) => {
+			album = album ??= await TidalApi.album(albumId);
+			if (album === undefined) return;
+			return new Album(albumId, album);
+		});
 	}
 
 	/**

@@ -8,25 +8,28 @@ import type { Artist } from "./Artist";
 type ContentType = keyof TContentState;
 type ContentItem<K extends ContentType> = Exclude<ReturnType<TContentState[K]["get"]>, undefined>;
 type ContentClass<K extends ContentType> = {
-	new (itemId: ItemId, contentItem: ContentItem<K>): any;
+	new (itemId: ItemId, contentItem: ContentItem<K>, ...args: any[]): any;
 };
 export type TImageSize = "1280" | "640" | "320" | "160" | "80";
 
 export class ContentBase {
 	private static readonly _instances: Record<string, Record<ItemId, ContentClass<ContentType>>> = {};
 
+	/**
+	 * Ensure instances of ContentClass's are properly cached and abstracts fetching from the store.
+	 */
 	protected static async fromStore<K extends ContentType, C extends ContentClass<K>, I extends InstanceType<C>>(
 		itemId: ItemId,
 		contentType: K,
-		clss: C,
-		generator?: () => MaybePromise<ContentItem<K> | undefined>,
+		generator: (contentItem?: ContentItem<K>) => MaybePromise<I | undefined>,
 	): Promise<I | undefined> {
 		if (this._instances[contentType]?.[itemId] !== undefined) return this._instances[contentType][itemId] as I;
-		const contentItem = this.getItemFromStore(contentType, itemId) ?? (await generator?.());
-		if (contentItem !== undefined) {
-			this._instances[contentType] ??= {};
-			return (this._instances[contentType][itemId] ??= new clss(itemId, contentItem)) as I;
-		}
+
+		const contentClass = await generator(this.getItemFromStore(contentType, itemId));
+		if (contentClass === undefined) return;
+
+		this._instances[contentType] ??= {};
+		return (this._instances[contentType][itemId] = contentClass);
 	}
 
 	/**
