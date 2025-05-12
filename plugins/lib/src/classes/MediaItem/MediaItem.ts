@@ -30,26 +30,21 @@ export class MediaItem extends ContentBase {
 	// #region Static
 	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
 
-	private static async fetchItem(itemId: ItemId, contentType: MediaItemType): Promise<TMediaItem | undefined> {
-		// TODO: Implement video fetching
-		if (contentType !== "track") return;
-		const item = await TidalApi.track(itemId);
-		if (item === undefined) return;
-		(item as any).contentType = contentType;
-		return { item, type: contentType };
-	}
-
 	public static async fromId(itemId?: ItemId, contentType: MediaItemType = "track"): Promise<MediaItem | undefined> {
 		if (itemId === undefined) return;
 		return super.fromStore(itemId, "mediaItems", this, async () => {
+			// Supress missing content warning when programatically loading mediaItems
+			const clearWarnCatch = redux.intercept("message/MESSAGE_WARN", unloads, (message) => {
+				if (message?.message === "The content is no longer available") return true;
+			});
 			const { mediaItem } = await redux.interceptActionResp(
 				() => redux.actions["content/LOAD_SINGLE_MEDIA_ITEM"]({ id: itemId, itemType: contentType }),
 				unloads,
 				["content/LOAD_SINGLE_MEDIA_ITEM_SUCCESS"],
 				["content/LOAD_SINGLE_MEDIA_ITEM_FAIL"],
 			);
-			if (mediaItem !== undefined) return mediaItem;
-			return this.fetchItem(itemId, contentType);
+			clearWarnCatch();
+			return mediaItem;
 		});
 	}
 	public static async fromPlaybackContext(playbackContext?: PlaybackContext) {
