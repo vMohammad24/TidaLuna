@@ -239,5 +239,8 @@ ipcHandle("__Luna.registerNative", async (_, name: string, code: string) => {
 	}
 });
 // Literally just to log if preload fails
-ipcHandle("__Luna.nativeLog", async (_, ...args: any[]) => console.log(...args));
+ipcHandle("__Luna.preloadErr", async (_, err: Error) => {
+	console.error(err);
+	electron.dialog.showErrorBox("TidaLuna", err.message);
+});
 // #endregion

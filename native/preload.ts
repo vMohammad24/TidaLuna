@@ -50,7 +50,7 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 							<span>\${err.stack}</span>\`;
 						}
 					});
-					err.message = "[Luna.preload] Failed to load luna.js: " + err.message;
+					err.message = "[Luna.preload] Failed to load luna.js:\\n" + err.message;
 					console.error(err);
 					throw err;
 				} finally {
@@ -61,8 +61,7 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 			true,
 		);
 	} catch (err) {
-		ipcRenderer.invoke("__Luna.nativeLog", err);
-		alert(err);
+		ipcRenderer.invoke("__Luna.preloadErr", err);
 		throw err;
 	}
 	console.log(`[Luna.preload] luna.js loaded!`);
