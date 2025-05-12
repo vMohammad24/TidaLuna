@@ -287,7 +287,7 @@ export class MediaItem extends ContentBase {
 	public coverUrl: (res?: TImageSize) => Promise<string | undefined> = memoize(async (res) => {
 		if (this.tidalItem.album?.cover) return ContentBase.formatCoverUrl(this.tidalItem.album?.cover, res);
 		const album = await this.album();
-		return album?.coverUrl();
+		return album?.coverUrl(res);
 	});
 	public brainzId: () => Promise<string | undefined> = memoize(async () => {
 		const brainzItem = await this.brainzItem();
