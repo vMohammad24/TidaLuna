@@ -4,7 +4,8 @@ import { Readable } from "stream";
 import { makeDecipher } from "./decrypt";
 import { fetchStream, type TrackStreamOptions } from "./fetchStream";
 
-export const fetchTrackStream = async (
+export { FetchProgress } from "./fetchStream";
+export const fetchMediaItemStream = async (
 	{ manifestMimeType, manifest }: PlaybackInfo,
 	options: Omit<TrackStreamOptions, "deciper">,
 ): Promise<Readable> => {

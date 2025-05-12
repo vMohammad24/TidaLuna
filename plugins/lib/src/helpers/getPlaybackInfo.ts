@@ -30,6 +30,7 @@ export type PlaybackInfo = DashPlaybackInfo | TidalPlaybackInfo;
 export const getPlaybackInfo = async (mediaItemId: ItemId, audioQuality: MediaItemAudioQuality): Promise<PlaybackInfo> => {
 	try {
 		const playbackInfo = await TidalApi.playbackInfo(mediaItemId, audioQuality);
+		if (playbackInfo === undefined) throw new Error(`Playback info not found for ${mediaItemId}`);
 
 		switch (playbackInfo.manifestMimeType) {
 			case "application/vnd.tidal.bts": {

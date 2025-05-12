@@ -1,6 +1,6 @@
-import { ftch, type Tracer } from "@luna/core";
+import { type Tracer } from "@luna/core";
 
-import { memoize, memoizeArgless, type Memoized, type VoidLike } from "@inrixia/helpers";
+import { memoize, memoizeArgless, statusOK, type Memoized, type VoidLike } from "@inrixia/helpers";
 
 import type { TApiTrack, TApiTracks } from "./types/Tracks";
 
@@ -32,7 +32,7 @@ export class TidalApi {
 		const res = await fetch(url, {
 			headers: await this.getAuthHeaders(),
 		});
-		if (ftch.statusOK(res.status)) return res.json();
+		if (statusOK(res.status)) return res.json();
 		if (res.status === 404) return undefined;
 		this.trace.err.withContext(url).throw(`${res.status} ${res.statusText}`);
 	});
@@ -41,7 +41,7 @@ export class TidalApi {
 		return this.fetch<TTrackItem>(`https://desktop.tidal.com/v1/tracks/${trackId}?${this.queryArgs()}`);
 	}
 	public static playbackInfo(trackId: ItemId, audioQuality: MediaItemAudioQuality) {
-		return ftch.json<PlaybackInfoResponse>(
+		return this.fetch<PlaybackInfoResponse>(
 			`https://desktop.tidal.com/v1/tracks/${trackId}/playbackinfo?audioquality=${audioQuality}&playbackmode=STREAM&assetpresentation=FULL`,
 		);
 	}

@@ -1,8 +1,9 @@
+import { rejectNotOk } from "@inrixia/helpers";
 import type { Decipher } from "crypto";
-import { rejectNotOk } from "../../../../render/src/helpers/fetch";
 
+export type FetchProgress = { readonly total: number; readonly downloaded: number };
 export type TrackStreamOptions = {
-	progress?: { readonly total: number; readonly downloaded: number };
+	progress?: FetchProgress;
 	bytesWanted?: number;
 	decipher?: Decipher;
 };
