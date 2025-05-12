@@ -18,12 +18,18 @@ Object.defineProperty(window.luna, "dev", {
 	enumerable: true,
 	configurable: false,
 });
+Object.defineProperty(window.luna, "native", {
+	get: () => modules["@luna/lib.native"],
+	enumerable: true,
+	configurable: false,
+});
 declare global {
 	interface Window {
 		luna: {
 			// Throw lib, ui & core here for ease of use
 			core?: typeof import("@luna/core");
 			lib?: typeof import("@luna/lib");
+			native?: typeof import("@luna/lib.native");
 			ui?: typeof import("@luna/ui");
 			dev?: typeof import("@luna/dev");
 		};
