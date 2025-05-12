@@ -1,6 +1,6 @@
 import { ftch, type Tracer } from "@luna/core";
 
-import { Memo, memoize, type Memoized, type VoidLike } from "@inrixia/helpers";
+import { memoize, memoizeArgless, type Memoized, type VoidLike } from "@inrixia/helpers";
 
 import type { TApiTrack, TApiTracks } from "./types/Tracks";
 
@@ -24,7 +24,7 @@ export class TidalApi {
 			"x-tidal-token": clientId,
 		};
 	}
-	public static readonly queryArgs: Memoized<() => string> = Memo.argless(() => {
+	public static readonly queryArgs: Memoized<() => string> = memoizeArgless(() => {
 		const store = redux.store.getState();
 		return `countryCode=${store.session.countryCode}&deviceType=DESKTOP&locale=${store.settings.language}`;
 	});

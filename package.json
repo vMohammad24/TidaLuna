@@ -36,7 +36,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@inrixia/helpers": "^3.17.0",
+    "@inrixia/helpers": "^3.19.0",
     "@types/clean-css": "^4.2.11",
     "@types/html-minifier-terser": "^7.0.2",
     "@types/node": "^22.15.17",

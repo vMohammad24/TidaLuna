@@ -1,4 +1,4 @@
-import { Memo } from "@inrixia/helpers";
+import { memoizeArgless } from "@inrixia/helpers";
 import { findModuleProperty } from "@luna/core";
 
 type TidalCredentials = {
@@ -11,7 +11,7 @@ type TidalCredentials = {
 	userId: string;
 };
 
-const _getCredentialsMemo = Memo.argless(() =>
+const _getCredentialsMemo = memoizeArgless(() =>
 	findModuleProperty<() => Promise<TidalCredentials>>((key, value) => key === "getCredentials" && typeof value === "function")!.value!(),
 );
 export const getCredentials = async () => {
