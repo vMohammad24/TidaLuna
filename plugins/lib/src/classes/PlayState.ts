@@ -26,6 +26,7 @@ export type PlaybackContext = {
 export type PlaybackControl = OutdatedStoreState["playbackControls"] & { playbackContext: PlaybackContext };
 export type PlayQueue = OutdatedStoreState["playQueue"];
 export type RepeatMode = "off" | "one" | "all";
+export type PlaybackState = "IDLE" | "NOT_PLAYING" | "PLAYING" | "STALLED";
 
 export class PlayState {
 	/**
@@ -61,10 +62,10 @@ export class PlayState {
 		return this.playbackControls.playbackContext;
 	}
 
-	public static get state() {
+	public static get state(): PlaybackState {
 		return this.playbackControls.playbackState;
 	}
-	public static get desiredState() {
+	public static get desiredState(): PlaybackState {
 		return this.playbackControls.desiredPlaybackState;
 	}
 
@@ -214,5 +215,11 @@ export class PlayState {
 			// reset as we started playing a new one
 			this.cumulativePlaytime = 0;
 		}),
+	);
+
+	public static onState: AddReceiver<PlaybackState> = registerEmitter((onState) =>
+		redux.intercept<PlaybackState>("playbackControls/SET_PLAYBACK_STATE", unloads, (playbackState) =>
+			onState(playbackState, this.trace.err.withContext("onState")),
+		),
 	);
 }
