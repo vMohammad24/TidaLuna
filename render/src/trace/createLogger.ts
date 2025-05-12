@@ -8,9 +8,9 @@ export type Logger<T extends LogConsumer = LogConsumer> = {
 	withContext(...context: Parameters<T>): {
 		(...data: Parameters<T>): VoidLike;
 		/** Throw data after logging */
-		throw: (...data: Parameters<T>) => VoidLike;
+		throw: (...data: Parameters<T>) => never;
 	};
-	throw: (...data: Parameters<T>) => VoidLike;
+	throw: (...data: Parameters<T>) => never;
 };
 export const createLogger = <T extends LogConsumer>(source: string, logConsumer: T): Logger<T> => {
 	const logger = (...data: any[]) => logConsumer(source, ...data);
@@ -18,7 +18,10 @@ export const createLogger = <T extends LogConsumer>(source: string, logConsumer:
 		const logWithContext = (...data: any[]) => logConsumer(source, ...context, ...data);
 		logWithContext.throw = (...data: any[]) => {
 			logWithContext(...data);
-			if (data?.[0] instanceof Error) throw data?.[0];
+			if (data?.[0] instanceof Error) {
+				data[0].cause = sanitizeData(source, ...context);
+				throw data?.[0];
+			}
 			throw new Error(sanitizeData(source, ...context, ...data), { cause: source });
 		};
 		return logWithContext;
