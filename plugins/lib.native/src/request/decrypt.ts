@@ -1,4 +1,4 @@
-import type { TidalManifest } from "@triton/lib";
+import type { TidalManifest } from "@luna/lib";
 import { createDecipheriv } from "crypto";
 
 // Do not change this
@@ -37,7 +37,8 @@ const makeDecipheriv = ({ key, nonce }: DecryptedKey) => {
 	return createDecipheriv("aes-128-ctr", Uint8Array.from(key), iv);
 };
 
-export const makeDecipher = (manifest: TidalManifest) => {
+export const makeDecipher = (manifest?: TidalManifest) => {
+	if (manifest === undefined) return;
 	switch (manifest.encryptionType) {
 		case "OLD_AES": {
 			return makeDecipheriv(decryptKeyId(manifest.keyId));
