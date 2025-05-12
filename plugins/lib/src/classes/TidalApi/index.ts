@@ -49,11 +49,17 @@ export class TidalApi {
 	public static async lyrics(trackId: ItemId) {
 		return this.fetch<TLyrics>(`https://desktop.tidal.com/v1/tracks/${trackId}/lyrics?${this.queryArgs()}`);
 	}
+	public static async artist(artistId: ItemId) {
+		return this.fetch<TArtist>(`https://desktop.tidal.com/v1/artists/${artistId}?${this.queryArgs()}`);
+	}
+
 	public static async album(albumId: ItemId) {
 		return this.fetch<TAlbum>(`https://desktop.tidal.com/v1/albums/${albumId}?${this.queryArgs()}`);
 	}
-	public static async artist(artistId: ItemId) {
-		return this.fetch<TArtist>(`https://desktop.tidal.com/v1/artists/${artistId}?${this.queryArgs()}`);
+	public static async albumItems(albumId: ItemId) {
+		return this.fetch<{ items: TMediaItem[]; totalNumberOfItems: number; offset: number; limit: -1 }>(
+			`https://desktop.tidal.com/v1/albums/${albumId}/items?${this.queryArgs()}&limit=-1`,
+		);
 	}
 
 	public static playlist(playlistUUID: ItemId) {

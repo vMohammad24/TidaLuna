@@ -21,8 +21,7 @@ export class Playlist extends ContentBase implements MediaCollection {
 
 	public static async fromId(playlistUUID?: ItemId) {
 		if (playlistUUID === undefined) return;
-		// TODO: Add with TidalApi call
-		return super.fromStore(playlistUUID, "playlists", this);
+		return super.fromStore(playlistUUID, "playlists", this, () => TidalApi.playlist(playlistUUID));
 	}
 
 	public async count() {

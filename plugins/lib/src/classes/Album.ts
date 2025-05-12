@@ -4,9 +4,8 @@ import type { IRelease, IReleaseMatch } from "musicbrainz-api";
 
 import { ftch, type Tracer } from "@luna/core";
 
-import { libTrace, unloads } from "../index.safe";
+import { libTrace } from "../index.safe";
 import type { ItemId, TAlbum, TMediaItem } from "../outdated.types";
-import * as redux from "../redux";
 import { Artist } from "./Artist";
 import { ContentBase, type TImageSize } from "./ContentBase";
 import type { MediaCollection } from "./MediaCollection";
@@ -78,17 +77,8 @@ export class Album extends ContentBase implements MediaCollection {
 		return this.tidalAlbum.numberOfTracks!;
 	}
 	public tMediaItems: () => Promise<TMediaItem[]> = memoize(async () => {
-		const result = await redux
-			.interceptActionResp(
-				() => redux.actions["content/LOAD_ALL_ALBUM_MEDIA_ITEMS"]({ albumId: this.tidalAlbum.id! }),
-				unloads,
-				["content/LOAD_ALL_ALBUM_MEDIA_ITEMS_SUCCESS"],
-				["content/LOAD_ALL_ALBUM_MEDIA_ITEMS_FAIL"],
-			)
-			.catch(this.trace.warn.withContext("tMediaItems.interceptActionResp", this));
-		const tMediaItems = <Immutable.List<TMediaItem>>result?.mediaItems;
-		if (tMediaItems === undefined) return [];
-		return Array.from(tMediaItems);
+		const playlistIitems = await TidalApi.albumItems(this.id);
+		return playlistIitems?.items ?? [];
 	});
 	public async mediaItems() {
 		return MediaItem.fromTMediaItems(await this.tMediaItems());
