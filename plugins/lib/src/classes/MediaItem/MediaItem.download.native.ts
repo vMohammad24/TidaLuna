@@ -1,36 +1,37 @@
-import type { PlaybackInfo } from "../../helpers";
-import type { MetaTags } from "./MediaItem.tags";
+import sanitize from "sanitize-filename";
+
+import { createWriteStream } from "fs";
+import { mkdir } from "fs/promises";
+import { join, parse } from "path";
 
 import { fetchMediaItemStream, type FetchProgress } from "@luna/lib.native";
 
-import { createWriteStream, type PathLike } from "fs";
-import { access, constants } from "fs/promises";
+import type { ItemId } from "@luna/lib";
+import type { PlaybackInfo } from "../../helpers";
+import type { MetaTags } from "./MediaItem.tags";
 
-const exists = (path: PathLike) =>
-	access(path, constants.F_OK)
-		.then(() => true)
-		.catch(() => false);
-
-const pathSeparator = process.platform === "win32" ? "\\" : "/";
-
-const downloadProgress: Record<string, FetchProgress> = {};
+const downloads: Record<ItemId, { progress: FetchProgress; promise: Promise<void> } | undefined> = {};
+export const downloadProgress = async (trackId: ItemId) => downloads[trackId];
 export const download = async (playbackInfo: PlaybackInfo, path: string, tags?: MetaTags): Promise<void> => {
-	// if (downloadStatus[playbackInfo.] !== undefined) throw new Error(`Something is already downloading to ${pathKey}`);
+	if (downloads[playbackInfo.trackId] !== undefined) return downloads[playbackInfo.trackId]!.promise;
 	try {
-		// const folderPath = path.join(pathInfo.basePath ?? "", pathInfo.folderPath);
-		// if (folderPath !== ".") await mkdir(folderPath, { recursive: true });
-		// const fileName = `${folderPath}${pathSeparator}${pathInfo.fileName}`;
-		// Dont download if exists
-		// if (await exists(fileName)) {
-		// 	delete downloadStatus[pathKey];
-		// 	return Promise.resolve();
-		// }
-		const progress = (downloadProgress[playbackInfo.trackId] = { total: 0, downloaded: 0 });
-		let stream = await fetchMediaItemStream(playbackInfo, { progress, tags });
-		const writeStream = createWriteStream("C:\\Users\\Inrixia\\Downloads\\test.flac");
-		return new Promise((res, rej) => stream.pipe(writeStream).on("finish", res).on("error", rej));
+		const parsedPath = parse(path);
+		await mkdir(parsedPath.dir, { recursive: true });
+		const writeStream = createWriteStream(join(parsedPath.dir, sanitize(parsedPath.base)));
+
+		const progress = { total: 0, downloaded: 0 };
+		const stream = await fetchMediaItemStream(playbackInfo, {
+			progress,
+			tags,
+		});
+
+		const { resolve, reject, promise } = Promise.withResolvers<void>();
+		stream.pipe(writeStream).on("finish", resolve).on("error", reject);
+
+		downloads[playbackInfo.trackId] = { progress, promise };
+
+		return promise;
 	} finally {
-		delete downloadProgress[playbackInfo.trackId];
+		delete downloads[playbackInfo.trackId];
 	}
 };
-export const getDownloadProgress = (filePath: string) => downloadProgress[filePath];

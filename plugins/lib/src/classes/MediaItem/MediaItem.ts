@@ -13,7 +13,7 @@ import { ContentBase, type TImageSize } from "../ContentBase";
 import { PlayState, type PlaybackContext } from "../PlayState";
 import { Quality, type MediaItemAudioQuality, type MediaMetadataTag } from "../Quality";
 import { TidalApi } from "../TidalApi";
-import { download } from "./MediaItem.download.native";
+import { download, downloadProgress } from "./MediaItem.download.native";
 import { makeTags, MetaTags } from "./MediaItem.tags";
 
 type MediaFormat = {
@@ -355,6 +355,9 @@ export class MediaItem extends ContentBase {
 	// #endregion
 
 	// #region Download
+	public async downloadProgress() {
+		return downloadProgress(this.id);
+	}
 	public async download(path: string): Promise<void> {
 		const [playbackInfo, flagTags] = await Promise.all([this.playbackInfo(), this.flacTags()]);
 		await download(playbackInfo, path, flagTags);
