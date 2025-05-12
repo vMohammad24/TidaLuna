@@ -36,8 +36,8 @@ export class Quality {
 		audioQuality: {
 			HI_RES_LOSSLESS: Quality.HiRes,
 			[Quality.HiRes.idx]: "HI_RES_LOSSLESS",
-			HI_RES: Quality.HiRes,
-			[Quality.HiRes.idx]: "HI_RES",
+			HI_RES: Quality.MQA,
+			[Quality.MQA.idx]: "HI_RES",
 			LOSSLESS: Quality.High,
 			[Quality.High.idx]: "LOSSLESS",
 			HIGH: Quality.High,
