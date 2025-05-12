@@ -1,4 +1,4 @@
-import { asyncDebounce, memoize, registerEmitter, sleep, type AddReceiver } from "@inrixia/helpers";
+import { asyncDebounce, memoize, registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { ftch, type Tracer } from "@luna/core";
@@ -9,7 +9,7 @@ import * as redux from "../../redux";
 import { Album } from "../Album";
 import { Artist } from "../Artist";
 import { ContentBase, type TImageSize } from "../ContentBase";
-import { type PlaybackContext } from "../PlayState";
+import { PlayState, type PlaybackContext } from "../PlayState";
 import { Quality, type MediaMetadataTag } from "../Quality";
 import { TidalApi } from "../TidalApi";
 import { makeTags, MetaTags } from "./MediaItem.tags";
@@ -23,13 +23,14 @@ type MediaFormat = {
 	bitrate?: number;
 };
 
-export type TMediaItemBase = { item: { id?: ItemId }; type?: TMediaItem["type"] };
+export type MediaItemType = "track" | "video";
+export type TMediaItemBase = { item: { id?: ItemId }; type?: MediaItemType };
 
 export class MediaItem extends ContentBase {
 	// #region Static
 	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
 
-	private static async fetchItem(itemId: ItemId, contentType: TMediaItem["type"]): Promise<TMediaItem | undefined> {
+	private static async fetchItem(itemId: ItemId, contentType: MediaItemType): Promise<TMediaItem | undefined> {
 		// TODO: Implement video fetching
 		if (contentType !== "track") return;
 		const item = await TidalApi.track(itemId);
@@ -38,9 +39,18 @@ export class MediaItem extends ContentBase {
 		return { item, type: contentType };
 	}
 
-	public static async fromId(itemId?: ItemId, contentType: TMediaItem["type"] = "track"): Promise<MediaItem | undefined> {
+	public static async fromId(itemId?: ItemId, contentType: MediaItemType = "track"): Promise<MediaItem | undefined> {
 		if (itemId === undefined) return;
-		return super.fromStore(itemId, "mediaItems", this, () => this.fetchItem(itemId, contentType));
+		return super.fromStore(itemId, "mediaItems", this, async () => {
+			const { mediaItem } = await redux.interceptActionResp(
+				() => redux.actions["content/LOAD_SINGLE_MEDIA_ITEM"]({ id: itemId, itemType: contentType }),
+				unloads,
+				["content/LOAD_SINGLE_MEDIA_ITEM_SUCCESS"],
+				["content/LOAD_SINGLE_MEDIA_ITEM_FAIL"],
+			);
+			if (mediaItem !== undefined) return mediaItem;
+			return this.fetchItem(itemId, contentType);
+		});
 	}
 	public static async fromPlaybackContext(playbackContext?: PlaybackContext) {
 		// This has to be here to avoid ciclic requirements breaking
@@ -70,23 +80,6 @@ export class MediaItem extends ContentBase {
 		}
 	}
 
-	public ensureLoaded = asyncDebounce(async () => {
-		const loadItem = () => redux.actions["content/LOAD_SINGLE_MEDIA_ITEM"]({ id: this.id, itemType: this.tidalItem.contentType });
-		await redux.interceptActionResp(loadItem, unloads, ["content/LOAD_SINGLE_MEDIA_ITEM_SUCCESS"], ["content/LOAD_SINGLE_MEDIA_ITEM_FAIL"]);
-		// Idk I hate this but its the only thing that works
-		await sleep(50);
-	});
-
-	public async play() {
-		await this.ensureLoaded();
-		redux.actions["playQueue/ADD_NOW"]({
-			context: {},
-			fromIndex: 0,
-			mediaItemIds: [this.id],
-			overwritePlayQueue: true,
-		});
-	}
-
 	// Listeners
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept<{ productId?: string; productType?: "track" | "video" }>("player/PRELOAD_ITEM", unloads, async (item) => {
@@ -113,7 +106,7 @@ export class MediaItem extends ContentBase {
 
 	/** Warning! Not always called, dont rely on this over onMediaTransition */
 	public static onPreMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
-		redux.intercept<{ productId: ItemId; productType: TMediaItem["type"] }>(
+		redux.intercept<{ productId: ItemId; productType: MediaItemType }>(
 			"playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION",
 			unloads,
 			asyncDebounce(async ({ mediaProduct: { productId, productType } }) => {
@@ -143,6 +136,10 @@ export class MediaItem extends ContentBase {
 		this.tidalItem = tidalMediaItem.item;
 		this.duration = this.tidalItem.duration;
 		this.trace = MediaItem.trace.withSource(`[${this.tidalItem.title ?? id}]`).trace;
+	}
+
+	public play() {
+		return PlayState.play(this.id);
 	}
 
 	public album: () => Promise<Album | undefined> = memoize(async () => {
@@ -221,6 +218,9 @@ export class MediaItem extends ContentBase {
 		return brainzItem;
 	});
 
+	public get contentType(): MediaItemType {
+		return this.tidalItem.contentType;
+	}
 	public get trackNumber(): number | undefined {
 		return this.tidalItem.trackNumber;
 	}

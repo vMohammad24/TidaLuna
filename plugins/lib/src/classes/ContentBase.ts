@@ -22,12 +22,19 @@ export class ContentBase {
 		generator?: () => MaybePromise<ContentItem<K> | undefined>,
 	): Promise<I | undefined> {
 		if (this._instances[contentType]?.[itemId] !== undefined) return this._instances[contentType][itemId] as I;
-		const storeContent = redux.store.getState().content;
-		const contentItem = (storeContent[contentType][itemId as keyof TContentState[K]] as ContentItem<K>) ?? (await generator?.());
+		const contentItem = this.getItemFromStore(contentType, itemId) ?? (await generator?.());
 		if (contentItem !== undefined) {
 			this._instances[contentType] ??= {};
 			return (this._instances[contentType][itemId] ??= new clss(itemId, contentItem)) as I;
 		}
+	}
+
+	/**
+	 * Fetches a content item from redux.store.content
+	 */
+	public static getItemFromStore<K extends ContentType>(contentType: K, itemId: ItemId): ContentItem<K> {
+		const storeContent = redux.store.getState().content;
+		return storeContent[contentType][itemId as keyof TContentState[K]] as ContentItem<K>;
 	}
 
 	protected static formatTitle(

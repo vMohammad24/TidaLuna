@@ -3,7 +3,7 @@ import { registerEmitter, type AddReceiver, type MaybePromise, type VoidLike } f
 import type { Tracer } from "@luna/core";
 
 import { libTrace, unloads } from "../index.safe";
-import type { OutdatedStoreState } from "../outdated.types";
+import type { ItemId, OutdatedStoreState } from "../outdated.types";
 import * as redux from "../redux";
 import { MediaItem } from "./MediaItem";
 import type { MediaItemAudioQuality } from "./Quality";
@@ -116,11 +116,52 @@ export class PlayState {
 	public static get playing(): boolean {
 		return this.desiredState === "PLAYING";
 	}
-	public static play() {
+	/**
+	 * Play the current track, or a specific track if mediaItemId is provided.
+	 * mediaItemId is not validated, you should use `MediaItem.play`
+	 *
+	 * If `mediaItemId` is provided, equivilent to:
+	 * ```ts
+	 * PlayState.playNext(mediaItemId);
+	 * PlayState.next();
+	 * PlayState.play();
+	 * ```
+	 */
+	public static play(mediaItemId?: ItemId) {
+		if (mediaItemId !== undefined) {
+			this.playNext(mediaItemId);
+			this.next();
+		}
 		redux.actions["playbackControls/PLAY"]();
 	}
 	public static pause() {
 		redux.actions["playbackControls/PAUSE"]();
+	}
+	/**
+	 * Skip to the next track
+	 */
+	public static next() {
+		redux.actions["playQueue/MOVE_NEXT"]();
+	}
+	/**
+	 * Skip to the previous track
+	 */
+	public static previous() {
+		redux.actions["playQueue/MOVE_PREVIOUS"]();
+	}
+	/**
+	 * Move to a specific track in the play queue
+	 * @param playQueueIndex The index of the track in the play queue
+	 */
+	public static moveTo(playQueueIndex: number) {
+		redux.actions["playQueue/MOVE_TO"](playQueueIndex);
+	}
+	/**
+	 * Adds `mediaItemIds` to playQueue after current track as temporary items (removed after played)
+	 */
+	public static playNext(mediaItemIds: ItemId | ItemId[]) {
+		mediaItemIds = Array.isArray(mediaItemIds) ? mediaItemIds : [mediaItemIds];
+		redux.actions["playQueue/ADD_NEXT"]({ mediaItemIds, context: { type: "UNKNOWN" } });
 	}
 	// #endregion
 
