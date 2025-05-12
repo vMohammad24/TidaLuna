@@ -1,4 +1,4 @@
-import { asyncDebounce, memoize, registerEmitter, Semaphore, type AddReceiver } from "@inrixia/helpers";
+import { asyncDebounce, memoize, registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { ftch, ReactiveStore, type Tracer } from "@luna/core";
@@ -13,7 +13,7 @@ import { ContentBase, type TImageSize } from "../ContentBase";
 import { PlayState, type PlaybackContext } from "../PlayState";
 import { Quality, type MediaItemAudioQuality, type MediaMetadataTag } from "../Quality";
 import { TidalApi } from "../TidalApi";
-import { startDownload } from "./MediaItem.download.native";
+import { download } from "./MediaItem.download.native";
 import { makeTags, MetaTags } from "./MediaItem.tags";
 
 type MediaFormat = {
@@ -355,14 +355,13 @@ export class MediaItem extends ContentBase {
 	// #endregion
 
 	// #region Download
-	public async download(path: string, metaTags?: MetaTags): Promise<void> {
+	public async download(path: string): Promise<void> {
 		const [playbackInfo, flagTags] = await Promise.all([this.playbackInfo(), this.flacTags()]);
-		await startDownload(playbackInfo, flagTags);
+		await download(playbackInfo, path, flagTags);
 	}
 	// #endregion
 
 	// #region Format
-	private static readonly getFormatSemaphore: Semaphore = new Semaphore(1);
 	// public getFormat: (audioQuality?: MediaItemAudioQuality) => Promise<void> = asyncDebounce((audioQuality) =>
 	// 	MediaItem.getFormatSemaphore.with(async () => {
 	// 		const playbackInfo = await this.playbackInfo(audioQuality);
