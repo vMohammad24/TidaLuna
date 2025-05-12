@@ -1,8 +1,9 @@
-import { asyncDebounce, memoize, registerEmitter, type AddReceiver } from "@inrixia/helpers";
+import { asyncDebounce, memoize, registerEmitter, Semaphore, type AddReceiver } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { ftch, ReactiveStore, type Tracer } from "@luna/core";
 
+import { getPlaybackInfo, type PlaybackInfo } from "../../helpers";
 import { libTrace, unloads } from "../../index.safe";
 import type { ItemId, TLyrics, TMediaItem } from "../../outdated.types";
 import * as redux from "../../redux";
@@ -10,7 +11,7 @@ import { Album } from "../Album";
 import { Artist } from "../Artist";
 import { ContentBase, type TImageSize } from "../ContentBase";
 import { PlayState, type PlaybackContext } from "../PlayState";
-import { Quality, type MediaMetadataTag } from "../Quality";
+import { Quality, type MediaItemAudioQuality, type MediaMetadataTag } from "../Quality";
 import { TidalApi } from "../TidalApi";
 import { makeTags, MetaTags } from "./MediaItem.tags";
 
@@ -30,7 +31,6 @@ export type MediaItemType = "track" | "video";
 export type TMediaItemBase = { item: { id?: ItemId }; type?: MediaItemType };
 
 export class MediaItem extends ContentBase {
-	// #region Static
 	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
 
 	private static cache = ReactiveStore.getStore("@luna/MediaItemCache");
@@ -100,13 +100,12 @@ export class MediaItem extends ContentBase {
 		}
 	}
 
-	// Listeners
+	// #region Listeners
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept<{ productId?: string; productType?: "track" | "video" }>("player/PRELOAD_ITEM", unloads, async (item) => {
 			if (item?.productId === undefined) return MediaItem.trace.warn("player/PRELOAD_ITEM intercepted without productId!", item);
 			const mediaItem = await this.fromId(item.productId, item.productType);
 			if (mediaItem === undefined) return;
-			mediaItem.preload();
 			emit(mediaItem, mediaItem.trace.err.withContext("preloadItem.runListeners"));
 		}),
 	);
@@ -123,7 +122,6 @@ export class MediaItem extends ContentBase {
 			}),
 		),
 	);
-
 	/** Warning! Not always called, dont rely on this over onMediaTransition */
 	public static onPreMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept<{ productId: ItemId; productType: MediaItemType }>(
@@ -132,29 +130,21 @@ export class MediaItem extends ContentBase {
 			asyncDebounce(async ({ mediaProduct: { productId, productType } }) => {
 				const mediaItem = await this.fromId(productId, productType);
 				if (mediaItem === undefined) return;
-				mediaItem.preload();
 				await emit(mediaItem, mediaItem.trace.err.withContext("prefillMPT.runListeners"));
 			}),
 		),
 	);
-
-	public static useTags: boolean = false;
-	public static useMax: boolean = false;
-	// public static useFormat: boolean = false;
 	// #endregion
-
 	public readonly tidalItem: Readonly<TMediaItem["item"]>;
-	public readonly duration?: number;
-
 	public readonly trace: Tracer;
 
 	constructor(
 		public readonly id: ItemId,
 		tidalMediaItem: TMediaItem,
+		private readonly cache: MediaItemCache,
 	) {
 		super();
 		this.tidalItem = tidalMediaItem.item;
-		this.duration = this.tidalItem.duration;
 		this.trace = MediaItem.trace.withSource(`[${this.tidalItem.title ?? id}]`).trace;
 	}
 
@@ -162,41 +152,7 @@ export class MediaItem extends ContentBase {
 		return PlayState.play(this.id);
 	}
 
-	public album: () => Promise<Album | undefined> = memoize(async () => {
-		if (this.tidalItem.album?.id) return Album.fromId(this.tidalItem.album?.id);
-	});
-	public artist: () => Promise<Artist | undefined> = memoize(async () => {
-		if (this.tidalItem.artist?.id) return Artist.fromId(this.tidalItem.artist.id);
-		if (this.tidalItem.artists?.[0]?.id) return Artist.fromId(this.tidalItem.artists?.[0].id);
-		return (await this.album())?.artist();
-	});
-	public artists: () => Promise<Promise<Artist | undefined>[]> = memoize(async () => {
-		if (this.tidalItem.artists) return this.tidalItem.artists.map((artist) => Artist.fromId(artist.id));
-		return (await this.album())?.artists() ?? [];
-	});
-
-	public async *isrcs(): AsyncIterable<string> {
-		const seen = new Set<string>();
-		if (this.tidalItem.isrc) {
-			yield this.tidalItem.isrc;
-			seen.add(this.tidalItem.isrc);
-		}
-
-		const brainzItem = await this.brainzItem();
-		if (brainzItem?.recording.isrcs) {
-			for (const isrc of brainzItem.recording.isrcs) {
-				if (seen.has(isrc)) continue;
-				yield isrc;
-				seen.add(isrc);
-			}
-		}
-	}
-	public isrc: () => Promise<string | undefined> = memoize(async () => {
-		for await (const isrc of this.isrcs()) return isrc;
-	});
-
-	public lyrics: () => Promise<TLyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
-
+	// #region MusicBrainz
 	public brainzItem: () => Promise<ITrack | undefined> = memoize(async () => {
 		const releaseTrackFromRecording = async (recording: IRecording) => {
 			// If a recording exists then fetch the full recording details including media for title resolution
@@ -237,7 +193,87 @@ export class MediaItem extends ContentBase {
 		}
 		return brainzItem;
 	});
+	public brainzId: () => Promise<string | undefined> = memoize(async () => {
+		const brainzItem = await this.brainzItem();
+		return brainzItem?.recording.id;
+	});
+	// #endregion
 
+	// #region Async properties
+	public album: () => Promise<Album | undefined> = memoize(async () => {
+		if (this.tidalItem.album?.id) return Album.fromId(this.tidalItem.album?.id);
+	});
+
+	public artist: () => Promise<Artist | undefined> = memoize(async () => {
+		if (this.tidalItem.artist?.id) return Artist.fromId(this.tidalItem.artist.id);
+		if (this.tidalItem.artists?.[0]?.id) return Artist.fromId(this.tidalItem.artists?.[0].id);
+		return (await this.album())?.artist();
+	});
+
+	public artists: () => Promise<Promise<Artist | undefined>[]> = memoize(async () => {
+		if (this.tidalItem.artists) return this.tidalItem.artists.map((artist) => Artist.fromId(artist.id));
+		return (await this.album())?.artists() ?? [];
+	});
+
+	public async *isrcs(): AsyncIterable<string> {
+		const seen = new Set<string>();
+		if (this.tidalItem.isrc) {
+			yield this.tidalItem.isrc;
+			seen.add(this.tidalItem.isrc);
+		}
+
+		const brainzItem = await this.brainzItem();
+		if (brainzItem?.recording.isrcs) {
+			for (const isrc of brainzItem.recording.isrcs) {
+				if (seen.has(isrc)) continue;
+				yield isrc;
+				seen.add(isrc);
+			}
+		}
+	}
+
+	public isrc: () => Promise<string | undefined> = memoize(async () => {
+		for await (const isrc of this.isrcs()) return isrc;
+	});
+
+	public lyrics: () => Promise<TLyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
+
+	public title: () => Promise<string | undefined> = memoize(async () => {
+		const brainzItem = await this.brainzItem();
+		return ContentBase.formatTitle(this.tidalItem.title, this.tidalItem.version, brainzItem?.title, brainzItem?.["artist-credit"]);
+	});
+
+	public releaseDate: () => Promise<Date | undefined> = memoize(async () => {
+		let releaseDate = this.tidalItem.releaseDate ?? this.tidalItem.streamStartDate;
+		if (releaseDate === undefined) {
+			const brainzItem = await this.brainzItem();
+			releaseDate = brainzItem?.recording?.["first-release-date"];
+		}
+		if (releaseDate === undefined) {
+			const album = await this.album();
+			releaseDate = album?.releaseDate;
+			releaseDate ??= (await album?.brainzAlbum())?.date;
+		}
+		if (releaseDate) return new Date(releaseDate);
+	});
+
+	/**
+	 * "year-month-day"
+	 */
+	public releaseDateStr: () => Promise<string | undefined> = memoize(async () => {
+		return (await this.releaseDate())?.toISOString().slice(0, 10);
+	});
+
+	public coverUrl: (res?: TImageSize) => Promise<string | undefined> = memoize(async (res) => {
+		if (this.tidalItem.album?.cover) return ContentBase.formatCoverUrl(this.tidalItem.album?.cover, res);
+		const album = await this.album();
+		return album?.coverUrl(res);
+	});
+
+	public flacTags: () => Promise<MetaTags> = memoize(() => makeTags(this));
+	// #endregion
+
+	// #region Properties
 	public get contentType(): MediaItemType {
 		return this.tidalItem.contentType;
 	}
@@ -265,7 +301,6 @@ export class MediaItem extends ContentBase {
 		// @ts-expect-error BPM is now present on some tracks
 		return this.tidalItem.bpm;
 	}
-
 	public get qualityTags(): Quality[] {
 		if (this.tidalItem.contentType !== "track") return [];
 		return Quality.fromMetaTags(this.tidalItem.mediaMetadata?.tags);
@@ -280,54 +315,12 @@ export class MediaItem extends ContentBase {
 			Quality.fromAudioQuality(this.tidalItem.audioQuality) ?? Quality.Lowest,
 		);
 	}
+	public get duration(): number | undefined {
+		return this.tidalItem.duration;
+	}
+	// #endregion
 
-	public title: () => Promise<string | undefined> = memoize(async () => {
-		const brainzItem = await this.brainzItem();
-		return ContentBase.formatTitle(this.tidalItem.title, this.tidalItem.version, brainzItem?.title, brainzItem?.["artist-credit"]);
-	});
-	public releaseDate: () => Promise<Date | undefined> = memoize(async () => {
-		let releaseDate = this.tidalItem.releaseDate ?? this.tidalItem.streamStartDate;
-		if (releaseDate === undefined) {
-			const brainzItem = await this.brainzItem();
-			releaseDate = brainzItem?.recording?.["first-release-date"];
-		}
-		if (releaseDate === undefined) {
-			const album = await this.album();
-			releaseDate = album?.releaseDate;
-			releaseDate ??= (await album?.brainzAlbum())?.date;
-		}
-		if (releaseDate) return new Date(releaseDate);
-	});
-	/**
-	 * "year-month-day"
-	 */
-	public releaseDateStr: () => Promise<string | undefined> = memoize(async () => {
-		return (await this.releaseDate())?.toISOString().slice(0, 10);
-	});
-	public coverUrl: (res?: TImageSize) => Promise<string | undefined> = memoize(async (res) => {
-		if (this.tidalItem.album?.cover) return ContentBase.formatCoverUrl(this.tidalItem.album?.cover, res);
-		const album = await this.album();
-		return album?.coverUrl(res);
-	});
-	public brainzId: () => Promise<string | undefined> = memoize(async () => {
-		const brainzItem = await this.brainzItem();
-		return brainzItem?.recording.id;
-	});
-
-	public flacTags: () => Promise<MetaTags> = memoize(() => makeTags(this));
-
-	public static fromIsrc: (isrc: string) => Promise<MediaItem | undefined> = memoize(async (isrc) => {
-		let bestMediaItem: MediaItem | undefined = undefined;
-		for await (const track of TidalApi.isrc(isrc)) {
-			// If quality is higher than current best, set as best
-			const maxTrackQuality = Quality.max(...Quality.fromMetaTags(track.attributes.mediaTags as MediaMetadataTag[]));
-			if (maxTrackQuality > (bestMediaItem?.bestQuality ?? Quality.Lowest)) {
-				bestMediaItem = (await MediaItem.fromId(track.id)) ?? bestMediaItem;
-				if ((bestMediaItem?.bestQuality ?? Quality.Lowest) >= Quality.Max) return bestMediaItem;
-			}
-		}
-		return bestMediaItem;
-	});
+	// #region Max
 	public max: () => Promise<MediaItem | undefined> = memoize(async () => {
 		if (this.bestQuality >= Quality.Max) return;
 
@@ -344,75 +337,53 @@ export class MediaItem extends ContentBase {
 		if (bestMediaItem.id === this.id) return undefined;
 		return bestMediaItem;
 	});
+	// #endregion
 
-	// public playbackInfo: (audioQuality: MediaItemAudioQuality) => Promise<PlaybackInfo> = memoize(async (audioQuality) => {
-	// 	const playbackInfo = await getPlaybackInfo(this, audioQuality);
-	// 	// this.setFormatAttrs(playbackInfo);
-	// 	return playbackInfo;
-	// });
-
-	// private static readonly formatStore: SharedObjectStoreExpirable<[trackId: number, audioQuality: MediaItemAudioQuality], MediaFormat> = new SharedObjectStoreExpirable("TrackInfoCache", {
-	// 	storeSchema: {
-	// 		keyPath: ["trackId", "audioQuality"],
-	// 	},
-	// 	maxAge: 24 * 6 * 60 * 1000,
-	// });
-	// private setFormatAttrs(mediaFormat: MediaFormat): void {
-	// 	type N = number | undefined;
-
-	// 	(this.bytes as N) = mediaFormat.bytes ?? this.bytes;
-	// 	(this.bitDepth as N) = mediaFormat.bitDepth ?? this.bitDepth;
-	// 	(this.sampleRate as N) = mediaFormat.sampleRate ?? this.sampleRate;
-	// 	(this.duration as N) = mediaFormat.duration ?? this.duration;
-
-	// 	(this.codec as string | undefined) = mediaFormat.codec ?? this.codec;
-
-	// 	if (this.bytes && this.duration) (this.bitrate as number) ??= (this.bytes / this.duration) * 8;
-
-	// 	runListeners(this, MediaItem.onFormatUpdateListeners, trace.err.withContext("setFormatAttrs.runListeners"));
-	// }
-	// private updateFormat: () => Promise<void> = asyncDebounce(async () => {
-	// 	const playbackInfo = await this.playbackInfo();
-
-	// 	const mediaFormat: MediaFormat = {};
-
-	// 	if (this.bitDepth === undefined || this.sampleRate === undefined || this.duration === undefined) {
-	// 		const { format, bytes } = await parseStreamMeta(playbackInfo);
-
-	// 		mediaFormat.bytes = bytes;
-
-	// 		mediaFormat.bitDepth = format.bitsPerSample ?? this.bitDepth;
-	// 		mediaFormat.sampleRate = format.sampleRate ?? this.sampleRate;
-	// 		mediaFormat.duration = format.duration ?? this.duration;
-
-	// 		mediaFormat.codec = format.codec?.toLowerCase() ?? this.codec;
-
-	// 		if (playbackInfo.manifestMimeType === "application/dash+xml") {
-	// 			mediaFormat.bitrate = playbackInfo.manifest.tracks.audios[0].bitrate.bps ?? this.bitrate;
-	// 			mediaFormat.bytes = playbackInfo.manifest.tracks.audios[0].size?.b ?? this.bytes;
-	// 		}
-	// 	} else {
-	// 		mediaFormat.bytes = (await getStreamBytes(playbackInfo)) ?? this.bytes;
-	// 	}
-
-	// 	MediaItem.formatStore.put(mediaFormat).catch(trace.err.withContext("formatStore.put"));
-	// 	this.setFormatAttrs(mediaFormat);
-	// });
-	// private loadFormat: () => Promise<void> = asyncDebounce(async () => {
-	// 	const { value: mediaFormat } = await MediaItem.formatStore.getWithExpiry([+this.id, this.quality.audioQuality]);
-	// 	if (mediaFormat) return this.setFormatAttrs(mediaFormat);
-	// 	this.updateFormat();
-	// });
-
-	// public readonly bytes?: number;
-	// public readonly sampleRate?: number;
-	// public readonly bitDepth?: number;
-	// public readonly codec?: string;
-	// public readonly bitrate?: number;
-
-	private preload() {
-		if (MediaItem.useTags) this.flacTags();
-		if (MediaItem.useMax) this.max();
-		// if (MediaItem.useFormat) this.loadFormat();
+	// #region PlaybackInfo
+	public async playbackInfo(audioQuality?: MediaItemAudioQuality): Promise<PlaybackInfo> {
+		audioQuality ??= Quality.Max.audioQuality;
+		const playbackInfo = await getPlaybackInfo(this.id, audioQuality);
+		this.cache.format ??= {};
+		this.cache.format[audioQuality] = {
+			...this.cache.format[audioQuality],
+			bitDepth: playbackInfo.bitDepth,
+			sampleRate: playbackInfo.sampleRate,
+		};
+		return playbackInfo;
 	}
+	// #endregion
+
+	// #region Format
+	private static readonly getFormatSemaphore: Semaphore = new Semaphore(1);
+	// public getFormat: (audioQuality?: MediaItemAudioQuality) => Promise<void> = asyncDebounce((audioQuality) =>
+	// 	MediaItem.getFormatSemaphore.with(async () => {
+	// 		const playbackInfo = await this.playbackInfo(audioQuality);
+
+	// 		this.cache.format ??= {};
+	// 		const format = (this.cache.format[playbackInfo.audioQuality] ??= {});
+
+	// 		if (format.bitDepth === undefined || format.sampleRate === undefined || format.duration === undefined) {
+	// 			const { format, bytes } = await parseStreamMeta(playbackInfo);
+
+	// 			mediaFormat.bytes = bytes;
+
+	// 			mediaFormat.bitDepth = format.bitsPerSample ?? this.bitDepth;
+	// 			mediaFormat.sampleRate = format.sampleRate ?? this.sampleRate;
+	// 			mediaFormat.duration = format.duration ?? this.duration;
+
+	// 			mediaFormat.codec = format.codec?.toLowerCase() ?? this.codec;
+
+	// 			if (playbackInfo.manifestMimeType === "application/dash+xml") {
+	// 				mediaFormat.bitrate = playbackInfo.manifest.tracks.audios[0].bitrate.bps ?? this.bitrate;
+	// 				mediaFormat.bytes = playbackInfo.manifest.tracks.audios[0].size?.b ?? this.bytes;
+	// 			}
+	// 		} else {
+	// 			mediaFormat.bytes = (await getStreamBytes(playbackInfo)) ?? this.bytes;
+	// 		}
+
+	// 		MediaItem.formatStore.put(mediaFormat).catch(trace.err.withContext("formatStore.put"));
+	// 		this.updateFormat(mediaFormat);
+	// 	}),
+	// );
+	// #endregion
 }
