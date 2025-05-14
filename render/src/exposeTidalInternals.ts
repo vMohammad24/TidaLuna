@@ -34,9 +34,16 @@ const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, 
 	return tidalModules[path];
 };
 
+let scripts: NodeListOf<HTMLScriptElement>;
+messageContainer.innerText = "Waiting for tidal scripts to load...\n";
+while ((scripts = document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`))) {
+	// Block until all scripts are loaded
+	if (scripts.length !== 0) break;
+}
+
 // Theres usually only 1 script on page that needs injecting (https://desktop.tidal.com/) see native/injector
 // So dw about blocking for loop
-for (const script of document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`)) {
+for (const script of scripts) {
 	const scriptPath = new URL(script.src).pathname;
 
 	const scriptContent = await fetchCode(scriptPath);
