@@ -9,7 +9,7 @@ import { Page } from "./classes/Page";
 
 import { confirm } from "./helpers/confirm";
 import { lunaMuiTheme } from "./lunaTheme";
-import { currentSettingsTab, LunaPage, LunaTabs } from "./SettingsPage";
+import { currentSettingsTab, LunaPage } from "./SettingsPage";
 import { storeUrls } from "./SettingsPage/PluginStoreTab";
 import { fetchReleases, pkg } from "./SettingsPage/SettingsTab/LunaClientUpdate";
 
@@ -53,12 +53,12 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 	if (url?.protocol !== "tidaluna:") return;
 	switch (url.pathname) {
 		case "//settings/store":
-			currentSettingsTab._ = LunaTabs.PluginStore;
+			currentSettingsTab._ = "Plugin Store";
 			const newStoreUrl = url.searchParams.get("installfromurl");
 			if (newStoreUrl !== null && !storeUrls.includes(newStoreUrl)) storeUrls.push(newStoreUrl);
 			break;
 		case "//settings/plugins":
-			currentSettingsTab._ = LunaTabs.Plugins;
+			currentSettingsTab._ = "Plugins";
 			break;
 	}
 	if (url.pathname.startsWith("//settings")) settingsPage.open();
@@ -81,7 +81,7 @@ setTimeout(async () => {
 			cancellationText: "Close",
 		});
 		if (!res.confirmed) return;
-		currentSettingsTab._ = LunaTabs.Settings;
+		currentSettingsTab._ = "Settings";
 		settingsPage.open();
 	}
 });
