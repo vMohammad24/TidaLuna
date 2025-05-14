@@ -4,7 +4,7 @@ import { unloadSet, type LunaUnload, type LunaUnloads } from "@luna/core";
 
 import { safeTimeout } from "../helpers";
 import { interceptPromise, type InterceptPayload } from "./intercept";
-import type { ActionType } from "./intercept.actionTypes";
+import type { ActionType } from "./types";
 
 const intercepts: Record<ActionType, Semaphore> = {} as Record<ActionType, Semaphore>;
 /**
@@ -41,5 +41,5 @@ export const interceptActionResp = async <RESAT extends ActionType, REJAT extend
 	const promise = Promise.race([...resPromises, ...rejPromises, rejTimeout]).finally(() => unloadSet(_unloads));
 	// Queue our action to the eventLoop
 	setTimeout(trigger);
-	return promise;
+	return promise as Promise<RES>;
 };

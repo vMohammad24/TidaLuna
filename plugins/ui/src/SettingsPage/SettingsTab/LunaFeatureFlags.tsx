@@ -1,30 +1,19 @@
 import { redux } from "@luna/lib";
 import React from "react";
-import { LunaSettings, LunaSwitchSetting } from "../../components";
+import { LunaSettings, LunaSwitchSetting, SpinningButton } from "../../components";
 
 import Grid from "@mui/material/Grid";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import { grey } from "@mui/material/colors";
-import { SpinningButton } from "../../components/SpinningButton";
 
-type FeatureFlag<K extends string = string> = {
-	created: number;
-	name: K;
-	type: "BOOLEAN";
-	value: boolean;
-};
-type FeatureFlags = {
-	flags: { [K in string]: FeatureFlag<K> };
-};
-
-const getFeatureFlags = (): FeatureFlags => redux.store.getState().featureFlags;
+const getFeatureFlags = () => redux.store.getState().featureFlags;
 
 export const LunaFeatureFlags = React.memo(() => {
 	const [featureFlags, setFeatureFlags] = React.useState(getFeatureFlags());
 	const [hide, setHidden] = React.useState(false);
 
-	const setFlag = React.useCallback((flag: FeatureFlag) => {
+	const setFlag = React.useCallback((flag: redux.FeatureFlag) => {
 		redux.actions["featureFlags/SET_FLAGS"]({ [flag.name]: { ...flag, value: !flag.value } });
 		setFeatureFlags(getFeatureFlags());
 	}, []);

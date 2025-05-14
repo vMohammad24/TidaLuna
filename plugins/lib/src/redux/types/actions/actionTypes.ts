@@ -1,6 +1,6 @@
 import type { ValueOfA } from "@inrixia/helpers";
 
-// Exported from Tidal using Object.keys(luna.actions).sort()
+// Exported from Tidal using Object.keys(luna.core.buildActions).sort()
 export type ActionType = ValueOfA<typeof actionTypes>;
 export const actionTypes = [
 	"ADD_ARTISTS_TO_CATEGORY",
@@ -9,11 +9,6 @@ export const actionTypes = [
 	"ADD_RELATED_ARTIST",
 	"ADD_TO_ALREADY_FETCHED_ARTISTS",
 	"CLEAR_SEARCH",
-	"FETCH_MORE_PLAYLIST_FANS",
-	"FETCH_MORE_PLAYLIST_FANS_SUCCESS",
-	"FETCH_PLAYLIST_FANS",
-	"FETCH_PLAYLIST_FANS_FAIL",
-	"FETCH_PLAYLIST_FANS_SUCCESS",
 	"HIDE_SEARCH_ASIDE",
 	"MOVE_MULTIPLE_MODAL_ITEMS_TO_FOLDER",
 	"MOVE_SINGLE_MODAL_ITEM_TO_FOLDER",
@@ -182,6 +177,7 @@ export const actionTypes = [
 	"contextMenu/OPEN",
 	"contextMenu/OPEN_BLOCK_ITEM",
 	"contextMenu/OPEN_CREATOR_CONTENT_OWNED_ITEM",
+	"contextMenu/OPEN_CREATOR_CONTENT_RECEIVED_ITEM",
 	"contextMenu/OPEN_EMPTY_FOLDER",
 	"contextMenu/OPEN_INPUT_FIELD_CLIPBOARD",
 	"contextMenu/OPEN_MEDIA_ITEM",
@@ -471,9 +467,6 @@ export const actionTypes = [
 	"route/LOADER_DATA__PLAYLIST",
 	"route/LOADER_DATA__PLAYLIST--FAIL",
 	"route/LOADER_DATA__PLAYLIST--SUCCESS",
-	"route/LOADER_DATA__PLAYLIST-FANS",
-	"route/LOADER_DATA__PLAYLIST-FANS--FAIL",
-	"route/LOADER_DATA__PLAYLIST-FANS--SUCCESS",
 	"route/LOADER_DATA__SEARCH",
 	"route/LOADER_DATA__SEARCH--FAIL",
 	"route/LOADER_DATA__SEARCH--SUCCESS",

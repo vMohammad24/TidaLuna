@@ -1,5 +1,4 @@
-export type MediaMetadataTag = "LOSSLESS" | "SONY_360RA" | "DOLBY_ATMOS" | "HIRES_LOSSLESS" | "MQA";
-export type MediaItemAudioQuality = "HI_RES_LOSSLESS" | "HI_RES" | "LOSSLESS" | "HIGH" | "LOW";
+import type { redux } from "..";
 
 export class Quality {
 	private static readonly idxLookup: Record<number, Quality> = {};
@@ -54,7 +53,7 @@ export class Quality {
 	/**
 	 * Convert Tidal `mediaItem.mediaMetadata?.tags` to Quality
 	 */
-	public static fromMetaTags(qualityTags?: MediaMetadataTag[]): Quality[] {
+	public static fromMetaTags(qualityTags?: redux.MediaMetadataTag[]): Quality[] {
 		if (!qualityTags) return [];
 		return qualityTags.map((tag) => this.lookups.metadataTags[tag]);
 	}
@@ -62,7 +61,7 @@ export class Quality {
 	/**
 	 * Convert Tidal `mediaItem.audioQuality` to Quality
 	 */
-	public static fromAudioQuality(audioQuality?: MediaItemAudioQuality) {
+	public static fromAudioQuality(audioQuality?: redux.AudioQuality): Quality | undefined {
 		if (audioQuality === undefined) return undefined;
 		return this.lookups.audioQuality[audioQuality];
 	}
@@ -77,14 +76,14 @@ export class Quality {
 	/**
 	 * Get in Tidal `mediaItem.audioQuality` format
 	 */
-	public get audioQuality(): MediaItemAudioQuality {
+	public get audioQuality(): redux.AudioQuality {
 		return Quality.lookups.audioQuality[this.idx];
 	}
 
 	/**
 	 * Get in Tidal `mediaItem.mediaMetadata?.tags` format
 	 */
-	public get metadataTag(): MediaMetadataTag {
+	public get metadataTag(): redux.MediaMetadataTag {
 		return Quality.lookups.metadataTags[this.idx];
 	}
 

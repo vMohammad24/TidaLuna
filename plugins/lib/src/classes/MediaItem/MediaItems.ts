@@ -1,15 +1,18 @@
 import type { ItemId } from "neptune-types/tidal";
 import type { MediaCollection } from "../MediaCollection";
-import type { TMediaItemBase } from "./MediaItem";
 import { MediaItem } from "./MediaItem";
 
-export class MediaItems implements MediaCollection {
-	private constructor(public readonly tMediaItems: TMediaItemBase[]) {}
+import type * as redux from "../../redux";
 
-	public static fromIds(itemIds: ItemId[]) {
-		return new this(itemIds.map((id) => ({ item: { id }, type: "track" })));
+export type MediaItemBase = { item: { id: redux.ItemId }; type: redux.ContentType };
+
+export class MediaItems implements MediaCollection {
+	private constructor(public readonly tMediaItems: MediaItemBase[]) {}
+
+	public static fromIds(itemIds: ItemId[], type: redux.ContentType = "track") {
+		return new this(itemIds.map((id) => ({ item: { id }, type })));
 	}
-	public static fromTMediaItems(tMediaItems: TMediaItemBase[]) {
+	public static fromTMediaItems(tMediaItems: MediaItemBase[]) {
 		return new this(tMediaItems);
 	}
 

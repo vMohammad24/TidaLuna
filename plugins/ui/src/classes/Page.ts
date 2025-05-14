@@ -75,7 +75,7 @@ export class Page {
 	}
 
 	static {
-		redux.intercept<{ search: string }>("router/NAVIGATED", unloads, (payload) => {
+		redux.intercept("router/NAVIGATED", unloads, (payload) => {
 			// payload.search = `?name`
 			const pageName = payload.search.slice(1);
 			if (pageName === Page.openPage?.name) return; // Already on this page

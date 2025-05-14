@@ -1,12 +1,12 @@
-import type { OutdatedActionPayloads } from "../outdated.types";
-import type { ActionType } from "./intercept.actionTypes";
+import type { ActionPayloads } from "./types";
+import type { ActionType } from "./types/actions/actionTypes";
 
 export type InterceptPayload<T extends ActionType | ReadonlyArray<ActionType>> =
 	T extends ReadonlyArray<infer U extends ActionType> // Check if T is an array, ensure U is ActionType
-		? InterceptPayload<U> // If yes, give a union of all payloads
-		: T extends keyof OutdatedActionPayloads // If no (T is ActionType), check if it's a known key
-			? OutdatedActionPayloads[T] // If yes, get the specific payload
-			: unknown; // Otherwise, the payload is unknown
+		? InterceptPayload<U> // If T is ActionType[], give a union of all payloads
+		: T extends keyof ActionPayloads
+			? ActionPayloads[T]
+			: never;
 
 export type InterceptCallback<T extends ActionType | ActionType[], P = InterceptPayload<T>> = (payload: P, type: ActionType) => true | unknown;
 export type LunaInterceptors = {
@@ -24,9 +24,7 @@ import { interceptors, type LunaUnload, type LunaUnloads } from "@luna/core";
  * @returns Function to call to unload/cancel the intercept
  */
 export function intercept<T extends ActionType>(actionType: T, unloads: LunaUnloads, cb: InterceptCallback<T>, once?: boolean): LunaUnload;
-export function intercept<P>(actionType: ActionType, unloads: LunaUnloads, cb: InterceptCallback<ActionType, P>, once?: boolean): LunaUnload;
 export function intercept<T extends ActionType[]>(actionType: T, unloads: LunaUnloads, cb: InterceptCallback<T>, once?: boolean): LunaUnload;
-export function intercept<P>(actionTypes: ActionType[], unloads: LunaUnloads, cb: InterceptCallback<ActionType, P>, once?: boolean): LunaUnload;
 export function intercept<T extends ActionType | ActionType[]>(
 	actionTypes: T,
 	unloads: LunaUnloads,
@@ -70,7 +68,6 @@ export function intercept<T extends ActionType | ActionType[]>(
  * @returns A promise that resolves with the action payload when the action is intercepted
  */
 export function interceptPromise<T extends ActionType>(actionType: T, unloads: LunaUnloads, cancel?: true): Promise<InterceptPayload<T>>;
-export function interceptPromise<P>(actionType: ActionType, unloads: LunaUnloads, cancel?: true): Promise<P>;
 export function interceptPromise<T extends ActionType>(actionType: T, unloads: LunaUnloads, cancel?: true): Promise<InterceptPayload<T>> {
 	const { resolve, promise } = Promise.withResolvers<InterceptPayload<T>>();
 	intercept(

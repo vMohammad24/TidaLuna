@@ -85,7 +85,7 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 		tags.genres = album.genre;
 		tags.organization = album.recordLabel;
 
-		tags.totalTracks = album.totalTracks?.toString();
+		tags.totalTracks = album.numberOfTracks?.toString();
 		tags.year = album.releaseYear;
 	}
 

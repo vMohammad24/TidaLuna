@@ -2,7 +2,6 @@ export * from "./index.safe";
 
 export * from "./classes";
 export * from "./helpers";
-export * from "./outdated.types";
 
 export * as ipcRenderer from "./ipc";
 export * as redux from "./redux";

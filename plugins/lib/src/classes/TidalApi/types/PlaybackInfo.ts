@@ -1,10 +1,10 @@
-import { TTrackItem } from "../../../outdated.types";
+import type { redux } from "@luna/lib";
 
 export type PlaybackInfoResponse = {
 	trackId: number;
 	assetPresentation: string;
-	audioMode: NonNullable<TTrackItem["audioModes"]>;
-	audioQuality: NonNullable<TTrackItem["audioQuality"]>;
+	audioMode: redux.AudioMode;
+	audioQuality: redux.AudioQuality;
 	manifestMimeType: "application/vnd.tidal.bts" | "application/dash+xml";
 	manifestHash: string;
 	manifest: string;

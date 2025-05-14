@@ -5,13 +5,12 @@ import { ftch, ReactiveStore, type Tracer } from "@luna/core";
 
 import { getPlaybackInfo, type PlaybackInfo } from "../../helpers";
 import { libTrace, unloads } from "../../index.safe";
-import type { ItemId, TLyrics, TMediaItem } from "../../outdated.types";
 import * as redux from "../../redux";
 import { Album } from "../Album";
 import { Artist } from "../Artist";
 import { ContentBase, type TImageSize } from "../ContentBase";
-import { PlayState, type PlaybackContext } from "../PlayState";
-import { Quality, type MediaItemAudioQuality, type MediaMetadataTag } from "../Quality";
+import { PlayState } from "../PlayState";
+import { Quality } from "../Quality";
 import { TidalApi } from "../TidalApi";
 import { download, downloadProgress } from "./MediaItem.download.native";
 import { makeTags, MetaTags } from "./MediaItem.tags";
@@ -25,18 +24,15 @@ type MediaFormat = {
 	bitrate?: number;
 };
 type MediaItemCache = {
-	format?: { [K in MediaItemAudioQuality]?: MediaFormat };
+	format?: { [K in redux.AudioQuality]?: MediaFormat };
 };
-
-export type MediaItemType = "track" | "video";
-export type TMediaItemBase = { item: { id?: ItemId }; type?: MediaItemType };
 
 export class MediaItem extends ContentBase {
 	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
 
 	private static cache = ReactiveStore.getStore("@luna/MediaItemCache");
 
-	private static async fetchMediaItem(itemId: ItemId, contentType: MediaItemType) {
+	private static async fetchMediaItem(itemId: redux.ItemId, contentType: redux.ContentType) {
 		// Supress missing content warning when programatically loading mediaItems
 		const clearWarnCatch = redux.intercept("message/MESSAGE_WARN", unloads, (message) => {
 			if (message?.message === "The content is no longer available") return true;
@@ -52,7 +48,7 @@ export class MediaItem extends ContentBase {
 	}
 
 	// #region Static Construction
-	public static async fromId(itemId?: ItemId, contentType: MediaItemType = "track"): Promise<MediaItem | undefined> {
+	public static async fromId(itemId?: redux.ItemId, contentType: redux.ContentType = "track"): Promise<MediaItem | undefined> {
 		if (itemId === undefined) return;
 		// Prefetch mediaItemCache while constructing
 		const mediaItemCache = MediaItem.cache.getReactive<MediaItemCache>(String(itemId), { format: {} });
@@ -66,7 +62,7 @@ export class MediaItem extends ContentBase {
 		let bestMediaItem: MediaItem | undefined = undefined;
 		for await (const track of TidalApi.isrc(isrc)) {
 			// If quality is higher than current best, set as best
-			const maxTrackQuality = Quality.max(...Quality.fromMetaTags(track.attributes.mediaTags as MediaMetadataTag[]));
+			const maxTrackQuality = Quality.max(...Quality.fromMetaTags(track.attributes.mediaTags as redux.MediaMetadataTag[]));
 			if (maxTrackQuality > (bestMediaItem?.bestQuality ?? Quality.Lowest)) {
 				bestMediaItem = (await MediaItem.fromId(track.id)) ?? bestMediaItem;
 				if ((bestMediaItem?.bestQuality ?? Quality.Lowest) >= Quality.Max) return bestMediaItem;
@@ -74,7 +70,7 @@ export class MediaItem extends ContentBase {
 		}
 		return bestMediaItem;
 	});
-	public static async fromPlaybackContext(playbackContext?: PlaybackContext) {
+	public static async fromPlaybackContext(playbackContext?: redux.PlaybackContext) {
 		// This has to be here to avoid ciclic requirements breaking
 		playbackContext ??= PlayState.playbackContext;
 		if (playbackContext?.actualProductId === undefined) return undefined;
@@ -87,14 +83,14 @@ export class MediaItem extends ContentBase {
 		// });
 		return mediaItem;
 	}
-	public static async *fromIds(ids?: (ItemId | undefined)[]) {
+	public static async *fromIds(ids?: (redux.ItemId | undefined)[]) {
 		if (ids === undefined) return;
 		for (const itemId of ids.filter((id) => id !== undefined)) {
 			const mediaItem = await MediaItem.fromId(itemId);
 			if (mediaItem !== undefined) yield mediaItem;
 		}
 	}
-	public static async *fromTMediaItems(tMediaItems?: (TMediaItemBase | undefined)[]) {
+	public static async *fromTMediaItems(tMediaItems?: ({ item: { id: redux.ItemId }; type: redux.ContentType } | undefined)[]) {
 		if (tMediaItems === undefined) return;
 		for (const tMediaItem of tMediaItems.filter((tMediaItem) => tMediaItem !== undefined)) {
 			const mediaItem = await MediaItem.fromId(tMediaItem.item.id, tMediaItem.type);
@@ -104,7 +100,7 @@ export class MediaItem extends ContentBase {
 
 	// #region Listeners
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
-		redux.intercept<{ productId?: string; productType?: "track" | "video" }>("player/PRELOAD_ITEM", unloads, async (item) => {
+		redux.intercept("player/PRELOAD_ITEM", unloads, async (item) => {
 			if (item?.productId === undefined) return MediaItem.trace.warn("player/PRELOAD_ITEM intercepted without productId!", item);
 			const mediaItem = await this.fromId(item.productId, item.productType);
 			if (mediaItem === undefined) return;
@@ -112,10 +108,10 @@ export class MediaItem extends ContentBase {
 		}),
 	);
 	public static onMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
-		redux.intercept<{ playbackContext: PlaybackContext }>(
+		redux.intercept(
 			"playbackControls/MEDIA_PRODUCT_TRANSITION",
 			unloads,
-			asyncDebounce(async ({ playbackContext }) => {
+			asyncDebounce(async ({ playbackContext }: redux.InterceptPayload<"playbackControls/MEDIA_PRODUCT_TRANSITION">) => {
 				const mediaItem = await this.fromPlaybackContext(playbackContext);
 				if (mediaItem === undefined) return;
 				// Always update format info on playback
@@ -126,27 +122,30 @@ export class MediaItem extends ContentBase {
 	);
 	/** Warning! Not always called, dont rely on this over onMediaTransition */
 	public static onPreMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
-		redux.intercept<{ productId: ItemId; productType: MediaItemType }>(
+		redux.intercept(
 			"playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION",
 			unloads,
-			asyncDebounce(async ({ mediaProduct: { productId, productType } }) => {
-				const mediaItem = await this.fromId(productId, productType);
-				if (mediaItem === undefined) return;
-				await emit(mediaItem, mediaItem.trace.err.withContext("prefillMPT.runListeners"));
-			}),
+			asyncDebounce(
+				async ({ mediaProduct: { productId, productType } }: redux.InterceptPayload<"playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION">) => {
+					const mediaItem = await this.fromId(productId, productType);
+					if (mediaItem === undefined) return;
+					await emit(mediaItem, mediaItem.trace.err.withContext("prefillMPT.runListeners"));
+				},
+			),
 		),
 	);
 	// #endregion
-	public readonly tidalItem: Readonly<TMediaItem["item"]>;
+	public readonly tidalItem: Readonly<redux.Track>;
 	public readonly trace: Tracer;
 
 	constructor(
-		public readonly id: ItemId,
-		tidalMediaItem: TMediaItem,
+		public readonly id: redux.ItemId,
+		tidalMediaItem: redux.MediaItem,
 		private readonly cache: MediaItemCache,
 	) {
 		super();
-		this.tidalItem = tidalMediaItem?.item;
+		// Ick, really need to figure out how to deal with videos
+		this.tidalItem = tidalMediaItem?.item as redux.Track;
 		if (this.tidalItem === undefined) MediaItem.trace.err.withContext("MediaItem constructor", this).throw("Tidal media item is undefined!");
 		this.trace = MediaItem.trace.withSource(`[${this.tidalItem.title ?? id}]`).trace;
 	}
@@ -219,6 +218,7 @@ export class MediaItem extends ContentBase {
 	});
 
 	public async *isrcs(): AsyncIterable<string> {
+		if (this.tidalItem.contentType !== "track") return;
 		const seen = new Set<string>();
 		if (this.tidalItem.isrc) {
 			yield this.tidalItem.isrc;
@@ -239,23 +239,23 @@ export class MediaItem extends ContentBase {
 		for await (const isrc of this.isrcs()) return isrc;
 	});
 
-	public lyrics: () => Promise<TLyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
+	public lyrics: () => Promise<redux.Lyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
 
 	public title: () => Promise<string | undefined> = memoize(async () => {
 		const brainzItem = await this.brainzItem();
-		return ContentBase.formatTitle(this.tidalItem.title, this.tidalItem.version, brainzItem?.title, brainzItem?.["artist-credit"]);
+		return ContentBase.formatTitle(this.tidalItem.title, this.tidalItem.version ?? undefined, brainzItem?.title, brainzItem?.["artist-credit"]);
 	});
 
 	public releaseDate: () => Promise<Date | undefined> = memoize(async () => {
 		let releaseDate = this.tidalItem.releaseDate ?? this.tidalItem.streamStartDate;
 		if (releaseDate === undefined) {
 			const brainzItem = await this.brainzItem();
-			releaseDate = brainzItem?.recording?.["first-release-date"];
+			releaseDate = brainzItem?.recording?.["first-release-date"] ?? releaseDate;
 		}
 		if (releaseDate === undefined) {
 			const album = await this.album();
-			releaseDate = album?.releaseDate;
-			releaseDate ??= (await album?.brainzAlbum())?.date;
+			releaseDate = album?.releaseDate ?? releaseDate;
+			releaseDate ??= (await album?.brainzAlbum())?.date ?? releaseDate;
 		}
 		if (releaseDate) return new Date(releaseDate);
 	});
@@ -277,32 +277,31 @@ export class MediaItem extends ContentBase {
 	// #endregion
 
 	// #region Properties
-	public get contentType(): MediaItemType {
+	public get contentType() {
 		return this.tidalItem.contentType;
 	}
-	public get trackNumber(): number | undefined {
+	public get trackNumber() {
 		return this.tidalItem.trackNumber;
 	}
-	public get volumeNumber(): number | undefined {
+	public get volumeNumber() {
 		return this.tidalItem.volumeNumber;
 	}
-	public get replayGainPeak(): number | undefined {
+	public get replayGainPeak() {
 		return this.tidalItem.peak;
 	}
 	public get replayGain(): number | undefined {
 		if (this.tidalItem.contentType !== "track") return;
 		return this.tidalItem.replayGain;
 	}
-	public get url(): string | undefined {
+	public get url(): string {
 		return this.tidalItem.url;
 	}
 	public get copyright(): string | undefined {
 		if (this.tidalItem.contentType !== "track") return;
-		return this.tidalItem.copyright;
+		return this.tidalItem.copyright ?? undefined;
 	}
 	public get bpm(): number | undefined {
-		// @ts-expect-error BPM is now present on some tracks
-		return this.tidalItem.bpm;
+		return this.tidalItem.bpm ?? undefined;
 	}
 	public get qualityTags(): Quality[] {
 		if (this.tidalItem.contentType !== "track") return [];
@@ -343,7 +342,7 @@ export class MediaItem extends ContentBase {
 	// #endregion
 
 	// #region PlaybackInfo
-	public async playbackInfo(audioQuality?: MediaItemAudioQuality): Promise<PlaybackInfo> {
+	public async playbackInfo(audioQuality?: redux.AudioQuality): Promise<PlaybackInfo> {
 		audioQuality ??= Quality.Max.audioQuality;
 		const playbackInfo = await getPlaybackInfo(this.id, audioQuality);
 		this.cache.format ??= {};

@@ -4,6 +4,7 @@
 		"/plugins/ui/src/components/settings",
 		"/plugins/ui/src/helpers",
 		"/plugins/lib/src/helpers",
-		"/plugins/lib/src/classes"
+		"/plugins/lib/src/classes",
+		"/plugins/lib/src/redux"
 	]
 }

@@ -8,11 +8,10 @@ import { getCredentials } from "../../helpers";
 import { libTrace } from "../../index.safe";
 import * as redux from "../../redux";
 
-import type { ItemId, TAlbum, TArtist, TLyrics, TMediaItem, TPlaylist, TTrackItem } from "../../outdated.types";
-import type { MediaItemAudioQuality } from "../Quality";
 import { PlaybackInfoResponse } from "./types/PlaybackInfo";
 
-export * from "./types";
+export type * from "./types";
+export type { PlaybackInfoResponse };
 
 export class TidalApi {
 	public static trace: Tracer = libTrace.withSource("TidalApi").trace;
@@ -37,13 +36,13 @@ export class TidalApi {
 		this.trace.err.withContext(url).throw(`${res.status} ${res.statusText}`);
 	});
 
-	public static async track(trackId: ItemId) {
-		return this.fetch<TTrackItem>(`https://desktop.tidal.com/v1/tracks/${trackId}?${this.queryArgs()}`);
+	public static async track(trackId: redux.ItemId) {
+		return this.fetch<redux.Track>(`https://desktop.tidal.com/v1/tracks/${trackId}?${this.queryArgs()}`);
 	}
 
 	// Lock to two concurrent requests
 	private static readonly playbackInfoSemaphore = new Semaphore(2);
-	public static playbackInfo(trackId: ItemId, audioQuality: MediaItemAudioQuality) {
+	public static playbackInfo(trackId: redux.ItemId, audioQuality: redux.AudioQuality) {
 		return this.playbackInfoSemaphore.with(() =>
 			this.fetch<PlaybackInfoResponse>(
 				`https://desktop.tidal.com/v1/tracks/${trackId}/playbackinfo?audioquality=${audioQuality}&playbackmode=STREAM&assetpresentation=FULL`,
@@ -51,27 +50,27 @@ export class TidalApi {
 		);
 	}
 
-	public static async lyrics(trackId: ItemId) {
-		return this.fetch<TLyrics>(`https://desktop.tidal.com/v1/tracks/${trackId}/lyrics?${this.queryArgs()}`);
+	public static async lyrics(trackId: redux.ItemId) {
+		return this.fetch<redux.Lyrics>(`https://desktop.tidal.com/v1/tracks/${trackId}/lyrics?${this.queryArgs()}`);
 	}
-	public static async artist(artistId: ItemId) {
-		return this.fetch<TArtist>(`https://desktop.tidal.com/v1/artists/${artistId}?${this.queryArgs()}`);
+	public static async artist(artistId: redux.ItemId) {
+		return this.fetch<redux.Artist>(`https://desktop.tidal.com/v1/artists/${artistId}?${this.queryArgs()}`);
 	}
 
-	public static async album(albumId: ItemId) {
-		return this.fetch<TAlbum>(`https://desktop.tidal.com/v1/albums/${albumId}?${this.queryArgs()}`);
+	public static async album(albumId: redux.ItemId) {
+		return this.fetch<redux.Album>(`https://desktop.tidal.com/v1/albums/${albumId}?${this.queryArgs()}`);
 	}
-	public static async albumItems(albumId: ItemId) {
-		return this.fetch<{ items: TMediaItem[]; totalNumberOfItems: number; offset: number; limit: -1 }>(
+	public static async albumItems(albumId: redux.ItemId) {
+		return this.fetch<{ items: redux.MediaItem[]; totalNumberOfItems: number; offset: number; limit: -1 }>(
 			`https://desktop.tidal.com/v1/albums/${albumId}/items?${this.queryArgs()}&limit=-1`,
 		);
 	}
 
-	public static playlist(playlistUUID: ItemId) {
-		return this.fetch<TPlaylist>(`https://desktop.tidal.com/v1/playlists/${playlistUUID}?${this.queryArgs()}`);
+	public static playlist(playlistUUID: redux.ItemId) {
+		return this.fetch<redux.Playlist>(`https://desktop.tidal.com/v1/playlists/${playlistUUID}?${this.queryArgs()}`);
 	}
-	public static async playlistItems(playlistUUID: ItemId) {
-		return this.fetch<{ items: TMediaItem[]; totalNumberOfItems: number; offset: number; limit: -1 }>(
+	public static async playlistItems(playlistUUID: redux.ItemId) {
+		return this.fetch<{ items: redux.MediaItem[]; totalNumberOfItems: number; offset: number; limit: -1 }>(
 			`https://desktop.tidal.com/v1/playlists/${playlistUUID}/items?${this.queryArgs()}&limit=-1`,
 		);
 	}

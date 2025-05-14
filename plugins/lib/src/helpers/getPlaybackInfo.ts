@@ -1,10 +1,10 @@
 import { parseDasha, type DashManifest } from "./getPlaybackInfo.dasha.native";
 
-import type { MediaItemAudioQuality } from "../classes/Quality";
+import type { PlaybackInfoResponse } from "../classes/TidalApi";
 import { TidalApi } from "../classes/TidalApi";
-import type { PlaybackInfoResponse } from "../classes/TidalApi/types/PlaybackInfo";
 import { libTrace } from "../index.safe";
-import type { ItemId } from "../outdated.types";
+
+import type { AudioQuality, ItemId } from "../redux";
 
 interface PlaybackInfoBase extends Omit<PlaybackInfoResponse, "manifest"> {
 	mimeType: string;
@@ -27,7 +27,7 @@ interface DashPlaybackInfo extends PlaybackInfoBase {
 }
 export type PlaybackInfo = DashPlaybackInfo | TidalPlaybackInfo;
 
-export const getPlaybackInfo = async (mediaItemId: ItemId, audioQuality: MediaItemAudioQuality): Promise<PlaybackInfo> => {
+export const getPlaybackInfo = async (mediaItemId: ItemId, audioQuality: AudioQuality): Promise<PlaybackInfo> => {
 	try {
 		const playbackInfo = await TidalApi.playbackInfo(mediaItemId, audioQuality);
 		if (playbackInfo === undefined) throw new Error(`Playback info not found for ${mediaItemId}`);

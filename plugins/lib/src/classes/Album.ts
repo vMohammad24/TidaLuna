@@ -5,18 +5,19 @@ import type { IRelease, IReleaseMatch } from "musicbrainz-api";
 import { ftch, type Tracer } from "@luna/core";
 
 import { libTrace } from "../index.safe";
-import type { ItemId, TAlbum, TMediaItem } from "../outdated.types";
 import { Artist } from "./Artist";
 import { ContentBase, type TImageSize } from "./ContentBase";
 import type { MediaCollection } from "./MediaCollection";
 import { MediaItem } from "./MediaItem";
 import { TidalApi } from "./TidalApi";
 
+import type * as redux from "../redux";
+
 export class Album extends ContentBase implements MediaCollection {
 	public readonly trace: Tracer;
 	constructor(
-		public readonly id: ItemId,
-		public readonly tidalAlbum: TAlbum,
+		public readonly id: redux.ItemId,
+		public readonly tidalAlbum: redux.Album,
 	) {
 		super();
 		this.trace = Album.trace.withSource(`[${this.tidalAlbum.title ?? id}]`).trace;
@@ -24,7 +25,7 @@ export class Album extends ContentBase implements MediaCollection {
 
 	public static readonly trace: Tracer = libTrace.withSource(".Album").trace;
 
-	public static async fromId(albumId?: ItemId): Promise<Album | undefined> {
+	public static async fromId(albumId?: redux.ItemId): Promise<Album | undefined> {
 		if (albumId === undefined) return;
 		return super.fromStore(albumId, "albums", async (album) => {
 			album = album ??= await TidalApi.album(albumId);
@@ -80,7 +81,7 @@ export class Album extends ContentBase implements MediaCollection {
 	public async count() {
 		return this.tidalAlbum.numberOfTracks!;
 	}
-	public tMediaItems: () => Promise<TMediaItem[]> = memoize(async () => {
+	public tMediaItems: () => Promise<redux.MediaItem[]> = memoize(async () => {
 		const playlistIitems = await TidalApi.albumItems(this.id);
 		return playlistIitems?.items ?? [];
 	});
@@ -95,7 +96,12 @@ export class Album extends ContentBase implements MediaCollection {
 
 	public title: () => Promise<string | undefined> = memoize(async () => {
 		const brainzAlbum = await this.brainzAlbum();
-		return ContentBase.formatTitle(this.tidalAlbum.title, this.tidalAlbum.version, brainzAlbum?.title, brainzAlbum?.["artist-credit"]);
+		return ContentBase.formatTitle(
+			this.tidalAlbum.title,
+			this.tidalAlbum.version ?? undefined,
+			brainzAlbum?.title,
+			brainzAlbum?.["artist-credit"],
+		);
 	});
 
 	public upc: () => Promise<string | undefined> = memoize(async () => {
@@ -107,18 +113,18 @@ export class Album extends ContentBase implements MediaCollection {
 	}
 
 	public get genre(): string | undefined {
-		return this.tidalAlbum.genre;
+		return this.tidalAlbum.genre ?? undefined;
 	}
 	public get recordLabel(): string | undefined {
-		return this.tidalAlbum.recordLabel;
+		return this.tidalAlbum.recordLabel ?? undefined;
 	}
-	public get totalTracks(): number | undefined {
+	public get numberOfTracks(): number {
 		return this.tidalAlbum.numberOfTracks;
 	}
 	public get releaseDate(): string | undefined {
 		return this.tidalAlbum.releaseDate ?? this.tidalAlbum.streamStartDate;
 	}
 	public get releaseYear(): string | undefined {
-		return this.tidalAlbum.releaseYear;
+		return this.tidalAlbum.releaseYear ?? undefined;
 	}
 }

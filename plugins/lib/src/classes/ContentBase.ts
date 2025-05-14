@@ -1,25 +1,24 @@
 import type { MaybePromise } from "@inrixia/helpers";
 import type { IArtistCredit } from "musicbrainz-api";
 
-import type { ItemId, TContentState } from "../outdated.types";
 import * as redux from "../redux";
 import type { Artist } from "./Artist";
 
-type ContentType = keyof TContentState;
-type ContentItem<K extends ContentType> = Exclude<ReturnType<TContentState[K]["get"]>, undefined>;
+type ContentType = keyof redux.Content;
+type ContentItem<K extends ContentType> = redux.Content[K][keyof redux.Content[K]];
 type ContentClass<K extends ContentType> = {
-	new (itemId: ItemId, contentItem: ContentItem<K>, ...args: any[]): any;
+	new (itemId: redux.ItemId, contentItem: ContentItem<K>, ...args: any[]): any;
 };
 export type TImageSize = "1280" | "640" | "320" | "160" | "80";
 
 export class ContentBase {
-	private static readonly _instances: Record<string, Record<ItemId, ContentClass<ContentType>>> = {};
+	private static readonly _instances: Record<string, Record<redux.ItemId, ContentClass<ContentType>>> = {};
 
 	/**
 	 * Ensure instances of ContentClass's are properly cached and abstracts fetching from the store.
 	 */
 	protected static async fromStore<K extends ContentType, C extends ContentClass<K>, I extends InstanceType<C>>(
-		itemId: ItemId,
+		itemId: redux.ItemId,
 		contentType: K,
 		generator: (contentItem?: ContentItem<K>) => MaybePromise<I | undefined>,
 	): Promise<I | undefined> {
@@ -35,9 +34,9 @@ export class ContentBase {
 	/**
 	 * Fetches a content item from redux.store.content
 	 */
-	public static getItemFromStore<K extends ContentType>(contentType: K, itemId: ItemId): ContentItem<K> {
+	public static getItemFromStore<K extends ContentType>(contentType: K, itemId: redux.ItemId): ContentItem<K> {
 		const storeContent = redux.store.getState().content;
-		return storeContent[contentType][itemId as keyof TContentState[K]] as ContentItem<K>;
+		return storeContent[contentType][itemId as keyof redux.Content[K]] as ContentItem<K>;
 	}
 
 	protected static formatTitle(

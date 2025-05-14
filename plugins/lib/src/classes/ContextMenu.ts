@@ -4,7 +4,6 @@ import type { Tracer } from "@luna/core";
 
 import { observePromise } from "../helpers";
 import { libTrace, unloads } from "../index.safe";
-import type { OutdatedActionPayloads } from "../outdated.types";
 import * as redux from "../redux";
 import { Album } from "./Album";
 import { MediaItems } from "./MediaItem";
@@ -43,7 +42,7 @@ export class ContextMenu {
 	/**
 	 *  Called with `contextMenu` when a context menu is opened
 	 */
-	public static onOpen: AddReceiver<{ event: OutdatedActionPayloads["contextMenu/OPEN"]; contextMenu: ContextMenuElem }> = registerEmitter(
+	public static onOpen: AddReceiver<{ event: redux.ActionPayloads["contextMenu/OPEN"]; contextMenu: ContextMenuElem }> = registerEmitter(
 		(onOpen) => {
 			redux.intercept("contextMenu/OPEN", unloads, async (event) => {
 				const contextMenu = await ContextMenu.getCurrent();

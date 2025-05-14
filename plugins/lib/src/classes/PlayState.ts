@@ -3,30 +3,8 @@ import { registerEmitter, type AddReceiver, type MaybePromise, type VoidLike } f
 import type { Tracer } from "@luna/core";
 
 import { libTrace, unloads } from "../index.safe";
-import type { ItemId, OutdatedStoreState } from "../outdated.types";
 import * as redux from "../redux";
 import { MediaItem } from "./MediaItem";
-import type { MediaItemAudioQuality } from "./Quality";
-
-export type PlaybackContext = {
-	actualAssetPresentation: string;
-	actualAudioMode: string;
-	actualAudioQuality: MediaItemAudioQuality;
-	actualDuration: number;
-	actualProductId: string;
-	actualStreamType: unknown;
-	actualVideoQuality: unknown;
-	assetPosition: number;
-	bitDepth: number | null;
-	codec: string;
-	playbackSessionId: string;
-	sampleRate: number | null;
-};
-
-export type PlaybackControl = OutdatedStoreState["playbackControls"] & { playbackContext: PlaybackContext };
-export type PlayQueue = OutdatedStoreState["playQueue"];
-export type RepeatMode = "off" | "one" | "all";
-export type PlaybackState = "IDLE" | "NOT_PLAYING" | "PLAYING" | "STALLED";
 
 export class PlayState {
 	/**
@@ -52,20 +30,20 @@ export class PlayState {
 
 	private static readonly trace: Tracer = libTrace.withSource(".PlayState").trace;
 
-	public static get playbackControls(): PlaybackControl {
+	public static get playbackControls() {
 		return redux.store.getState().playbackControls;
 	}
-	public static get playQueue(): PlayQueue {
+	public static get playQueue() {
 		return redux.store.getState().playQueue;
 	}
-	public static get playbackContext(): PlaybackContext {
+	public static get playbackContext() {
 		return this.playbackControls.playbackContext;
 	}
 
-	public static get state(): PlaybackState {
+	public static get state() {
 		return this.playbackControls.playbackState;
 	}
-	public static get desiredState(): PlaybackState {
+	public static get desiredState() {
 		return this.playbackControls.desiredPlaybackState;
 	}
 
@@ -78,7 +56,9 @@ export class PlayState {
 	public static setShuffle(shuffle: boolean, shuffleItems: boolean = false): MaybePromise<VoidLike> {
 		if (shuffleItems)
 			return shuffle
-				? redux.actions["playQueue/ENABLE_SHUFFLE_MODE_AND_SHUFFLE_ITEMS"]()
+				? redux.actions["playQueue/ENABLE_SHUFFLE_MODE_AND_SHUFFLE_ITEMS"]({
+						shuffleSeed: Math.random(),
+					})
 				: redux.actions["playQueue/DISABLE_SHUFFLE_MODE_AND_UNSHUFFLE_ITEMS"]();
 
 		if (shuffle !== this.shuffle) shuffle ? redux.actions["playQueue/ENABLE_SHUFFLE_MODE"]() : redux.actions["playQueue/DISABLE_SHUFFLE_MODE"]();
@@ -86,31 +66,12 @@ export class PlayState {
 	// #endregion
 
 	// #region Repeat
-	public static get repeatMode(): RepeatMode {
-		switch (this.playQueue.repeatMode) {
-			case 0:
-				return "off";
-			case 1:
-				return "all";
-			case 2:
-				return "one";
-			default:
-				this.trace.warn("Unknown repeat mode", this.playQueue.repeatMode);
-				return "off";
-		}
+	public static RepeatMode = redux.RepeatMode;
+	public static get repeatMode(): redux.RepeatMode {
+		return this.playQueue.repeatMode;
 	}
-	public static setRepeatMode(repeatMode: RepeatMode): void {
-		switch (repeatMode.toLowerCase()) {
-			case "off":
-				redux.actions["playQueue/SET_REPEAT_MODE"](0);
-				break;
-			case "all":
-				redux.actions["playQueue/SET_REPEAT_MODE"](1);
-				break;
-			case "one":
-				redux.actions["playQueue/SET_REPEAT_MODE"](2);
-				break;
-		}
+	public static setRepeatMode(repeatMode: redux.RepeatMode): void {
+		redux.actions["playQueue/SET_REPEAT_MODE"](repeatMode);
 	}
 	// #endregion
 
@@ -129,7 +90,7 @@ export class PlayState {
 	 * PlayState.play();
 	 * ```
 	 */
-	public static play(mediaItemId?: ItemId) {
+	public static play(mediaItemId?: redux.ItemId) {
 		if (mediaItemId !== undefined) {
 			this.playNext(mediaItemId);
 			this.next();
@@ -161,14 +122,14 @@ export class PlayState {
 	/**
 	 * Adds `mediaItemIds` to playQueue after current track as temporary items (removed after played)
 	 */
-	public static playNext(mediaItemIds: ItemId | ItemId[]) {
+	public static playNext(mediaItemIds: redux.ItemId | redux.ItemId[]) {
 		mediaItemIds = Array.isArray(mediaItemIds) ? mediaItemIds : [mediaItemIds];
 		redux.actions["playQueue/ADD_NEXT"]({ mediaItemIds, context: { type: "UNKNOWN" } });
 	}
 	/**
 	 * Updeates PlayState.playQueue, note this may cause playback to restart
 	 */
-	public static updatePlayQueue(playQueue: Partial<PlayQueue>) {
+	public static updatePlayQueue(playQueue: Partial<redux.PlayQueue>) {
 		redux.actions["playQueue/RESET"]({
 			...PlayState.playQueue,
 			...playQueue,
@@ -222,8 +183,8 @@ export class PlayState {
 		});
 	});
 
-	public static onState: AddReceiver<PlaybackState> = registerEmitter((onState) =>
-		redux.intercept<PlaybackState>("playbackControls/SET_PLAYBACK_STATE", unloads, (playbackState) =>
+	public static onState: AddReceiver<redux.PlaybackState> = registerEmitter((onState) =>
+		redux.intercept("playbackControls/SET_PLAYBACK_STATE", unloads, (playbackState) =>
 			onState(playbackState, this.trace.err.withContext("onState")),
 		),
 	);

@@ -1,21 +1,22 @@
 import type { Tracer } from "@luna/core";
 
 import { libTrace } from "../index.safe";
-import type { ItemId, TArtist } from "../outdated.types";
 import { ContentBase, type TImageSize } from "./ContentBase";
 import { TidalApi } from "./TidalApi";
 
+import type * as redux from "../redux";
+
 export class Artist extends ContentBase {
 	constructor(
-		public readonly id: ItemId,
-		public readonly tidalArtist: TArtist,
+		public readonly id: redux.ItemId,
+		public readonly tidalArtist: redux.Artist,
 	) {
 		super();
 	}
 
 	public static readonly trace: Tracer = libTrace.withSource(".Artist").trace;
 
-	public static async fromId(artistId?: ItemId): Promise<Artist | undefined> {
+	public static async fromId(artistId?: redux.ItemId): Promise<Artist | undefined> {
 		if (artistId === undefined) return;
 		return super.fromStore(artistId, "artists", async (artist) => {
 			artist = artist ??= await TidalApi.artist(artistId);

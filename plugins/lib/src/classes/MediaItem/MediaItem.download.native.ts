@@ -6,12 +6,14 @@ import { join, parse } from "path";
 
 import { fetchMediaItemStream, type FetchProgress } from "@luna/lib.native";
 
-import type { ItemId } from "@luna/lib";
+// Type import & native space so not a issue
+import type { redux } from "@luna/lib";
+
 import type { PlaybackInfo } from "../../helpers";
 import type { MetaTags } from "./MediaItem.tags";
 
-const downloads: Record<ItemId, { progress: FetchProgress; promise: Promise<void> } | undefined> = {};
-export const downloadProgress = async (trackId: ItemId) => downloads[trackId];
+const downloads: Record<redux.ItemId, { progress: FetchProgress; promise: Promise<void> } | undefined> = {};
+export const downloadProgress = async (trackId: redux.ItemId) => downloads[trackId];
 export const download = async (playbackInfo: PlaybackInfo, path: string, tags?: MetaTags): Promise<void> => {
 	if (downloads[playbackInfo.trackId] !== undefined) return downloads[playbackInfo.trackId]!.promise;
 	try {
