@@ -58,6 +58,7 @@ export class MediaItem extends ContentBase {
 		const mediaItemCache = MediaItem.cache.getReactive<MediaItemCache>(String(itemId), { format: {} });
 		return super.fromStore(itemId, "mediaItems", async (mediaItem) => {
 			mediaItem = mediaItem ??= await this.fetchMediaItem(itemId, contentType);
+			if (mediaItem === undefined) return;
 			return new MediaItem(itemId, mediaItem, await mediaItemCache);
 		});
 	}
@@ -145,7 +146,8 @@ export class MediaItem extends ContentBase {
 		private readonly cache: MediaItemCache,
 	) {
 		super();
-		this.tidalItem = tidalMediaItem.item;
+		this.tidalItem = tidalMediaItem?.item;
+		if (this.tidalItem === undefined) MediaItem.trace.err.withContext("MediaItem constructor", this).throw("Tidal media item is undefined!");
 		this.trace = MediaItem.trace.withSource(`[${this.tidalItem.title ?? id}]`).trace;
 	}
 
