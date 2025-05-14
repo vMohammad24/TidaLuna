@@ -6,6 +6,7 @@ import "./exposeTidalInternals.patchAction";
 import { resolveAbsolutePath } from "./helpers/resolvePath";
 
 import { findCreateActionFunction } from "./helpers/findCreateAction";
+import { getOrCreateLoadingContainer } from "./loadingContainer";
 
 export const tidalModules: Record<string, object> = {};
 
@@ -16,8 +17,7 @@ const fetchCode = async (path: string) => {
 };
 
 let loading = 0;
-// Created in native/injector.ts
-const messageContainer = document.getElementById("tidaluna-loading-text")!;
+const messageContainer = getOrCreateLoadingContainer().messageContainer;
 
 const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);
