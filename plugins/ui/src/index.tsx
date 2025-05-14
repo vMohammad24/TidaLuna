@@ -1,9 +1,9 @@
+import { ThemeProvider } from "@mui/material/styles";
 import { ConfirmProvider } from "material-ui-confirm";
 import React from "react";
+import semverRcompare from "semver/functions/rcompare";
 
 import { ContextMenu, ipcRenderer } from "@luna/lib";
-
-import { ThemeProvider } from "@mui/material/styles";
 
 import { Page } from "./classes/Page";
 
@@ -65,7 +65,10 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 });
 
 setTimeout(async () => {
-	const latestReleaseTag = (await fetchReleases()).map((rel) => rel.tag_name)[0];
+	const latestReleaseTag = (await fetchReleases())
+		.filter((release) => !release.prerelease)
+		.map((rel) => rel.tag_name)
+		.sort(semverRcompare)[0];
 	if (latestReleaseTag !== pkg.version) {
 		const res = await confirm({
 			title: (

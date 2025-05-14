@@ -12,9 +12,11 @@
 		"@emotion/styled": "^11.14.0",
 		"@mui/icons-material": "^7.1.0",
 		"@mui/material": "^7.1.0",
-		"material-ui-confirm": "^4.0.0"
+		"material-ui-confirm": "^4.0.0",
+		"semver": "^7.7.2"
 	},
 	"devDependencies": {
-		"@octokit/openapi-types": "^25.0.0"
+		"@octokit/openapi-types": "^25.0.0",
+		"@types/semver": "^7.7.0"
 	}
 }
