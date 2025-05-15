@@ -65,8 +65,11 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 });
 
 setTimeout(async () => {
+	const runningDevVersion = pkg.version.incldes("-dev");
 	const latestReleaseTag = (await fetchReleases())
-		.filter((release) => !release.prerelease)
+		.filter((release) => {
+			return runningDevVersion || !release.prerelease;
+		})
 		.map((rel) => rel.tag_name)
 		.sort(semverRcompare)[0];
 	if (latestReleaseTag !== pkg.version) {
