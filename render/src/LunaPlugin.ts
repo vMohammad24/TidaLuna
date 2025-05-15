@@ -114,13 +114,18 @@ export class LunaPlugin {
 		return plugin.load();
 	}
 
+	public static async fromName(name: string): Promise<LunaPlugin | undefined> {
+		if (name in this.plugins) return this.plugins[name];
+
+		const store = await LunaPlugin.pluginStorage.getReactive<LunaPluginStorage>(name);
+		if (store === undefined) return;
+
+		return this.fromStorage(store);
+	}
+
 	public static async loadStoredPlugins() {
 		const keys = await LunaPlugin.pluginStorage.keys();
-		return Promise.all(
-			keys.map(async (name) =>
-				LunaPlugin.fromStorage(await LunaPlugin.pluginStorage.getReactive(name)).catch(this.trace.err.withContext("loadStoredPlugins", name)),
-			),
-		);
+		return Promise.all(keys.map(async (name) => LunaPlugin.fromName(name).catch(this.trace.err.withContext("loadStoredPlugins", name))));
 	}
 	// #endregion
 
@@ -265,7 +270,7 @@ export class LunaPlugin {
 	 * Load the plugin if it is enabled
 	 */
 	public async load(): Promise<LunaPlugin> {
-		if (this.enabled) await this.enable();
+		if (this.enabled && this.installed) await this.enable();
 		return this;
 	}
 	// #endregion
