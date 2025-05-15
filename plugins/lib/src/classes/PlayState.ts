@@ -33,11 +33,20 @@ export class PlayState {
 	public static get playbackControls() {
 		return redux.store.getState().playbackControls;
 	}
+	public static get playbackContext() {
+		return this.playbackControls.playbackContext;
+	}
+
 	public static get playQueue() {
 		return redux.store.getState().playQueue;
 	}
-	public static get playbackContext() {
-		return this.playbackControls.playbackContext;
+	public static nextMediaItem() {
+		const nextItemId = this.playQueue.elements[this.playQueue.currentIndex + 1]?.mediaItemId;
+		return MediaItem.fromId(nextItemId);
+	}
+	public static previousMediaItem() {
+		const previousMediaItem = this.playQueue.elements[this.playQueue.currentIndex - 1]?.mediaItemId;
+		return MediaItem.fromId(previousMediaItem);
 	}
 
 	public static get state() {
@@ -147,6 +156,7 @@ export class PlayState {
 	// #endregion
 
 	static {
+		// State tracking for scrobbling
 		redux.intercept("playbackControls/SET_PLAYBACK_STATE", unloads, (state) => {
 			switch (state) {
 				case "PLAYING": {
@@ -163,7 +173,7 @@ export class PlayState {
 
 	private static currentMediaItem?: MediaItem;
 	/**
-	 * `onScrobble` called with `MediaItem` when a track should be scrobbled according to `MIN_SCROBBLE_DURATION` and `MIN_SCROBBLE_PERCENTAGE`
+	 * Triggered on MediaItem.onMediaTransition and when a track should be scrobbled according to `MIN_SCROBBLE_DURATION` and `MIN_SCROBBLE_PERCENTAGE`
 	 */
 	public static onScrobble: AddReceiver<MediaItem> = registerEmitter(async (onScrobble) => {
 		this.currentMediaItem = await MediaItem.fromPlaybackContext();
@@ -183,6 +193,7 @@ export class PlayState {
 		});
 	});
 
+	/** Triggered on "playbackControls/SET_PLAYBACK_STATE" */
 	public static onState: AddReceiver<redux.PlaybackState> = registerEmitter((onState) =>
 		redux.intercept("playbackControls/SET_PLAYBACK_STATE", unloads, (playbackState) =>
 			onState(playbackState, this.trace.err.withContext("onState")),

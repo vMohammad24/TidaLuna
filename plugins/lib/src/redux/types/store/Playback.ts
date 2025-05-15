@@ -7,7 +7,7 @@ export interface AccumulatedPlaybackTime {
 	storedTimes: Record<string, number>;
 }
 
-export type PlaybackState = "PLAYING" | "IDLE" | "PAUSED" | "NOT_PLAYING";
+export type PlaybackState = "PLAYING" | "IDLE" | "PAUSED" | "NOT_PLAYING" | "STALLED";
 export type Player = "BOOMBOX" | "GOOGLE_CAST" | "REMOTE_PLAYBACK";
 
 export interface PlaybackContext {

@@ -106,9 +106,9 @@ export interface LoadFavoriteMediaItem {
 export interface MediaProduct {
 	productId: ItemId;
 	productType: ContentType;
-	referenceId: string;
-	sourceId: string;
-	sourceType: string;
+	referenceId?: string;
+	sourceId?: string;
+	sourceType?: string;
 }
 // #endregion
 
@@ -1194,7 +1194,7 @@ export interface ActionPayloads {
 
 	// #region playbackControls
 	"playbackControls/DECREASE_VOLUME": void;
-	"playbackControls/ENDED": unknown;
+	"playbackControls/ENDED": { reason: "completed" | "skip" };
 	"playbackControls/INCREASE_VOLUME": void;
 	"playbackControls/MEDIA_PRODUCT_TRANSITION": {
 		mediaProduct: MediaProduct;
@@ -1213,9 +1213,7 @@ export interface ActionPayloads {
 	"playbackControls/SEEK_FORWARDS": number | undefined;
 	"playbackControls/SET_DESIRED_PAUSE_STATE": void;
 	"playbackControls/SET_DURATION": number;
-	"playbackControls/SET_MUTE": {
-		mute: boolean;
-	};
+	"playbackControls/SET_MUTE": boolean;
 	"playbackControls/SET_PLAYBACK_STATE": PlaybackState;
 	"playbackControls/SET_VOLUME": {
 		volume: number;
@@ -1536,7 +1534,7 @@ export interface ActionPayloads {
 	"settings/SET_AUDIO_SPECTRUM_ENABLED": SettingsState["audioSpectrumEnabled"];
 	"settings/SET_AUTOPLAY": SettingsState["autoPlay"];
 	"settings/SET_AUTOSTART_MODE": SettingsState["desktop"]["autoStartMode"];
-	"settings/SET_EXPLICIT_CONTENT_TOGGLE": SettingsState["explicitContentEnabled"];
+	"settings/SET_EXPLICIT_CONTENT_TOGGLE": { isEnabled: SettingsState["explicitContentEnabled"] };
 	"settings/SET_LANGUAGE": SettingsState["language"];
 	"settings/SET_OPEN_LINKS_IN_DESKTOP_APP": SettingsState["openLinksInDesktopApp"];
 	"settings/SET_STREAMING_QUALITY": SettingsState["quality"]["streaming"];

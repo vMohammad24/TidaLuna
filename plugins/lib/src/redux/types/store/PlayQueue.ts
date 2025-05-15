@@ -27,7 +27,7 @@ export type PlayQueuePriority = "priority_history" | "priority_keep" | "priority
 
 export interface PlayQueueElement {
 	context: PlayQueueContext;
-	mediaItemId: number;
+	mediaItemId: ItemId;
 	priority: PlayQueuePriority;
 	uid: string;
 }

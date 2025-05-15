@@ -99,6 +99,7 @@ export class MediaItem extends ContentBase {
 	}
 
 	// #region Listeners
+	/** Triggered on "player/PRELOAD_ITEM" */
 	public static onPreload: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept("player/PRELOAD_ITEM", unloads, async (item) => {
 			if (item?.productId === undefined) return MediaItem.trace.warn("player/PRELOAD_ITEM intercepted without productId!", item);
@@ -107,6 +108,7 @@ export class MediaItem extends ContentBase {
 			emit(mediaItem, mediaItem.trace.err.withContext("preloadItem.runListeners"));
 		}),
 	);
+	/** Triggered on "playbackControls/MEDIA_PRODUCT_TRANSITION"*/
 	public static onMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept(
 			"playbackControls/MEDIA_PRODUCT_TRANSITION",
@@ -114,13 +116,15 @@ export class MediaItem extends ContentBase {
 			asyncDebounce(async ({ playbackContext }: redux.InterceptPayload<"playbackControls/MEDIA_PRODUCT_TRANSITION">) => {
 				const mediaItem = await this.fromPlaybackContext(playbackContext);
 				if (mediaItem === undefined) return;
-				// Always update format info on playback
-				// if (this.useFormat) mediaItem.updateFormat();
+
 				await emit(mediaItem, mediaItem.trace.err.withContext("mediaProductTransition.runListeners"));
 			}),
 		),
 	);
-	/** Warning! Not always called, dont rely on this over onMediaTransition */
+	/**
+	 * Triggered on "playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION"
+	 * Warning! Not always called, **dont rely on this over onMediaTransition**
+	 * */
 	public static onPreMediaTransition: AddReceiver<MediaItem> = registerEmitter((emit) =>
 		redux.intercept(
 			"playbackControls/PREFILL_MEDIA_PRODUCT_TRANSITION",
