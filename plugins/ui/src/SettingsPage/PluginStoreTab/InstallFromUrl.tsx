@@ -6,7 +6,7 @@ import { debounce } from "@inrixia/helpers";
 import { LunaPlugin } from "@luna/core";
 
 import { Messager } from "@luna/core";
-import { storeUrls } from ".";
+import { addToStores } from ".";
 
 const successSx = {
 	"& .MuiOutlinedInput-root:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline": {
@@ -35,20 +35,13 @@ export const InstallFromUrl = React.memo(() => {
 	const loadPlugin = React.useCallback(async (urlValue: string) => {
 		if (urlValue === "") return;
 		try {
+			// Sanity check url
+			const url = new URL(urlValue).href;
 			let successMessage;
-			if (urlValue.endsWith("/store.json")) {
-				if (storeUrls.includes(urlValue)) {
-					setErr("Store already added");
-					return;
-				}
-				storeUrls.push(urlValue.slice(0, -11));
-				setValue("");
-				successMessage = `Added store ${urlValue}!`;
-				setErr(null);
-				setSuccess(successMessage);
-				Messager.Info(successMessage);
+			if (url.endsWith("/store.json")) {
+				if (addToStores(url) === false) return setErr("Store already added");
+				successMessage = `Added store ${url}!`;
 			} else {
-				const url = new URL(urlValue).href;
 				const plugin = await LunaPlugin.fromStorage({ url });
 				successMessage = `Loaded plugin ${plugin.name}!`;
 			}

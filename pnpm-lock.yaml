@@ -92,6 +92,9 @@ importers:
       flac-stream-tagger:
         specifier: ^1.0.10
         version: 1.0.10
+      type-fest:
+        specifier: ^4.41.0
+        version: 4.41.0
     devDependencies:
       '@types/adm-zip':
         specifier: ^0.5.7
