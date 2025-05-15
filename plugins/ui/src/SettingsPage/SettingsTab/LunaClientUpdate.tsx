@@ -7,7 +7,7 @@ type GitHubRelease = components["schemas"]["release"];
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 
-import { getPackage, updateLuna } from "@luna/lib.native";
+import { getPackage, relaunch, updateLuna } from "@luna/lib.native";
 
 import { useConfirm } from "material-ui-confirm";
 import { LunaButton, LunaSettings, SpinningButton } from "../../components";
@@ -52,7 +52,7 @@ export const LunaClientUpdate = React.memo(() => {
 		>
 			<LunaButton
 				children={action}
-				tooltip={desc}
+				title={desc}
 				onClick={async () => {
 					const result = await confirm({ title: action, description: desc, confirmationText: action });
 					if (!result.confirmed) return;
@@ -69,6 +69,28 @@ export const LunaClientUpdate = React.memo(() => {
 				children={releases.map((release) => {
 					return <MenuItem value={release.tag_name}>{`${release.tag_name}${release.prerelease ? "-dev" : ""}`}</MenuItem>;
 				})}
+			/>
+			<LunaButton
+				color="error"
+				children={"Factory Reset"}
+				title={"Warning! This will reset luna to a clean install with no plugins."}
+				onClick={async () => {
+					const ok = await confirm({
+						title: "Factory Reset",
+						description: "ARE YOU SURE? This will delete and reset all plugins and configuration for Luna.",
+						confirmationText: "DELETE and Restart",
+					});
+					if (!ok.confirmed) return;
+
+					for (const db of await indexedDB.databases()) {
+						// Dont delete the tidal localforage db as it will reset the tidal app
+						// Deleting other _TIDAL indexedDB databases is ok
+						if (db.name === "localforage" || db.name === undefined) continue;
+						indexedDB.deleteDatabase(db.name);
+					}
+
+					await relaunch();
+				}}
 			/>
 		</LunaSettings>
 	);

@@ -273,7 +273,7 @@ export class LunaPlugin {
 	 * Load the plugin if it is enabled
 	 */
 	public async load(): Promise<LunaPlugin> {
-		if (this.enabled && this.installed) await this.enable();
+		if (this.enabled && this.installed !== false) await this.enable();
 		return this;
 	}
 	// #endregion
