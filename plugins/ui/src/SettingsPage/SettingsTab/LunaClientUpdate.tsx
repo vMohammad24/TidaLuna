@@ -19,7 +19,7 @@ export const LunaClientUpdate = React.memo(() => {
 	const confirm = useConfirm();
 	const [releases, setReleases] = React.useState<GitHubRelease[]>([]);
 	const [loading, setLoading] = React.useState(false);
-	const [selectedRelease, setSelectedRelease] = React.useState<string>(pkg.version);
+	const [selectedRelease, setSelectedRelease] = React.useState<string>(pkg.version!);
 
 	const updateReleases = async () => {
 		setLoading(true);

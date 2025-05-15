@@ -65,7 +65,7 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 });
 
 setTimeout(async () => {
-	const runningDevVersion = pkg.version.incldes("-dev");
+	const runningDevVersion = pkg.version!.includes("-dev");
 	const latestReleaseTag = (await fetchReleases())
 		.filter((release) => {
 			return runningDevVersion || !release.prerelease;

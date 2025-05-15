@@ -4,7 +4,9 @@ import AdmZip from "adm-zip";
 import { readdir, rm, unlink } from "fs/promises";
 import path from "path";
 
-export const getPackage = async () => require("./app/package.json");
+import type { PackageJson } from "type-fest";
+
+export const getPackage = async (): Promise<PackageJson> => require("./app/package.json");
 export const relaunch = async () => {
 	app.relaunch();
 	app.exit(0);
