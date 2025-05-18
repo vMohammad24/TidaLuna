@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles";
 import { ConfirmProvider } from "material-ui-confirm";
 import React from "react";
+import semverGt from "semver/functions/gt";
 import semverRcompare from "semver/functions/rcompare";
 
 import { ContextMenu, ipcRenderer } from "@luna/lib";
@@ -65,14 +66,11 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 });
 
 setTimeout(async () => {
-	const runningDevVersion = pkg.version!.includes("-dev");
 	const latestReleaseTag = (await fetchReleases())
-		.filter((release) => {
-			return runningDevVersion || !release.prerelease;
-		})
+		.filter((release) => !release.prerelease)
 		.map((rel) => rel.tag_name)
 		.sort(semverRcompare)[0];
-	if (latestReleaseTag !== pkg.version) {
+	if (semverGt(latestReleaseTag, pkg.version!, true)) {
 		const res = await confirm({
 			title: (
 				<>
