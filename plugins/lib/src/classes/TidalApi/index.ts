@@ -8,6 +8,7 @@ import { getCredentials } from "../../helpers";
 import { libTrace } from "../../index.safe";
 import * as redux from "../../redux";
 
+import type { AlbumPage } from "./types/AlbumPage";
 import { PlaybackInfoResponse } from "./types/PlaybackInfo";
 
 export type * from "./types";
@@ -61,9 +62,16 @@ export class TidalApi {
 		return this.fetch<redux.Album>(`https://desktop.tidal.com/v1/albums/${albumId}?${this.queryArgs()}`);
 	}
 	public static async albumItems(albumId: redux.ItemId) {
-		return this.fetch<{ items: redux.MediaItem[]; totalNumberOfItems: number; offset: number; limit: -1 }>(
-			`https://desktop.tidal.com/v1/albums/${albumId}/items?${this.queryArgs()}&limit=-1`,
+		const albumPage = await this.fetch<AlbumPage>(
+			`https://desktop.tidal.com/v1/pages/album?albumId=${albumId}&countryCode=NZ&locale=en_US&deviceType=DESKTOP`,
 		);
+		for (const row of albumPage?.rows ?? []) {
+			for (const module of row.modules) {
+				if (module.type === "ALBUM_ITEMS" && module.pagedList) {
+					return module.pagedList.items;
+				}
+			}
+		}
 	}
 
 	public static playlist(playlistUUID: redux.ItemId) {
