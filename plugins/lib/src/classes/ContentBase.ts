@@ -39,16 +39,11 @@ export class ContentBase {
 		return storeContent[contentType][itemId as keyof redux.Content[K]] as ContentItem<K>;
 	}
 
-	protected static formatTitle(
-		tidalTitle?: string,
-		tidalVersion?: string,
-		brainzTitle?: string,
-		brainzCredit?: IArtistCredit[],
-	): string | undefined {
+	protected static formatTitle(tidalTitle?: string, tidalVersion?: string, brainzTitle?: string, brainzCredit?: IArtistCredit[]): string {
 		brainzTitle = brainzTitle?.replaceAll("’", "'");
 
 		let title = brainzTitle ?? tidalTitle;
-		if (title === undefined) return undefined;
+		if (title === undefined) throw new Error("Title is undefined");
 
 		// If the title has feat and its validated by musicBrainz then use the tidal title.
 		if (tidalTitle?.includes("feat. ") && !brainzTitle?.includes("feat. ")) {

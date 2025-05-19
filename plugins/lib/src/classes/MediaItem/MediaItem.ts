@@ -1,4 +1,4 @@
-import { asyncDebounce, memoize, registerEmitter, type AddReceiver } from "@inrixia/helpers";
+import { asyncDebounce, memoize, memoizeArgless, registerEmitter, type AddReceiver } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { ftch, ReactiveStore, type Tracer } from "@luna/core";
@@ -158,6 +158,14 @@ export class MediaItem extends ContentBase {
 		return PlayState.play(this.id);
 	}
 
+	/**
+	 * Fetches the Tidal media item from the API to ensure properties like `bpm` are populated.
+	 * Is idempotent so can be called multiple times without causing re-fetch.
+	 */
+	public fetchTidalMediaItem: () => Promise<void> = memoizeArgless(async () => {
+		(this.tidalItem as any) = await TidalApi.track(this.id);
+	});
+
 	// #region MusicBrainz
 	public brainzItem: () => Promise<ITrack | undefined> = memoize(async () => {
 		const releaseTrackFromRecording = async (recording: IRecording) => {
@@ -245,7 +253,7 @@ export class MediaItem extends ContentBase {
 
 	public lyrics: () => Promise<redux.Lyrics | undefined> = memoize(() => TidalApi.lyrics(this.id));
 
-	public title: () => Promise<string | undefined> = memoize(async () => {
+	public title: () => Promise<string> = memoize(async () => {
 		const brainzItem = await this.brainzItem();
 		return ContentBase.formatTitle(this.tidalItem.title, this.tidalItem.version ?? undefined, brainzItem?.title, brainzItem?.["artist-credit"]);
 	});
@@ -278,6 +286,15 @@ export class MediaItem extends ContentBase {
 	});
 
 	public flacTags: () => Promise<MetaTags> = memoize(() => makeTags(this));
+
+	public async copyright(): Promise<string | undefined> {
+		if (!!this.tidalItem.copyright) await this.fetchTidalMediaItem();
+		return this.tidalItem.copyright ?? undefined;
+	}
+	public async bpm(): Promise<number | undefined> {
+		if (!!this.tidalItem.bpm) await this.fetchTidalMediaItem();
+		return this.tidalItem.bpm ?? undefined;
+	}
 	// #endregion
 
 	// #region Properties
@@ -293,19 +310,12 @@ export class MediaItem extends ContentBase {
 	public get replayGainPeak() {
 		return this.tidalItem.peak;
 	}
-	public get replayGain(): number | undefined {
-		if (this.tidalItem.contentType !== "track") return;
+	public get replayGain(): number {
+		if (this.tidalItem.contentType !== "track") return 0;
 		return this.tidalItem.replayGain;
 	}
 	public get url(): string {
 		return this.tidalItem.url;
-	}
-	public get copyright(): string | undefined {
-		if (this.tidalItem.contentType !== "track") return;
-		return this.tidalItem.copyright ?? undefined;
-	}
-	public get bpm(): number | undefined {
-		return this.tidalItem.bpm ?? undefined;
 	}
 	public get qualityTags(): Quality[] {
 		if (this.tidalItem.contentType !== "track") return [];
