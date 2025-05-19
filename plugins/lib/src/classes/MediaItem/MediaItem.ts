@@ -377,6 +377,15 @@ export class MediaItem extends ContentBase {
 		const [playbackInfo, flagTags] = await Promise.all([this.playbackInfo(), this.flacTags()]);
 		await download(playbackInfo, path, flagTags);
 	}
+	public async fileExtension(): Promise<string> {
+		const playbackInfo = await this.playbackInfo();
+		switch (playbackInfo.manifestMimeType) {
+			case "application/dash+xml":
+				return "m4a";
+			case "application/vnd.tidal.bts":
+				return "flac";
+		}
+	}
 	// #endregion
 
 	// #region Format
