@@ -13,7 +13,7 @@ import { PlayState } from "../PlayState";
 import { Quality } from "../Quality";
 import { TidalApi } from "../TidalApi";
 import { download, downloadProgress } from "./MediaItem.download.native";
-import { makeTags, MetaTags } from "./MediaItem.tags";
+import { availableTags, makeTags, MetaTags } from "./MediaItem.tags";
 
 type MediaFormat = {
 	bitDepth?: number;
@@ -29,6 +29,7 @@ type MediaItemCache = {
 
 export class MediaItem extends ContentBase {
 	public static readonly trace: Tracer = libTrace.withSource(".MediaItem").trace;
+	public static readonly availableTags = availableTags;
 
 	private static cache = ReactiveStore.getStore("@luna/MediaItemCache");
 
