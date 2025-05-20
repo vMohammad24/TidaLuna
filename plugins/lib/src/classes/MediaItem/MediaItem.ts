@@ -3,7 +3,7 @@ import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { ftch, ReactiveStore, type Tracer } from "@luna/core";
 
-import { getPlaybackInfo, type PlaybackInfo } from "../../helpers";
+import { getPlaybackInfo, parseDate, type PlaybackInfo } from "../../helpers";
 import { libTrace, unloads } from "../../index.safe";
 import * as redux from "../../redux";
 import { Album } from "../Album";
@@ -260,17 +260,20 @@ export class MediaItem extends ContentBase {
 	});
 
 	public releaseDate: () => Promise<Date | undefined> = memoize(async () => {
-		let releaseDate = this.tidalItem.releaseDate ?? this.tidalItem.streamStartDate;
+		let releaseDate = parseDate(this.tidalItem.releaseDate) ?? parseDate(this.tidalItem.streamStartDate);
 		if (releaseDate === undefined) {
 			const brainzItem = await this.brainzItem();
-			releaseDate = brainzItem?.recording?.["first-release-date"] ?? releaseDate;
+			releaseDate = parseDate(brainzItem?.recording?.["first-release-date"]);
 		}
 		if (releaseDate === undefined) {
 			const album = await this.album();
-			releaseDate = album?.releaseDate ?? releaseDate;
-			releaseDate ??= (await album?.brainzAlbum())?.date ?? releaseDate;
+			releaseDate = parseDate(album?.releaseDate);
+			if (releaseDate === undefined) {
+				const brainzAlbum = await album?.brainzAlbum();
+				releaseDate ??= parseDate(brainzAlbum?.date);
+			}
 		}
-		if (releaseDate) return new Date(releaseDate);
+		return releaseDate;
 	});
 
 	/**
