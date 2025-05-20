@@ -1,13 +1,13 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
   };
 
   outputs = inputs@{ self, systems, flake-parts, nixpkgs, ... }: flake-parts.lib.mkFlake { inherit inputs; } {
     systems = import systems;
 
-    imports = [ ./package.nix ];
+    imports = [ ./nix ];
 
     perSystem = { config, pkgs, system, ... }: {
       _module.args.pkgs = import inputs.nixpkgs {
@@ -15,6 +15,8 @@
         overlays = [ self.overlays.default ];
       };
 
+      packages.injection =
+       pkgs.callPackage ./nix/package.nix { inherit (pkgs) nodejs fetchFromGitHub; pnpm = pkgs.pnpm_9; };
       packages.default = pkgs.tidaLuna;
     };
   };

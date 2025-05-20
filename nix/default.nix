@@ -3,11 +3,7 @@
     withSystem prev.stdenv.hostPlatform.system (
       { config, ... }:
       let
-        injection = prev.fetchzip {
-          url = "https://github.com/Inrixia/TidaLuna/releases/download/1.1.0-alpha/luna.zip";
-          sha256 = "bOjA+slsjYmG+kmjTgN8yYKJCciwsnGHZ7kjozC4ZiA=";
-          stripRoot = false;
-        };
+        injection = prev.callPackage ./package.nix { nodejs = prev.nodejs; pnpm = prev.pnpm_9; };
       in
       {
         tidaLuna =  prev.tidal-hifi.overrideAttrs (old: {
@@ -26,7 +22,6 @@
             mkdir -p "$out/opt/tidal-hifi/resources/app/"
             cp -R ${injection}/* $out/opt/tidal-hifi/resources/app/
 
-            chmod -R g-w "$out"
 
             runHook postInstall
           '';
@@ -36,3 +31,4 @@
     }
   );
 }
+
