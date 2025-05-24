@@ -19,7 +19,7 @@ export class ContextMenu {
 	 * Will return null if the element is not found (usually means no context menu is open)
 	 */
 	public static async getCurrent() {
-		const contextMenu = await observePromise<ContextMenuElem>(`[data-type="list-container__context-menu"]`, 1000);
+		const contextMenu = await observePromise<ContextMenuElem>(unloads, `[data-type="list-container__context-menu"]`, 1000);
 		if (contextMenu !== null) {
 			const templateButton = contextMenu.querySelector(`div[data-type="contextmenu-item"]`) as Element | undefined;
 			contextMenu.addButton = (text, onClick) => {
