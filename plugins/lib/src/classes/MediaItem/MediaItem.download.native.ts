@@ -13,7 +13,7 @@ import type { PlaybackInfo } from "../../helpers";
 import type { MetaTags } from "./MediaItem.tags";
 
 const downloads: Record<redux.ItemId, { progress: FetchProgress; promise: Promise<void> } | undefined> = {};
-export const downloadProgress = async (trackId: redux.ItemId) => downloads[trackId];
+export const downloadProgress = async (trackId: redux.ItemId) => downloads[trackId]?.progress;
 export const download = async (playbackInfo: PlaybackInfo, path: string, tags?: MetaTags): Promise<void> => {
 	if (downloads[playbackInfo.trackId] !== undefined) return downloads[playbackInfo.trackId]!.promise;
 	try {

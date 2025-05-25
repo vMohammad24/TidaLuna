@@ -56,7 +56,7 @@ export class MediaItem extends ContentBase {
 		return super.fromStore(itemId, "mediaItems", async (mediaItem) => {
 			mediaItem = mediaItem ??= await this.fetchMediaItem(itemId, contentType);
 			if (mediaItem === undefined) return;
-			return new MediaItem(itemId, mediaItem, await mediaItemCache);
+			return new MediaItem(itemId, mediaItem, contentType, await mediaItemCache);
 		});
 	}
 	public static fromIsrc: (isrc: string) => Promise<MediaItem | undefined> = memoize(async (isrc) => {
@@ -146,6 +146,7 @@ export class MediaItem extends ContentBase {
 	constructor(
 		public readonly id: redux.ItemId,
 		tidalMediaItem: redux.MediaItem,
+		public readonly contentType: redux.ContentType,
 		private readonly cache: MediaItemCache,
 	) {
 		super();
@@ -231,7 +232,7 @@ export class MediaItem extends ContentBase {
 	});
 
 	public async *isrcs(): AsyncIterable<string> {
-		if (this.tidalItem.contentType !== "track") return;
+		if (this.contentType !== "track") return;
 		const seen = new Set<string>();
 		if (this.tidalItem.isrc) {
 			yield this.tidalItem.isrc;
@@ -302,9 +303,6 @@ export class MediaItem extends ContentBase {
 	// #endregion
 
 	// #region Properties
-	public get contentType() {
-		return this.tidalItem.contentType;
-	}
 	public get trackNumber() {
 		return this.tidalItem.trackNumber;
 	}
@@ -315,18 +313,18 @@ export class MediaItem extends ContentBase {
 		return this.tidalItem.peak;
 	}
 	public get replayGain(): number {
-		if (this.tidalItem.contentType !== "track") return 0;
+		if (this.contentType !== "track") return 0;
 		return this.tidalItem.replayGain;
 	}
 	public get url(): string {
 		return this.tidalItem.url;
 	}
 	public get qualityTags(): Quality[] {
-		if (this.tidalItem.contentType !== "track") return [];
+		if (this.contentType !== "track") return [];
 		return Quality.fromMetaTags(this.tidalItem.mediaMetadata?.tags);
 	}
 	public get bestQuality(): Quality {
-		if (this.tidalItem.contentType !== "track") {
+		if (this.contentType !== "track") {
 			this.trace.warn("MediaItem quality called on non-track!", this);
 			return Quality.High;
 		}
