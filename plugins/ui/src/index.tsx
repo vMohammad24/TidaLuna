@@ -1,15 +1,16 @@
+import { ThemeProvider } from "@mui/material/styles";
 import { ConfirmProvider } from "material-ui-confirm";
 import React from "react";
+import semverGt from "semver/functions/gt";
+import semverRcompare from "semver/functions/rcompare";
 
 import { ContextMenu, ipcRenderer } from "@luna/lib";
-
-import { ThemeProvider } from "@mui/material/styles";
 
 import { Page } from "./classes/Page";
 
 import { confirm } from "./helpers/confirm";
 import { lunaMuiTheme } from "./lunaTheme";
-import { currentSettingsTab, LunaPage, LunaTabs } from "./SettingsPage";
+import { currentSettingsTab, LunaPage } from "./SettingsPage";
 import { storeUrls } from "./SettingsPage/PluginStoreTab";
 import { fetchReleases, pkg } from "./SettingsPage/SettingsTab/LunaClientUpdate";
 
@@ -53,20 +54,23 @@ ipcRenderer.onOpenUrl(unloads, (reqUrl) => {
 	if (url?.protocol !== "tidaluna:") return;
 	switch (url.pathname) {
 		case "//settings/store":
-			currentSettingsTab._ = LunaTabs.PluginStore;
+			currentSettingsTab._ = "Plugin Store";
 			const newStoreUrl = url.searchParams.get("installfromurl");
 			if (newStoreUrl !== null && !storeUrls.includes(newStoreUrl)) storeUrls.push(newStoreUrl);
 			break;
 		case "//settings/plugins":
-			currentSettingsTab._ = LunaTabs.Plugins;
+			currentSettingsTab._ = "Plugins";
 			break;
 	}
 	if (url.pathname.startsWith("//settings")) settingsPage.open();
 });
 
 setTimeout(async () => {
-	const latestReleaseTag = (await fetchReleases()).map((rel) => rel.tag_name)[0];
-	if (latestReleaseTag !== pkg.version) {
+	const latestReleaseTag = (await fetchReleases())
+		.filter((release) => !release.prerelease)
+		.map((rel) => rel.tag_name)
+		.sort(semverRcompare)[0];
+	if (semverGt(latestReleaseTag, pkg.version!, true)) {
 		const res = await confirm({
 			title: (
 				<>
@@ -78,7 +82,7 @@ setTimeout(async () => {
 			cancellationText: "Close",
 		});
 		if (!res.confirmed) return;
-		currentSettingsTab._ = LunaTabs.Settings;
+		currentSettingsTab._ = "Settings";
 		settingsPage.open();
 	}
 });

@@ -5,6 +5,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 
 import ExtensionIcon from "@mui/icons-material/Extension";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import PaletteIcon from "@mui/icons-material/Palette";
 import SettingsIcon from "@mui/icons-material/Settings";
 import StorefrontIcon from "@mui/icons-material/Storefront";
@@ -13,20 +14,16 @@ import { Signal } from "@inrixia/helpers";
 import { PluginsTab } from "./PluginsTab";
 import { PluginStoreTab } from "./PluginStoreTab";
 import { SettingsTab } from "./SettingsTab";
+import { SupportersTab } from "./SupportersTab";
 
-export enum LunaTabs {
-	Plugins = "Plugins",
-	PluginStore = "Plugin Store",
-	Settings = "Settings",
-	Themes = "Themes",
-}
+type LunaSettingsTab = "Plugins" | "Plugin Store" | "Settings" | "Themes" | "Supporters";
 
-const LunaTabPage = React.memo(({ tab, currentTab, children }: { tab: LunaTabs; currentTab: LunaTabs } & PropsWithChildren) => {
+const LunaTabPage = React.memo(({ tab, currentTab, children }: { tab: LunaSettingsTab; currentTab: LunaSettingsTab } & PropsWithChildren) => {
 	if (tab !== currentTab) return null;
 	return <Container sx={{ marginTop: 3, marginLeft: -3 }} children={children} />;
 });
 
-export const currentSettingsTab = new Signal(LunaTabs.Plugins);
+export const currentSettingsTab = new Signal<LunaSettingsTab>("Plugins");
 export const LunaPage = React.memo(() => {
 	const [currentTab, setCurrentTab] = React.useState(currentSettingsTab._);
 	React.useEffect(() => {
@@ -38,14 +35,17 @@ export const LunaPage = React.memo(() => {
 	return (
 		<Container maxWidth="md" sx={{ padding: 0, marginBottom: 10, flexGrow: 1 }}>
 			<Tabs value={currentTab} onChange={(_, tab) => (currentSettingsTab._ = tab)}>
-				<Tab iconPosition="start" icon={<ExtensionIcon />} value={LunaTabs.Plugins} label={LunaTabs.Plugins} />
-				<Tab iconPosition="start" icon={<StorefrontIcon />} value={LunaTabs.PluginStore} label={LunaTabs.PluginStore} />
-				<Tab iconPosition="start" icon={<PaletteIcon />} value={LunaTabs.Themes} label={LunaTabs.Themes} />
-				<Tab iconPosition="start" icon={<SettingsIcon />} value={LunaTabs.Settings} label={LunaTabs.Settings} />
+				<Tab iconPosition="start" icon={<ExtensionIcon />} value={"Plugins"} label={"Plugins"} />
+				<Tab iconPosition="start" icon={<StorefrontIcon />} value={"Plugin Store"} label={"Plugin Store"} />
+				<Tab iconPosition="start" icon={<PaletteIcon />} value={"Themes"} label={"Themes"} />
+				<Tab iconPosition="start" icon={<SettingsIcon />} value={"Settings"} label={"Settings"} />
+				<Tab iconPosition="start" icon={<FavoriteIcon />} value={"Supporters"} label={"Supporters"} />
 			</Tabs>
-			<LunaTabPage tab={LunaTabs.Plugins} currentTab={currentTab} children={<PluginsTab />} />
-			<LunaTabPage tab={LunaTabs.Settings} currentTab={currentTab} children={<SettingsTab />} />
-			<LunaTabPage tab={LunaTabs.PluginStore} currentTab={currentTab} children={<PluginStoreTab />} />
+			<LunaTabPage tab={"Plugins"} currentTab={currentTab} children={<PluginsTab />} />
+			<LunaTabPage tab={"Settings"} currentTab={currentTab} children={<SettingsTab />} />
+			<LunaTabPage tab={"Plugin Store"} currentTab={currentTab} children={<PluginStoreTab />} />
+			{/* <LunaTabPage tab={"Themes"} currentTab={currentTab} children={<div>Coming soon!</div>} /> */}
+			<LunaTabPage tab={"Supporters"} currentTab={currentTab} children={<SupportersTab />} />
 		</Container>
 	);
 });

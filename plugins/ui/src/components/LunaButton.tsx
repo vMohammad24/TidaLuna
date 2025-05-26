@@ -9,7 +9,7 @@ export type LunaButtonProps = ButtonProps & {
 };
 
 export const LunaButton = React.memo((props: LunaButtonProps) => {
-	const title = (props.tooltip ?? props.title ?? typeof props.children === "string") ? props.children : undefined;
+	const title = props.tooltip ?? props.title ?? (typeof props.children === "string" ? props.children : undefined);
 	return (
 		<Tooltip sx={{ marginRight: "auto" }} title={title}>
 			<Button

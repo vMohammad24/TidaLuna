@@ -1,45 +1,49 @@
 import type { MaybePromise } from "@inrixia/helpers";
 import type { IArtistCredit } from "musicbrainz-api";
 
-import type { ItemId, TContentState } from "../outdated.types";
 import * as redux from "../redux";
 import type { Artist } from "./Artist";
 
-type ContentType = keyof TContentState;
-type ContentItem<K extends ContentType> = Exclude<ReturnType<TContentState[K]["get"]>, undefined>;
+type ContentType = keyof redux.Content;
+type ContentItem<K extends ContentType> = redux.Content[K][keyof redux.Content[K]];
 type ContentClass<K extends ContentType> = {
-	new (itemId: ItemId, contentItem: ContentItem<K>): any;
+	new (itemId: redux.ItemId, contentItem: ContentItem<K>, ...args: any[]): any;
 };
 export type TImageSize = "1280" | "640" | "320" | "160" | "80";
 
 export class ContentBase {
-	private static readonly _instances: Record<string, Record<ItemId, ContentClass<ContentType>>> = {};
+	private static readonly _instances: Record<string, Record<redux.ItemId, ContentClass<ContentType>>> = {};
 
+	/**
+	 * Ensure instances of ContentClass's are properly cached and abstracts fetching from the store.
+	 */
 	protected static async fromStore<K extends ContentType, C extends ContentClass<K>, I extends InstanceType<C>>(
-		itemId: ItemId,
+		itemId: redux.ItemId,
 		contentType: K,
-		clss: C,
-		generator?: () => MaybePromise<ContentItem<K> | undefined>,
+		generator: (contentItem?: ContentItem<K>) => MaybePromise<I | undefined>,
 	): Promise<I | undefined> {
 		if (this._instances[contentType]?.[itemId] !== undefined) return this._instances[contentType][itemId] as I;
-		const storeContent = redux.store.getState().content;
-		const contentItem = (storeContent[contentType][itemId as keyof TContentState[K]] as ContentItem<K>) ?? (await generator?.());
-		if (contentItem !== undefined) {
-			this._instances[contentType] ??= {};
-			return (this._instances[contentType][itemId] ??= new clss(itemId, contentItem)) as I;
-		}
+
+		const contentClass = await generator(this.getItemFromStore(contentType, itemId));
+		if (contentClass === undefined) return;
+
+		this._instances[contentType] ??= {};
+		return (this._instances[contentType][itemId] = contentClass);
 	}
 
-	protected static formatTitle(
-		tidalTitle?: string,
-		tidalVersion?: string,
-		brainzTitle?: string,
-		brainzCredit?: IArtistCredit[],
-	): string | undefined {
+	/**
+	 * Fetches a content item from redux.store.content
+	 */
+	public static getItemFromStore<K extends ContentType>(contentType: K, itemId: redux.ItemId): ContentItem<K> {
+		const storeContent = redux.store.getState().content;
+		return storeContent[contentType][itemId as keyof redux.Content[K]] as ContentItem<K>;
+	}
+
+	protected static formatTitle(tidalTitle?: string, tidalVersion?: string, brainzTitle?: string, brainzCredit?: IArtistCredit[]): string {
 		brainzTitle = brainzTitle?.replaceAll("’", "'");
 
 		let title = brainzTitle ?? tidalTitle;
-		if (title === undefined) return undefined;
+		if (title === undefined) throw new Error("Title is undefined");
 
 		// If the title has feat and its validated by musicBrainz then use the tidal title.
 		if (tidalTitle?.includes("feat. ") && !brainzTitle?.includes("feat. ")) {

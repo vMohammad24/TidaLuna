@@ -96,16 +96,19 @@ export class LunaPlugin {
 	 * Create a plugin instance from a store:LunaPluginStorage, if package is not populated it will be fetched using the url so we can get the name
 	 */
 	public static async fromStorage(storeInit: PartialLunaPluginStorage): Promise<LunaPlugin> {
-		// Ensure the url is sanitized incase users paste a link to the actual file
-		storeInit.url = storeInit.url.replace(/(\.mjs|\.json|\.mjs.map)$/, "");
+		let name = storeInit.package?.name;
+		if (name === undefined) {
+			// Ensure the url is sanitized incase users paste a link to the actual file
+			storeInit.url = storeInit.url.replace(/(\.mjs|\.json|\.mjs.map)$/, "");
 
-		storeInit.package ??= await this.fetchPackage(storeInit.url);
-		const name = storeInit.package.name;
+			storeInit.package ??= await this.fetchPackage(storeInit.url);
+			name = storeInit.package.name;
+		}
 
 		if (name in this.plugins) return this.plugins[name];
 
 		// Disable liveReload on load so people dont accidentally leave it on
-		storeInit.liveReload ??= false;
+		storeInit.liveReload = false;
 
 		const store = await LunaPlugin.pluginStorage.getReactive<LunaPluginStorage>(name);
 		Object.assign(store, storeInit);
@@ -114,13 +117,18 @@ export class LunaPlugin {
 		return plugin.load();
 	}
 
+	public static async fromName(name: string): Promise<LunaPlugin | undefined> {
+		if (name in this.plugins) return this.plugins[name];
+
+		const store = await LunaPlugin.pluginStorage.getReactive<LunaPluginStorage>(name);
+		if (store === undefined) return;
+
+		return this.fromStorage(store);
+	}
+
 	public static async loadStoredPlugins() {
 		const keys = await LunaPlugin.pluginStorage.keys();
-		return Promise.all(
-			keys.map(async (name) =>
-				LunaPlugin.fromStorage(await LunaPlugin.pluginStorage.getReactive(name)).catch(this.trace.err.withContext("loadStoredPlugins", name)),
-			),
-		);
+		return Promise.all(keys.map(async (name) => LunaPlugin.fromName(name).catch(this.trace.err.withContext("loadStoredPlugins", name))));
 	}
 	// #endregion
 
@@ -265,7 +273,7 @@ export class LunaPlugin {
 	 * Load the plugin if it is enabled
 	 */
 	public async load(): Promise<LunaPlugin> {
-		if (this.enabled) await this.enable();
+		if (this.enabled && this.installed !== false) await this.enable();
 		return this;
 	}
 	// #endregion
@@ -311,6 +319,8 @@ export class LunaPlugin {
 			LunaPlugin.plugins[name].dependants.delete(this);
 		}
 		this.store.installed = false;
+		delete LunaPlugin.plugins[this.name];
+		await LunaPlugin.pluginStorage.del(this.name);
 		this.loading._ = false;
 		coreTrace.msg.log(`Uninstalled plugin ${this.name}`);
 	}

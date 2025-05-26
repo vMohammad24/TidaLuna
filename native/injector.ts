@@ -87,14 +87,6 @@ electron.app.whenReady().then(async () => {
 					return match;
 				},
 			);
-			// Add loading text to the body
-			body = body.replace(
-				/<body(.*?)>/i,
-				`<body$1><div id="tidaluna-loading" style="position: absolute; z-index: -1; top: 20%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; text-align: center; opacity: 1; transition: opacity 1s ease-out;">
-					<h1>Loading Tida<b><span style="color: #31d8ff;">Luna</span></b>...</h1>
-					<div id="tidaluna-loading-text" style="position: absolute; top: 100%;"></div>
-				</div>`,
-			);
 			return new Response(body, res);
 		}
 		// Fix tidal trying to bypass cors
@@ -239,5 +231,8 @@ ipcHandle("__Luna.registerNative", async (_, name: string, code: string) => {
 	}
 });
 // Literally just to log if preload fails
-ipcHandle("__Luna.nativeLog", async (_, ...args: any[]) => console.log(...args));
+ipcHandle("__Luna.preloadErr", async (_, err: Error) => {
+	console.error(err);
+	electron.dialog.showErrorBox("TidaLuna", err.message);
+});
 // #endregion

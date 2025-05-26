@@ -11,6 +11,17 @@ import { LunaStore } from "./LunaStore";
 
 const pluginStores = ReactiveStore.getStore("@luna/pluginStores");
 export const storeUrls = await pluginStores.getReactive<string[]>("storeUrls", []);
+export const addToStores = (url: string) => {
+	if (url.endsWith("/store.json")) url = url.slice(0, -11);
+	if (storeUrls.includes(url)) return false;
+	return storeUrls.push(url);
+};
+
+// Devs! Add your stores here <3
+// TODO: Abstract this to a git repo
+addToStores("https://github.com/Inrixia/neptune-plugins/releases/download/dev/store.json");
+addToStores("https://github.com/wont-stream/lunar/releases/download/dev/store.json");
+addToStores("https://github.com/jxnxsdev/luna-plugins/releases/download/latest/store.json");
 
 export const PluginStoreTab = React.memo(() => {
 	const [_storeUrls, setPluginStores] = useState<string[]>(obyStore.unwrap(storeUrls));

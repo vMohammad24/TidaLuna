@@ -1,9 +1,10 @@
-import { parseDasha, type DashManifest } from "./dasha.native";
+import { parseDasha, type DashManifest } from "./getPlaybackInfo.dasha.native";
 
-import type { MediaItemAudioQuality } from "../Quality";
-import { TidalApi } from "../TidalApi";
-import type { PlaybackInfoResponse } from "../TidalApi/types/PlaybackInfo";
-import type { MediaItem } from "./MediaItem";
+import type { PlaybackInfoResponse } from "../classes/TidalApi";
+import { TidalApi } from "../classes/TidalApi";
+import { libTrace } from "../index.safe";
+
+import type { AudioQuality, ItemId } from "../redux";
 
 interface PlaybackInfoBase extends Omit<PlaybackInfoResponse, "manifest"> {
 	mimeType: string;
@@ -26,9 +27,10 @@ interface DashPlaybackInfo extends PlaybackInfoBase {
 }
 export type PlaybackInfo = DashPlaybackInfo | TidalPlaybackInfo;
 
-export const getPlaybackInfo = async (mediaItem: MediaItem, audioQuality: MediaItemAudioQuality): Promise<PlaybackInfo> => {
+export const getPlaybackInfo = async (mediaItemId: ItemId, audioQuality: AudioQuality): Promise<PlaybackInfo> => {
 	try {
-		const playbackInfo = await TidalApi.playbackInfo(mediaItem.id, audioQuality);
+		const playbackInfo = await TidalApi.playbackInfo(mediaItemId, audioQuality);
+		if (playbackInfo === undefined) throw new Error(`Playback info not found for ${mediaItemId}`);
 
 		switch (playbackInfo.manifestMimeType) {
 			case "application/vnd.tidal.bts": {
@@ -44,6 +46,6 @@ export const getPlaybackInfo = async (mediaItem: MediaItem, audioQuality: MediaI
 			}
 		}
 	} catch (e) {
-		throw new Error(`Failed to get playbackInfo! ${(<Error>e)?.message}`);
+		return libTrace.err.withContext("getPlaybackInfo", mediaItemId, audioQuality).throw(e);
 	}
 };

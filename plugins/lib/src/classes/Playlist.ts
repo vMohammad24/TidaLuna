@@ -3,26 +3,30 @@ import { asyncDebounce } from "@inrixia/helpers";
 import type { Tracer } from "@luna/core";
 
 import { libTrace } from "../index.safe";
-import type { ItemId, TMediaItem, TPlaylist } from "../outdated.types";
 import { ContentBase } from "./ContentBase";
 import type { MediaCollection } from "./MediaCollection";
 import { MediaItem } from "./MediaItem";
 import { TidalApi } from "./TidalApi";
 
+import * as redux from "../redux";
+
 export class Playlist extends ContentBase implements MediaCollection {
 	public readonly trace: Tracer;
 	constructor(
-		public readonly uuid: ItemId,
-		public readonly tidalPlaylist: TPlaylist,
+		public readonly uuid: redux.ItemId,
+		public readonly tidalPlaylist: redux.Playlist,
 	) {
 		super();
 		this.trace = libTrace.withSource(`.Playlist[${tidalPlaylist.title ?? uuid}]`).trace;
 	}
 
-	public static async fromId(playlistUUID?: ItemId) {
+	public static async fromId(playlistUUID?: redux.ItemId) {
 		if (playlistUUID === undefined) return;
-		// TODO: Add with TidalApi call
-		return super.fromStore(playlistUUID, "playlists", this);
+		return super.fromStore(playlistUUID, "playlists", async (playlist) => {
+			playlist = playlist ??= await TidalApi.playlist(playlistUUID);
+			if (playlist === undefined) return;
+			return new Playlist(playlistUUID, playlist);
+		});
 	}
 
 	public async count() {
@@ -31,7 +35,7 @@ export class Playlist extends ContentBase implements MediaCollection {
 	/**
 	 * Equivilent to `TidalApi.playlistItems`
 	 */
-	public tMediaItems: () => Promise<TMediaItem[]> = asyncDebounce(async () => {
+	public tMediaItems: () => Promise<redux.MediaItem[]> = asyncDebounce(async () => {
 		const playlistIitems = await TidalApi.playlistItems(this.uuid);
 		return playlistIitems?.items ?? [];
 	});

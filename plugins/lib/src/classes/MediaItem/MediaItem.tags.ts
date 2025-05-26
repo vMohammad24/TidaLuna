@@ -62,8 +62,8 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 	tags.REPLAYGAIN_TRACK_PEAK = mediaItem.replayGainPeak?.toString();
 	tags.REPLAYGAIN_TRACK_GAIN = mediaItem.replayGain?.toString();
 	tags.comment = mediaItem.url;
-	tags.copyright = mediaItem.copyright;
-	tags.bpm = mediaItem.bpm?.toString();
+	tags.copyright = await mediaItem.copyright();
+	tags.bpm = (await mediaItem.bpm())?.toString();
 	tags.discNumber = mediaItem.volumeNumber?.toString();
 
 	tags.artist = await MediaItem.artistNames(mediaItem.artists());
@@ -85,7 +85,7 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 		tags.genres = album.genre;
 		tags.organization = album.recordLabel;
 
-		tags.totalTracks = album.totalTracks?.toString();
+		tags.totalTracks = album.numberOfTracks?.toString();
 		tags.year = album.releaseYear;
 	}
 

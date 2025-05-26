@@ -4,7 +4,6 @@ import type { Tracer } from "@luna/core";
 
 import { observePromise } from "../helpers";
 import { libTrace, unloads } from "../index.safe";
-import type { OutdatedActionPayloads } from "../outdated.types";
 import * as redux from "../redux";
 import { Album } from "./Album";
 import { MediaItems } from "./MediaItem";
@@ -20,13 +19,13 @@ export class ContextMenu {
 	 * Will return null if the element is not found (usually means no context menu is open)
 	 */
 	public static async getCurrent() {
-		const contextMenu = await observePromise<ContextMenuElem>(`[data-type="list-container__context-menu"]`, 1000);
+		const contextMenu = await observePromise<ContextMenuElem>(unloads, `[data-type="list-container__context-menu"]`, 1000);
 		if (contextMenu !== null) {
-			const templateButton = Array.from(contextMenu.children).find((child) => child.querySelector("a"));
+			const templateButton = contextMenu.querySelector(`div[data-type="contextmenu-item"]`) as Element | undefined;
 			contextMenu.addButton = (text, onClick) => {
 				if (templateButton === undefined) throw new Error("No buttons to clone off contextMenu found!");
 				const newButton = templateButton.cloneNode(true) as Element;
-				newButton.querySelector<HTMLAnchorElement>("a")!.href = "";
+				newButton.querySelector<HTMLButtonElement>("button")!.removeAttribute("data-test");
 				const span = newButton.querySelector<HTMLSpanElement>("span")!;
 				span.innerText = text;
 				span.onclick = (e) => {
@@ -43,7 +42,7 @@ export class ContextMenu {
 	/**
 	 *  Called with `contextMenu` when a context menu is opened
 	 */
-	public static onOpen: AddReceiver<{ event: OutdatedActionPayloads["contextMenu/OPEN"]; contextMenu: ContextMenuElem }> = registerEmitter(
+	public static onOpen: AddReceiver<{ event: redux.ActionPayloads["contextMenu/OPEN"]; contextMenu: ContextMenuElem }> = registerEmitter(
 		(onOpen) => {
 			redux.intercept("contextMenu/OPEN", unloads, async (event) => {
 				const contextMenu = await ContextMenu.getCurrent();
