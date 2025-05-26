@@ -7,23 +7,13 @@
       in
       {
         tidaLuna =  prev.tidal-hifi.overrideAttrs (old: {
-          installPhase = ''
-            runHook preInstall
-
-            # Default installation from tidal-hifi
-            mkdir -p "$out/bin"
-            cp -R "opt" "$out"
-            cp -R "usr/share" "$out/share"
-
+          postInstall = ''
             # Rename app.asar to original.asar
-            mv $out/opt/tidal-hifi/resources/app.asar $out/opt/tidal-hifi/resources/original.asar
+            mv $out/share/tidal-hifi/resources/app.asar $out/share/tidal-hifi/resources/original.asar
 
             # Move injection into app folder
-            mkdir -p "$out/opt/tidal-hifi/resources/app/"
-            cp -R ${injection}/* $out/opt/tidal-hifi/resources/app/
-
-
-            runHook postInstall
+            mkdir -p "$out/share/tidal-hifi/resources/app/"
+            cp -R ${injection}/* $out/share/tidal-hifi/resources/app/
           '';
 
           tidaLuna = final.tidal-hifi;
