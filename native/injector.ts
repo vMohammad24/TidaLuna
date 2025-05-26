@@ -1,4 +1,5 @@
 import electron from "electron";
+import os from "os";
 
 import { readFile, rm, writeFile } from "fs/promises";
 import mime from "mime";
@@ -25,6 +26,7 @@ declare global {
 		tidalWindow?: Electron.BrowserWindow;
 	};
 }
+
 globalThis.luna = {
 	modules: {},
 };
@@ -211,7 +213,9 @@ const requirePrefix = `import { createRequire } from 'module';const require = cr
 ipcHandle("__Luna.registerNative", async (_, name: string, code: string) => {
 	const tempPath = path.join(bundleDir, Math.random().toString() + ".mjs");
 	try {
+		console.error('AAARG')
 		await writeFile(tempPath, requirePrefix + code, "utf8");
+
 		// Load module
 		const exports = (globalThis.luna.modules[name] = await import(pathToFileURL(tempPath).href));
 		const channel = `__LunaNative.${name}`;

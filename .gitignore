@@ -1,5 +1,18 @@
 node_modules/
 dist/
+result/
 
-# Jetbrains IDE
+# IDEs
 .idea/
+.vscode/
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
