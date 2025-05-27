@@ -64,6 +64,7 @@ ipcHandle("__Luna.renderJs", () => lunaBundle);
 // Ensure app is ready
 electron.app.whenReady().then(async () => {
 	electron.protocol.handle("https", async (req) => {
+
 		if (req.url.startsWith("https://luna/")) {
 			try {
 				return new Response(...(await bundleFile(req.url)));
@@ -71,6 +72,7 @@ electron.app.whenReady().then(async () => {
 				return new Response(err.message, { status: err.message.startsWith("ENOENT") ? 404 : 500, statusText: err.message });
 			}
 		}
+
 		// Bypass CSP & Mark meta scripts for quartz injection
 		if (req.url === "https://desktop.tidal.com/" || req.url === "https://listen.tidal.com/") {
 			const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
@@ -85,6 +87,7 @@ electron.app.whenReady().then(async () => {
 						// Mark module scripts for quartz injection
 						return `<script type="luna/quartz" src="${src}">`;
 					}
+
 					// Should not happen if the regex is correct
 					return match;
 				},
@@ -114,6 +117,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
 		// tidal-hifi does not set the title, rely on dev tools instead.
 		const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
+
 		if (isTidalWindow) {
 			// Store original preload and add a handle to fetch it later (see ./preload.ts)
 			const origialPreload = options.webPreferences?.preload;
@@ -126,6 +130,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 			// TODO: Find why sandboxing has to be disabled
 			options.webPreferences.sandbox = false;
 		}
+
 		const window = (luna.tidalWindow = new target(options));
 
 		// #region Open from link
@@ -208,32 +213,36 @@ require(startPath);
 // #endregion
 
 // #region LunaNative
+// TODO: original.asar cant be found under linux
 const requirePrefix = `import { createRequire } from 'module';const require = createRequire(${JSON.stringify(pathToFileURL(process.resourcesPath + "/").href)});`;
 // Call to register native module
 ipcHandle("__Luna.registerNative", async (_, name: string, code: string) => {
-	const tempPath = path.join(bundleDir, Math.random().toString() + ".mjs");
+	const tempDir = os.tmpdir();
+	const tempFile = path.join(tempDir, Math.random().toString() + ".mjs");
 	try {
-		console.error('AAARG')
-		await writeFile(tempPath, requirePrefix + code, "utf8");
+			await writeFile(tempFile, requirePrefix + code, "utf8");
 
 		// Load module
-		const exports = (globalThis.luna.modules[name] = await import(pathToFileURL(tempPath).href));
+		const exports = (globalThis.luna.modules[name] = await import(pathToFileURL(tempFile).href));
 		const channel = `__LunaNative.${name}`;
+
 		// Register handler for calling module exports
 		ipcHandle(channel, async (_, exportName, ...args) => {
 			try {
 				return await exports[exportName](...args);
 			} catch (err: any) {
-				// Set cause to identify native module
+				// Set cause to identify a native module
 				err.cause = `[Luna.native] (${name}).${exportName}`;
 				throw err;
 			}
 		});
+
 		return channel;
 	} finally {
-		await rm(tempPath, { force: true });
+		await rm(tempFile, { force: true });
 	}
 });
+
 // Literally just to log if preload fails
 ipcHandle("__Luna.preloadErr", async (_, err: Error) => {
 	console.error(err);
