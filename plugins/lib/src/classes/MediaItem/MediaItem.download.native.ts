@@ -28,11 +28,11 @@ export const download = async (playbackInfo: PlaybackInfo, path: string, tags?: 
 		});
 
 		const { resolve, reject, promise } = Promise.withResolvers<void>();
-		stream.pipe(writeStream).on("finish", resolve).on("error", reject);
-
 		downloads[playbackInfo.trackId] = { progress, promise };
 
-		return promise;
+		stream.pipe(writeStream).on("finish", resolve).on("error", reject);
+
+		await promise;
 	} finally {
 		delete downloads[playbackInfo.trackId];
 	}
