@@ -21,6 +21,8 @@ export const LunaTheme = React.memo(({ theme, url, uninstall }: { theme: LunaThe
 	const [css, setCSS] = React.useState(theme.css);
 	const [loading, setLoading] = React.useState(false);
 	const [themeStyle] = React.useState(() => new StyleTag(url, unloads));
+	// Neptune theme manifest support
+	const [manifest, setManifest] = React.useState<{ name?: string; description?: string; author?: string } | undefined>();
 
 	// Memoize callbacks
 	const toggleEnabled = React.useCallback((_: unknown, checked: boolean) => {
@@ -31,8 +33,13 @@ export const LunaTheme = React.memo(({ theme, url, uninstall }: { theme: LunaThe
 	}, []);
 	const loadCSS = React.useCallback(async () => {
 		setLoading(true);
-		setCSS((theme.css = await ftch.text(url)));
-		setLoading(false);
+		try {
+			const css = (theme.css = await ftch.text(url));
+			setCSS(css);
+			setManifest(JSON.parse(css.slice(css.indexOf("/*") + 2, css.indexOf("*/"))));
+		} finally {
+			setLoading(false);
+		}
 	}, []);
 
 	React.useEffect(() => {
@@ -54,7 +61,9 @@ export const LunaTheme = React.memo(({ theme, url, uninstall }: { theme: LunaThe
 			}}
 		>
 			<LunaPluginHeader
-				name={url}
+				name={manifest?.name ?? url}
+				desc={manifest?.description}
+				author={manifest?.author}
 				link={url}
 				children={
 					<>
