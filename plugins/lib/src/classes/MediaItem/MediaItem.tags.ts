@@ -55,8 +55,9 @@ export type MetaTags = {
 export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 	const tags: FlacTags = {};
 
-	const [title, releaseDate, copyright, bpm, artistNames, brainzId, isrc, album, lyrics, coverUrl] = await Promise.all([
+	const [title, releaseDate, releaseDateStr, copyright, bpm, artistNames, brainzId, isrc, album, lyrics, coverUrl] = await Promise.all([
 		mediaItem.title(),
+		mediaItem.releaseDate(),
 		mediaItem.releaseDateStr(),
 		mediaItem.copyright(),
 		mediaItem.bpm(),
@@ -71,7 +72,8 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 	tags.title = title;
 
 	tags.trackNumber = mediaItem.trackNumber?.toString();
-	tags.date = releaseDate;
+	tags.date = releaseDateStr;
+	tags.year = releaseDate?.getFullYear().toString();
 	tags.REPLAYGAIN_TRACK_PEAK = mediaItem.replayGainPeak?.toString();
 	tags.REPLAYGAIN_TRACK_GAIN = mediaItem.replayGain?.toString();
 	tags.comment = mediaItem.url;
@@ -104,7 +106,7 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 		tags.organization = album.recordLabel;
 
 		tags.totalTracks = album.numberOfTracks?.toString();
-		tags.year = album.releaseYear;
+		tags.year = album.releaseYear ?? tags.year;
 	}
 
 	tags.lyrics = lyrics?.lyrics;
