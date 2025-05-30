@@ -19,9 +19,10 @@ export const addToStores = (url: string) => {
 
 // Devs! Add your stores here <3
 // TODO: Abstract this to a git repo
-addToStores("https://github.com/Inrixia/neptune-plugins/releases/download/dev/store.json");
 addToStores("https://github.com/wont-stream/lunar/releases/download/dev/store.json");
 addToStores("https://github.com/jxnxsdev/luna-plugins/releases/download/latest/store.json");
+addToStores("https://github.com/espeon/luna-plugins/releases/download/latest/store.json");
+addToStores("https://github.com/Inrixia/luna-plugins/releases/download/dev/store.json");
 
 export const PluginStoreTab = React.memo(() => {
 	const [_storeUrls, setPluginStores] = useState<string[]>(obyStore.unwrap(storeUrls));
