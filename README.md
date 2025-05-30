@@ -5,7 +5,7 @@ Luna lets developers create and users run plugins to modify and enhance the Tida
 
 If you want to chat with users and plugin creators, head over to our discord! **[discord.gg/jK3uHrJGx4](https://discord.gg/jK3uHrJGx4)**
 
-The client is currently in **ALPHA** and active development.
+The client is currently in **BETA**.
 
 ## Installation
 Use one of the following projects:  
