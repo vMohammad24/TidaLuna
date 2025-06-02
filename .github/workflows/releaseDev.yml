@@ -4,9 +4,8 @@ on:
  push:
   branches:
    - dev
-  paths-ignore:
-   - "**/*.md"
-   - ".vscode/**"
+  paths:
+   - "package.json"
 
 jobs:
  Build:
