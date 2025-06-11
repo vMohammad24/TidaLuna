@@ -360,7 +360,7 @@ export class MediaItem extends ContentBase {
 	// #endregion
 
 	// #region PlaybackInfo
-	public async playbackInfo(audioQuality?: redux.AudioQuality): Promise<PlaybackInfo> {
+	public playbackInfo: (audioQuality?: redux.AudioQuality) => Promise<PlaybackInfo> = memoize(async (audioQuality?: redux.AudioQuality) => {
 		audioQuality ??= Quality.Max.audioQuality;
 		const playbackInfo = await getPlaybackInfo(this.id, audioQuality);
 		const [_, emitFormat] = this.formatEmitters[audioQuality] ?? [];
@@ -372,17 +372,17 @@ export class MediaItem extends ContentBase {
 		};
 		emitFormat?.(this.cache.format[audioQuality]!, this.trace.err.withContext("playbackInfo.emitFormat"));
 		return playbackInfo;
-	}
+	});
 	// #endregion
 
 	// #region Download
 	public async downloadProgress() {
 		return downloadProgress(this.id);
 	}
-	public async download(path: string): Promise<void> {
+	public download: (path: string) => Promise<void> = asyncDebounce(async (path: string) => {
 		const [playbackInfo, flagTags] = await Promise.all([this.playbackInfo(), this.flacTags()]);
 		return download(playbackInfo, path, flagTags);
-	}
+	});
 	public async fileExtension(): Promise<string> {
 		const playbackInfo = await this.playbackInfo();
 		switch (playbackInfo.manifestMimeType) {
