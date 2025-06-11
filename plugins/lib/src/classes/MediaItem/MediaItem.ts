@@ -263,7 +263,7 @@ export class MediaItem extends ContentBase {
 	});
 
 	public releaseDate: () => Promise<Date | undefined> = memoize(async () => {
-		let releaseDate = parseDate(this.tidalItem.releaseDate) ?? parseDate(this.tidalItem.streamStartDate);
+		let releaseDate = parseDate(this.tidalItem.releaseDate);
 		if (releaseDate === undefined) {
 			const brainzItem = await this.brainzItem();
 			releaseDate = parseDate(brainzItem?.recording?.["first-release-date"]);
@@ -276,7 +276,7 @@ export class MediaItem extends ContentBase {
 				releaseDate ??= parseDate(brainzAlbum?.date);
 			}
 		}
-		return releaseDate;
+		return releaseDate ?? parseDate(this.tidalItem.streamStartDate);
 	});
 
 	/**
