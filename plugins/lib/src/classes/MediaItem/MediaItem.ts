@@ -1,4 +1,4 @@
-import { asyncDebounce, memoize, memoizeArgless, registerEmitter, Semaphore, type AddReceiver, type Emit } from "@inrixia/helpers";
+import { asyncDebounce, memoize, memoizeArgless, registerEmitter, type AddReceiver, type Emit } from "@inrixia/helpers";
 import type { IRecording, ITrack } from "musicbrainz-api";
 
 import { ftch, ReactiveStore, type LunaUnload, type LunaUnloads, type Tracer } from "@luna/core";
@@ -401,40 +401,38 @@ export class MediaItem extends ContentBase {
 	public withFormat(unloads: LunaUnloads, audioQuality: redux.AudioQuality, listener: (format: MediaFormat) => void): LunaUnload {
 		const [onFormat] = (this.formatEmitters[audioQuality] ??= registerEmitter<MediaFormat>());
 		const unload = onFormat(unloads, listener);
-		if (this.cache.format?.[audioQuality] === undefined) this.updateFormat(audioQuality);
-		else listener(this.cache.format[audioQuality]);
+		if (this.cache.format?.[audioQuality] !== undefined) listener(this.cache.format[audioQuality]);
 		return unload;
 	}
-	private static readonly formatSema = new Semaphore(1);
-	public updateFormat: (audioQuality?: redux.AudioQuality) => Promise<void> = asyncDebounce((audioQuality) =>
-		MediaItem.formatSema.with(async () => {
-			const playbackInfo = await this.playbackInfo(audioQuality);
+	public updateFormat: (audioQuality?: redux.AudioQuality, force?: true) => Promise<void> = asyncDebounce(async (audioQuality, force) => {
+		this.cache.format ??= {};
+		audioQuality ??= Quality.Max.audioQuality;
+		const format = (this.cache.format[audioQuality] ??= {});
 
-			this.cache.format ??= {};
-			const format = (this.cache.format[playbackInfo.audioQuality] ??= {});
+		if (format.bitrate !== undefined && force !== true) return;
 
-			format.duration = this.duration;
+		const playbackInfo = await this.playbackInfo(audioQuality);
+		format.duration = this.duration;
 
-			if (format.bitDepth === undefined || format.sampleRate === undefined || format.duration === undefined) {
-				const { format: streamFormat, bytes } = await parseStreamFormat(playbackInfo);
-				format.bytes = bytes;
-				format.bitDepth = streamFormat.bitsPerSample ?? format.bitDepth;
-				format.sampleRate = streamFormat.sampleRate ?? format.sampleRate;
-				format.duration = streamFormat.duration ?? format.duration;
-				format.codec = streamFormat.codec?.toLowerCase() ?? format.codec;
-				if (playbackInfo.manifestMimeType === "application/dash+xml") {
-					format.bitrate = playbackInfo.manifest.tracks.audios[0].bitrate.bps ?? format.bitrate;
-					format.bytes = playbackInfo.manifest.tracks.audios[0].size?.b ?? format.bytes;
-				}
-			} else {
-				format.bytes = (await getStreamBytes(playbackInfo)) ?? format.bytes;
+		if (format.bitDepth === undefined || format.sampleRate === undefined || format.duration === undefined) {
+			const { format: streamFormat, bytes } = await parseStreamFormat(playbackInfo);
+			format.bytes = bytes;
+			format.bitDepth = streamFormat.bitsPerSample ?? format.bitDepth;
+			format.sampleRate = streamFormat.sampleRate ?? format.sampleRate;
+			format.duration = streamFormat.duration ?? format.duration;
+			format.codec = streamFormat.codec?.toLowerCase() ?? format.codec;
+			if (playbackInfo.manifestMimeType === "application/dash+xml") {
+				format.bitrate = playbackInfo.manifest.tracks.audios[0].bitrate.bps ?? format.bitrate;
+				format.bytes = playbackInfo.manifest.tracks.audios[0].size?.b ?? format.bytes;
 			}
+		} else {
+			format.bytes = (await getStreamBytes(playbackInfo)) ?? format.bytes;
+		}
 
-			format.bitrate ??= !!format.bytes && !!format.duration ? (format.bytes / format.duration) * 8 : undefined;
+		format.bitrate ??= !!format.bytes && !!format.duration ? (format.bytes / format.duration) * 8 : undefined;
 
-			const [_, emitFormat] = this.formatEmitters[playbackInfo.audioQuality] ?? [];
-			emitFormat?.(format, this.trace.err.withContext("updateFormat.emitFormat"));
-		}),
-	);
+		const [_, emitFormat] = this.formatEmitters[playbackInfo.audioQuality] ?? [];
+		emitFormat?.(format, this.trace.err.withContext("updateFormat.emitFormat"));
+	});
 	// #endregion
 }
