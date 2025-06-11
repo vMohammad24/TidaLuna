@@ -1,6 +1,6 @@
 import { type Tracer } from "@luna/core";
 
-import { memoize, memoizeArgless, Semaphore, statusOK, type Memoized, type VoidLike } from "@inrixia/helpers";
+import { memoize, memoizeArgless, Semaphore, sleep, statusOK, type Memoized, type VoidLike } from "@inrixia/helpers";
 
 import type { TApiTrack, TApiTracks } from "./types/Tracks";
 
@@ -29,12 +29,18 @@ export class TidalApi {
 		return `countryCode=${store.session.countryCode}&deviceType=DESKTOP&locale=${store.settings.language}`;
 	});
 	public static fetch = memoize(async <T>(url: string): Promise<T | undefined> => {
-		const res = await fetch(url, {
-			headers: await this.getAuthHeaders(),
-		});
-		if (statusOK(res.status)) return res.json();
-		if (res.status === 404) return undefined;
-		this.trace.err.withContext(url).throw(`${res.status} ${res.statusText}`);
+		// Retry a failed request once with a 1s delay
+		let retry = true;
+		while (true) {
+			const res = await fetch(url, {
+				headers: await this.getAuthHeaders(),
+			});
+			if (statusOK(res.status)) return res.json();
+			if (res.status === 404) return undefined;
+			if (!retry) this.trace.err.withContext(url).throw(`${res.status} ${res.statusText}`);
+			retry = false;
+			await sleep(1000);
+		}
 	});
 
 	public static async track(trackId: redux.ItemId) {
