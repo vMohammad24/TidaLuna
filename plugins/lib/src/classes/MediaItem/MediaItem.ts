@@ -166,7 +166,8 @@ export class MediaItem extends ContentBase {
 	 * Is idempotent so can be called multiple times without causing re-fetch.
 	 */
 	public fetchTidalMediaItem: () => Promise<void> = memoizeArgless(async () => {
-		(this.tidalItem as any) = await TidalApi.track(this.id);
+		const tidalItem = await TidalApi.track(this.id);
+		if (tidalItem !== undefined) (<redux.Track>this.tidalItem) = tidalItem;
 	});
 
 	// #region MusicBrainz
