@@ -2,12 +2,12 @@
 stdenv.mkDerivation (finalAttrs: rec {
   name = "TidaLuna";
   pname = "${name}";
-  version = "1.6.3-beta";
+  version = "1.6.5-beta";
   src = fetchFromGitHub {
     owner = "Inrixia";
     repo = "${name}";
     rev = "${version}";
-    hash = "sha256-/yo3MYoLxf+WGqFur3IDfzS+1vhpoQYy2lVWK0K/AXs=";
+    hash = "sha256-8fhYv5MaLAv9VFwJYLfVirnBf3J89qCYkyAUNgW9W6c=";
   };
 
   nativeBuildInputs = [
@@ -17,7 +17,7 @@ stdenv.mkDerivation (finalAttrs: rec {
 
   pnpmDeps = pnpm.fetchDeps {
     inherit (finalAttrs) pname src version;
-    hash = "sha256-e+nsZe26f9qz0QcklHX8UkNjbW8L2DlRpdXbkkrY1qE=";
+    hash = "sha256-Daah0gSdd9VYf7lf+9iCBAVI7CSvuYOd/8pmI3QBUR0=";
   };
 
   buildPhase = ''
