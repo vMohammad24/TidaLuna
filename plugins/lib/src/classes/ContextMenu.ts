@@ -36,6 +36,20 @@ class ContextMenuButton {
 		this._text = text;
 	}
 
+	public async show(contextMenu: Element | null) {
+		if (contextMenu !== null) {
+			const templateButton = contextMenu.querySelector(`div[data-type="contextmenu-item"]`) as Element | undefined;
+			const makeButton = () => {
+				if (templateButton === undefined) throw new Error("No buttons to clone off contextMenu found!");
+				const newButton = templateButton.cloneNode(true) as Element;
+				newButton.querySelector<HTMLButtonElement>("button")!.removeAttribute("data-test");
+				return newButton.querySelector<HTMLSpanElement>("span")!;
+			};
+			contextMenu.appendChild((this.elem ??= makeButton()).parentElement!.parentElement!);
+		}
+		return this.elem;
+	}
+
 	private _onClick?: OnClick;
 	public onClick(cb: OnClick) {
 		this._onClick = cb;
@@ -66,20 +80,7 @@ export class ContextMenu {
 	 * Will return null if the element is not found (usually means no context menu is open)
 	 */
 	public static async getCurrent() {
-		const contextMenu = await observePromise<Element>(unloads, `[data-type="list-container__context-menu"]`, 1000);
-		if (contextMenu !== null) {
-			const templateButton = contextMenu.querySelector(`div[data-type="contextmenu-item"]`) as Element | undefined;
-			const makeButton = () => {
-				if (templateButton === undefined) throw new Error("No buttons to clone off contextMenu found!");
-				const newButton = templateButton.cloneNode(true) as Element;
-				newButton.querySelector<HTMLButtonElement>("button")!.removeAttribute("data-test");
-				return newButton.querySelector<HTMLSpanElement>("span")!;
-			};
-			for (const button of this.buttons) {
-				contextMenu.appendChild((button.elem ??= makeButton()).parentElement!.parentElement!);
-			}
-		}
-		return contextMenu;
+		return await observePromise<Element>(unloads, `[data-type="list-container__context-menu"]`, 1000);
 	}
 
 	/**

@@ -379,10 +379,12 @@ export class MediaItem extends ContentBase {
 	public async downloadProgress() {
 		return downloadProgress(this.id);
 	}
-	public download: (path: string) => Promise<void> = asyncDebounce(async (path: string) => {
-		const [playbackInfo, flagTags] = await Promise.all([this.playbackInfo(), this.flacTags()]);
-		return download(playbackInfo, path, flagTags);
-	});
+	public download: (path: string, audioQuality?: redux.AudioQuality) => Promise<void> = asyncDebounce(
+		async (path: string, audioQuality?: redux.AudioQuality) => {
+			const [playbackInfo, flagTags] = await Promise.all([this.playbackInfo(audioQuality), this.flacTags()]);
+			return download(playbackInfo, path, flagTags);
+		},
+	);
 	public async fileExtension(): Promise<string> {
 		const playbackInfo = await this.playbackInfo();
 		switch (playbackInfo.manifestMimeType) {
