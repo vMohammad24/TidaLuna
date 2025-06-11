@@ -1,7 +1,7 @@
 import sanitize from "sanitize-filename";
 
 import { createWriteStream } from "fs";
-import { mkdir } from "fs/promises";
+import { access, constants, mkdir } from "fs/promises";
 import { join, parse } from "path";
 
 import { fetchMediaItemStream, type FetchProgress } from "@luna/lib.native";
@@ -12,11 +12,22 @@ import type { redux } from "@luna/lib";
 import type { PlaybackInfo } from "../../helpers";
 import type { MetaTags } from "./MediaItem.tags";
 
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		await access(path, constants.F_OK);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 const downloads: Record<redux.ItemId, { progress: FetchProgress; promise: Promise<void> } | undefined> = {};
 export const downloadProgress = async (trackId: redux.ItemId) => downloads[trackId]?.progress;
 export const download = async (playbackInfo: PlaybackInfo, path: string, tags?: MetaTags): Promise<void> => {
 	if (downloads[playbackInfo.trackId] !== undefined) return downloads[playbackInfo.trackId]!.promise;
 	try {
+		// Dont download if file already exists
+		if (await fileExists(path)) return;
 		const parsedPath = parse(path);
 		await mkdir(parsedPath.dir, { recursive: true });
 		const writeStream = createWriteStream(join(parsedPath.dir, sanitize(parsedPath.base)));
