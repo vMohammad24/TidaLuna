@@ -2,12 +2,12 @@
 stdenv.mkDerivation (finalAttrs: rec {
   name = "TidaLuna";
   pname = "${name}";
-  version = "1.6.12-beta";
+  version = "1.6.13-beta";
   src = fetchFromGitHub {
     owner = "Inrixia";
     repo = "${name}";
     rev = "${version}";
-    hash = "sha256-8pZCa7VW4s8oaa9py1CMwtrZhEIK6OXe6u/s13COB3w=";
+    hash = "sha256-j5eZv53/bJ41oqtG6BrppvT0kV3AMkMbxWhpmm/sCss=";
   };
 
   nativeBuildInputs = [
