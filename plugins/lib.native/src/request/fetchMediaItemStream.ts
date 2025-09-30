@@ -23,7 +23,7 @@ export const fetchMediaItemStream = ({ manifestMimeType, manifest }: PlaybackInf
 			case "application/vnd.tidal.bts": {
 				options.decipher = makeDecipher(manifest);
 				const stream = Readable.from(fetchStream(manifest.urls, options), { objectMode: false });
-				if (options.tags === undefined || manifest.codecs !== "flac") return stream;
+				if (options.tags === undefined) return stream;
 
 				const { tags, coverUrl } = options.tags;
 				let picture;
