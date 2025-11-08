@@ -11,6 +11,7 @@ import { createRequire } from "module";
 
 // #region Bundle
 const bundleDir = process.env.TIDALUNA_DIST_PATH ?? path.dirname(fileURLToPath(import.meta.url));
+const tidalAppPath = path.join(process.resourcesPath, "original.asar");
 
 // Safe ipcHandler to ensure no duplicates
 const ipcHandle: (typeof Electron)["ipcMain"]["handle"] = (channel, listener) => {
@@ -66,6 +67,7 @@ electron.app.whenReady().then(async () => {
 	electron.protocol.handle("https", async (req) => {
 		if (req.url.startsWith("https://luna/")) {
 			try {
+				// @ts-expect-error: Buffer is valid for Response body
 				return new Response(...(await bundleFile(req.url)));
 			} catch (err: any) {
 				return new Response(err.message, { status: err.message.startsWith("ENOENT") ? 404 : 500, statusText: err.message });
@@ -111,11 +113,19 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
 		// Improve memory limits
 		options.webPreferences.nodeOptions = "--max-old-space-size=8192";
+
 		// Ensure smoothScrolling is always enabled
 		options.webPreferences.smoothScrolling = true;
 
 		// tidal-hifi does not set the title, rely on dev tools instead.
 		const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
+
+		// explicitly set icon before load on linux
+		const platformIsLinux = process.platform === "linux";
+		const iconPath = path.join(tidalAppPath, "assets/icon.png");
+		if (platformIsLinux) {
+			options.icon = iconPath;
+		}
 
 		if (isTidalWindow) {
 			// Store original preload and add a handle to fetch it later (see ./preload.ts)
@@ -131,6 +141,14 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 		}
 
 		const window = (luna.tidalWindow = new target(options));
+
+		// if we are on linux and this is the main tidal window, 
+		// set the icon again after load (potential KDE quirk)
+		if (platformIsLinux && isTidalWindow) {
+			window.webContents.once("did-finish-load", () => {
+				window.setIcon(iconPath);
+			});
+		}
 
 		// #region Open from link
 		// MacOS
@@ -177,7 +195,6 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 });
 // #endregion
 
-const tidalAppPath = path.join(process.resourcesPath, "original.asar");
 const tidalPackage = await readFile(path.resolve(path.join(tidalAppPath, "package.json")), "utf8").then(JSON.parse);
 const startPath = path.join(tidalAppPath, tidalPackage.main);
 
