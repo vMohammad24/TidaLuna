@@ -9,7 +9,13 @@ type ContentItem<K extends ContentType> = redux.Content[K][keyof redux.Content[K
 type ContentClass<K extends ContentType> = {
 	new (itemId: redux.ItemId, contentItem: ContentItem<K>, ...args: any[]): any;
 };
-export type TImageSize = "1280" | "640" | "320" | "160" | "80";
+export type TCoverRes = "1280" | "640" | "320" | "160" | "80";
+export type TCoverType = "video" | "image";
+export type TCoverOpts = {
+	res?: TCoverRes;
+	type?: TCoverType;
+	fallback?: false;
+};
 
 export class ContentBase {
 	private static readonly _instances: Record<string, Record<redux.ItemId, ContentClass<ContentType>>> = {};
@@ -57,8 +63,20 @@ export class ContentBase {
 		return title;
 	}
 
-	public static formatCoverUrl(uuid?: string, res: TImageSize = "1280") {
-		if (uuid) return `https://resources.tidal.com/images/${uuid.split("-").join("/")}/${res}x${res}.jpg`;
+	public static getAlbumCoverUrl(album?: redux.Album | null, opts?: TCoverOpts) {
+		if (!album) return;
+		let type = opts?.type ?? "image";
+		if (type === "video" && !album.videoCover && !(opts?.fallback === false)) type = "image";
+		const uuid = type === "image" ? album.cover : album.videoCover;
+		if (uuid) return ContentBase.formatCoverUrl(uuid, opts);
+	}
+
+	public static formatCoverUrl(uuid?: string, opts?: TCoverOpts) {
+		if (!uuid) return;
+		const type = opts?.type ?? "image";
+		const res = opts?.res ?? "1280";
+		const ext = type === "image" ? "jpg" : "mp4";
+		return `https://resources.tidal.com/${type}s/${uuid.split("-").join("/")}/${res}x${res}.${ext}`;
 	}
 
 	public static async artistNames(artists?: Promise<Promise<Artist | undefined>[]> | Promise<Artist | undefined>[]): Promise<string[]> {

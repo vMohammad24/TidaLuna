@@ -1,7 +1,7 @@
 import type { Tracer } from "@luna/core";
 
 import { libTrace } from "../index.safe";
-import { ContentBase, type TImageSize } from "./ContentBase";
+import { ContentBase, type TCoverRes } from "./ContentBase";
 import { TidalApi } from "./TidalApi";
 
 import type * as redux from "../redux";
@@ -25,9 +25,9 @@ export class Artist extends ContentBase {
 		});
 	}
 
-	public coverUrl(res?: TImageSize) {
+	public coverUrl(res?: TCoverRes) {
 		if (this.tidalArtist.picture === undefined) return;
-		return ContentBase.formatCoverUrl(this.tidalArtist.picture, res);
+		return ContentBase.formatCoverUrl(this.tidalArtist.picture, { res });
 	}
 
 	public get name() {

@@ -6,7 +6,7 @@ import { ftch, type Tracer } from "@luna/core";
 
 import { libTrace } from "../index.safe";
 import { Artist } from "./Artist";
-import { ContentBase, type TImageSize } from "./ContentBase";
+import { ContentBase, type TCoverOpts } from "./ContentBase";
 import type { MediaCollection } from "./MediaCollection";
 import { MediaItem } from "./MediaItem";
 import { TidalApi } from "./TidalApi";
@@ -89,9 +89,8 @@ export class Album extends ContentBase implements MediaCollection {
 		return MediaItem.fromTMediaItems(await this.tMediaItems());
 	}
 
-	public coverUrl(res?: TImageSize) {
-		if (this.tidalAlbum.cover === undefined) return;
-		return ContentBase.formatCoverUrl(this.tidalAlbum.cover, res);
+	public coverUrl(opts?: TCoverOpts) {
+		return ContentBase.getAlbumCoverUrl(this.tidalAlbum, opts);
 	}
 
 	public title: () => Promise<string | undefined> = memoize(async () => {

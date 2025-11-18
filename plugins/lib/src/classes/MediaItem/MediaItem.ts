@@ -8,7 +8,7 @@ import { libTrace, unloads } from "../../index.safe";
 import * as redux from "../../redux";
 import { Album } from "../Album";
 import { Artist } from "../Artist";
-import { ContentBase, type TImageSize } from "../ContentBase";
+import { ContentBase, type TCoverOpts } from "../ContentBase";
 import { PlayState } from "../PlayState";
 import { Quality } from "../Quality";
 import { TidalApi } from "../TidalApi";
@@ -286,10 +286,11 @@ export class MediaItem extends ContentBase {
 		return (await this.releaseDate())?.toISOString().slice(0, 10);
 	});
 
-	public coverUrl: (res?: TImageSize) => Promise<string | undefined> = memoize(async (res) => {
-		if (this.tidalItem.album?.cover) return ContentBase.formatCoverUrl(this.tidalItem.album?.cover, res);
+	public coverUrl: (opts?: TCoverOpts) => Promise<string | undefined> = memoize(async (opts) => {
+		const coverUrl = ContentBase.getAlbumCoverUrl(this.tidalItem.album, opts);
+		if (coverUrl) return coverUrl;
 		const album = await this.album();
-		return album?.coverUrl(res);
+		return album?.coverUrl(opts);
 	});
 
 	public flacTags: () => Promise<MetaTags> = memoize(() => makeTags(this));

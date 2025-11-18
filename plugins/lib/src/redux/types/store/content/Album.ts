@@ -11,7 +11,7 @@ export interface AlbumInline {
 	cover: string;
 	/** @example "#2e5b79" */
 	vibrantColor: string;
-	videoCover?: unknown;
+	videoCover?: string;
 }
 
 export interface Album extends AlbumInline, StreamingFlags {
