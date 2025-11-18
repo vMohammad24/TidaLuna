@@ -7,7 +7,7 @@ import mime from "mime";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
-import { createRequire } from "module";
+import Module, { createRequire } from "module";
 
 // #region Bundle
 const bundleDir = process.env.TIDALUNA_DIST_PATH ?? path.dirname(fileURLToPath(import.meta.url));
@@ -142,7 +142,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
 		const window = (luna.tidalWindow = new target(options));
 
-		// if we are on linux and this is the main tidal window, 
+		// if we are on linux and this is the main tidal window,
 		// set the icon again after load (potential KDE quirk)
 		if (platformIsLinux && isTidalWindow) {
 			window.webContents.once("did-finish-load", () => {
@@ -202,6 +202,15 @@ const startPath = path.join(tidalAppPath, tidalPackage.main);
 electron.app.setAppPath?.(tidalAppPath);
 electron.app.name = tidalPackage.name;
 
+const blockedModules = new Set(["jszip"]);
+const _require = Module.prototype.require;
+Module.prototype.require = function (id) {
+	if (blockedModules.has(id)) {
+		console.warn(`[Luna.native] Intercepted and blocked global require('${id}')`);
+		return {};
+	}
+	return _require.apply(this, [id]);
+};
 require = createRequire(tidalAppPath);
 
 // Replace the default electron BrowserWindow with our proxied one
