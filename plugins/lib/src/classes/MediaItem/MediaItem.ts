@@ -385,8 +385,8 @@ export class MediaItem extends ContentBase {
 			return download(playbackInfo, path, flagTags);
 		},
 	);
-	public async fileExtension(): Promise<string> {
-		const playbackInfo = await this.playbackInfo();
+	public async fileExtension(audioQuality?: redux.AudioQuality): Promise<string> {
+		const playbackInfo = await this.playbackInfo(audioQuality);
 		switch (playbackInfo.manifestMimeType) {
 			case "application/dash+xml":
 				return "m4a";
