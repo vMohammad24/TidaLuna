@@ -37,7 +37,7 @@ class ContextMenuButton {
 	}
 
 	public async show(contextMenu: Element | null) {
-		if (contextMenu !== null) {
+		if (!!contextMenu) {
 			const templateButton = contextMenu.querySelector(`div[data-type="contextmenu-item"]`) as Element | undefined;
 			const makeButton = () => {
 				if (templateButton === undefined) throw new Error("No buttons to clone off contextMenu found!");
