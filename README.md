@@ -7,12 +7,12 @@ If you want to chat with users and plugin creators, head over to our discord! **
 
 The client is currently in **BETA**.
 
-## Installation
+## Installing
 
-Use one of the following projects:
+To install Luna
 
-- https://github.com/jxnxsdev/TidaLuna-Installer
-- https://github.com/espeon/lunactl
+1. Install [**Tidal**](https://offer.tidal.com/download)
+2. Download and run the [**Luna Installer**](https://github.com/jxnxsdev/TidaLuna-Installer/releases/latest)
 
 ### FAQ
 
@@ -20,6 +20,31 @@ Use one of the following projects:
   Please install the desktop version if you have the Store version.
 - Ensure that Tidal is closed when installing or installation may fail.
 - You shouldnt need to run as Admin for installing.
+
+### Manual Install
+
+Only needed if for some reason the [**Luna Installer**](https://github.com/jxnxsdev/TidaLuna-Installer/releases/latest) is not working for you!
+
+1. Download the **luna.zip** release you want to install from https://github.com/Inrixia/TidaLuna/releases
+2. Go to your Tidal install resources folder, typically found in:
+
+- Windows: `%localappdata%\TIDAL\app-x.xx.x\resources`
+- MacOS: `/Applications/TIDAL.app/Contents/Resources`
+- Linux: `/opt/tidal-hifi/resources`
+
+3. Rename `app.asar` to `original.asar`
+4. Unzip **luna.zip** into a folder named `app` in the `resources` directory alongside `original.asar`
+5. You should now have a folder `TIDAL\...\resources\app` next to `original.asar` with all the files from **luna.zip**
+
+#### MacOS CodeSign
+
+On MacOS you need to sign the new install so that it isnt reverted, you can do this by running this command
+
+```sh
+codesign --force --deep --sign - /Applications/TIDAL.app
+```
+
+Done! Start Tidal and you should see the Luna splashscreen.
 
 ### Nix install
 
@@ -37,21 +62,6 @@ environment.systemPackages = with pkgs; [
 +  inputs.tidaLuna.packages.${system}.default
 ];
 ```
-
-### Manual Install
-
-1. Download the **luna.zip** release you want to install from https://github.com/Inrixia/TidaLuna/releases
-2. Go to your Tidal install resources folder, typically found in:
-
-- Windows: `%localappdata%\TIDAL\app-x.xx.x\resources`
-- MacOS: `/Applications/TIDAL.app/Contents/Resources`
-- Linux: `/opt/tidal-hifi/resources`
-
-3. Rename `app.asar` to `original.asar`
-4. Unzip **luna.zip** into a folder named `app` in the `resources` directory alongside `original.asar`
-5. You should now have a folder `TIDAL\...\resources\app` next to `original.asar` with all the files from **luna.zip**
-
-Done! Start Tidal and you should see the Luna splashscreen.
 
 ## Developers
 
