@@ -55,7 +55,9 @@ export class Page {
 		const notFound = document.querySelector<HTMLElement>(`[class^="_pageNotFoundError_"]`);
 		if (notFound) {
 			notFound.style.display = "none";
-			const mainContainer = notFound.parentElement!;
+			const mainContainer = notFound.parentElement;
+			if (!mainContainer) return console.warn("Could not find _pageNotFound.parentElement");
+
 			mainContainer.appendChild(this.root);
 			mainContainer.removeAttribute("style");
 			Object.assign(mainContainer!.style, this.pageStyles);
