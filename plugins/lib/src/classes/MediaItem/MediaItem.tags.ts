@@ -5,6 +5,7 @@ export type FlacTags = {
 	trackNumber?: string;
 	discNumber?: string;
 	bpm?: string;
+	year?: string;
 	date?: string;
 	copyright?: string;
 	REPLAYGAIN_TRACK_GAIN?: string;
@@ -21,13 +22,13 @@ export type FlacTags = {
 	organization?: string;
 	totalTracks?: string;
 	lyrics?: string;
-	year?: string;
 };
 export const availableTags: (keyof FlacTags)[] = [
 	"title",
 	"trackNumber",
 	"discNumber",
 	"bpm",
+	"year",
 	"date",
 	"copyright",
 	"REPLAYGAIN_TRACK_GAIN",
@@ -44,7 +45,6 @@ export const availableTags: (keyof FlacTags)[] = [
 	"organization",
 	"totalTracks",
 	"lyrics",
-	"year",
 ];
 
 export type MetaTags = {
@@ -72,8 +72,10 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 	tags.title = title;
 
 	tags.trackNumber = mediaItem.trackNumber?.toString();
-	tags.date = releaseDateStr;
+
 	tags.year = releaseDate?.getFullYear().toString();
+	tags.date = releaseDateStr;
+
 	tags.REPLAYGAIN_TRACK_PEAK = mediaItem.replayGainPeak?.toString();
 	tags.REPLAYGAIN_TRACK_GAIN = mediaItem.replayGain?.toString();
 	tags.comment = mediaItem.url;
@@ -106,6 +108,8 @@ export const makeTags = async (mediaItem: MediaItem): Promise<MetaTags> => {
 		tags.organization = album.recordLabel;
 
 		tags.totalTracks = album.numberOfTracks?.toString();
+
+		tags.date = album.releaseDate ?? tags.date;
 		tags.year = album.releaseYear ?? tags.year;
 	}
 
