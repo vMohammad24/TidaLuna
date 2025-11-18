@@ -1,12 +1,12 @@
 import { rejectNotOk } from "@inrixia/helpers";
-import type { Decipher } from "crypto";
+import type { Decipheriv } from "crypto";
 
 export type FetchProgress = { readonly total?: number; readonly downloaded?: number };
 export type TrackStreamOptions = {
 	progress?: FetchProgress;
 	reqInit?: RequestInit;
 	bytesWanted?: number;
-	decipher?: Decipher;
+	decipher?: Decipheriv;
 };
 
 const parseTotal = (headers: Response["headers"]) => {
