@@ -1,5 +1,5 @@
 // Always expose internals first
-export { tidalModules } from "./exposeTidalInternals";
+export { addQuartzPlugin, loadTidalModules, tidalModules } from "./exposeTidalInternals";
 export { buildActions, interceptors } from "./exposeTidalInternals.patchAction";
 
 export * as ftch from "./helpers/fetch";
@@ -8,7 +8,8 @@ export { unloadSet, type LunaUnload, type LunaUnloads, type NullishLunaUnloads }
 
 export { Messager, Tracer } from "./trace";
 
-export { modules, reduxStore } from "./modules";
+export { modules, reduxStore } from "./moduleRegistry";
+export { initModules } from "./modules";
 
 export * from "./LunaPlugin";
 export * from "./ReactiveStore";
@@ -17,17 +18,40 @@ export * from "./ReactiveStore";
 import "./window.core";
 
 import { LunaPlugin } from "./LunaPlugin";
+import { loadTidalModules } from "./exposeTidalInternals";
+import { initModules } from "./modules";
 
-// Wrap loading of plugins in a timeout so native/preload.ts can populate modules with @luna/core (see native/preload.ts)
-setTimeout(async () => {
-	// Load lib
+export const init = async () => {
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib.native" });
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.lib" });
-	// Load ui after lib as it depends on it.
+
+	const tempCache = {};
+	const originalGetElementById = document.getElementById;
+	document.getElementById = (id: string) => {
+		if (id === "app" || id === "root") return null;
+		return originalGetElementById.call(document, id);
+	};
+	const originalDefine = customElements.define;
+	customElements.define = () => { };
+
+	await loadTidalModules(tempCache, false);
+	document.getElementById = originalGetElementById;
+	customElements.define = originalDefine;
+
+	await initModules(tempCache);
+
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.ui" });
-	// Load other api's
 	await LunaPlugin.fromStorage({ enabled: true, url: "https://luna/luna.dev" });
 
-	// Load all plugins from storage
 	await LunaPlugin.loadStoredPlugins();
-});
+
+	await loadTidalModules();
+	await initModules();
+
+	for (const plugin of Object.values(LunaPlugin.plugins)) {
+		if (plugin.loadError._) {
+			plugin.trace.log("Retrying load after modules init...");
+			await plugin.load();
+		}
+	}
+};

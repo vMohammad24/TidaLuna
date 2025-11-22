@@ -8,7 +8,11 @@ export type LunaActions = {
 	[K in ActionType]: (payload: ActionPayloads[K]) => MaybePromise<VoidLike>;
 };
 
-export const actions: LunaActions = <LunaActions>{};
-for (const [name, buildAction] of Object.entries(buildActions)) {
-	actions[name as keyof LunaActions] = (...args: any[]) => reduxStore.dispatch(buildAction(...args));
-}
+export const actions: LunaActions = new Proxy({} as LunaActions, {
+	get: (_target, prop: string) => {
+		const buildAction = buildActions[prop];
+		if (buildAction) {
+			return (...args: any[]) => reduxStore.dispatch(buildAction(...args));
+		}
+	},
+});

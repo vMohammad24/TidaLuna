@@ -5,7 +5,7 @@ import { ReactiveStore } from "./ReactiveStore";
 
 import { type LunaUnload } from "@luna/core";
 import * as ftch from "./helpers/fetch";
-import { modules } from "./modules";
+import { modules } from "./moduleRegistry";
 import { coreTrace, Tracer } from "./trace";
 
 type ModuleExports = {
@@ -166,7 +166,7 @@ export class LunaPlugin {
 		if (this._reloadTimeout) return;
 		const reloadLoop = async () => {
 			// Fail quietly
-			await this.loadExports().catch(() => {});
+			await this.loadExports().catch(() => { });
 			// Dont continue to loop if disabled or liveReload is false
 			if (!this.enabled || !this._liveReload._) return;
 			this._reloadTimeout = setTimeout(reloadLoop.bind(this), 1000);

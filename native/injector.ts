@@ -74,6 +74,8 @@ electron.app.whenReady().then(async () => {
 			}
 		}
 
+		if (req.url.includes('service-worker.js')) return new Response('', { status: 200, headers: { 'Content-Type': 'application/javascript' } });
+
 		// Bypass CSP & Mark meta scripts for quartz injection
 		if (req.url === "https://desktop.tidal.com/" || req.url === "https://tidal.com/" || req.url === "https://listen.tidal.com/") {
 			const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
@@ -181,7 +183,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 							_console.error(consolePrefix, ...args);
 							try {
 								window.webContents.send("__Luna.console", "error", args);
-							} catch {}
+							} catch { }
 						}
 					};
 				}

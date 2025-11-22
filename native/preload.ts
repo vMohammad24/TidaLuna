@@ -39,6 +39,7 @@ ipcRenderer.on("__Luna.console", (_event, prop: ConsoleMethodName, args: any[]) 
 					window.luna ??= {};
 					window.luna.core = await import(renderUrl);
 					window.luna.core.modules["@luna/core"] = window.luna.core;
+					await window.luna.core.init();
 				} catch (err) {
 					setTimeout(() => {
 						// Created in native/injector.ts

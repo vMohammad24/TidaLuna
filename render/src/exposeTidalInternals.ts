@@ -7,8 +7,12 @@ import { resolveAbsolutePath } from "./helpers/resolvePath";
 
 import { findCreateActionFunction } from "./helpers/findCreateAction";
 import { getOrCreateLoadingContainer } from "./loadingContainer";
+import { modules } from "./moduleRegistry";
 
 export const tidalModules: Record<string, object> = {};
+
+const quartzPlugins: QuartzPlugin[] = [];
+export const addQuartzPlugin = (plugin: QuartzPlugin) => quartzPlugins.push(plugin);
 
 const fetchCode = async (path: string) => {
 	const res = await fetch(path);
@@ -19,42 +23,42 @@ const fetchCode = async (path: string) => {
 let loading = 0;
 const messageContainer = getOrCreateLoadingContainer().messageContainer;
 
-const dynamicResolve: QuartzPlugin["dynamicResolve"] = async ({ name, moduleId, config }) => {
+const createDynamicResolve = (cache: Record<string, object>): QuartzPlugin["dynamicResolve"] => async ({ name, moduleId, config }) => {
 	const path = resolveAbsolutePath(moduleId, name);
-	if (tidalModules[path]) return tidalModules[path];
+	if (cache[path]) return cache[path];
 
 	messageContainer.innerText += `Loading ${path}\n`;
 	loading++;
 	const code = await fetchCode(path);
 
 	// Load each js module and store it in the cache so we can access its exports
-	tidalModules[path] = await quartz(code, config, path);
+	cache[path] = await quartz(code, config, path);
 	loading--;
 	setTimeout(() => (document.getElementById("tidaluna-loading")!.style.opacity = "0"), 2000);
-	return tidalModules[path];
+	return cache[path];
 };
 
-let scripts: NodeListOf<HTMLScriptElement>;
-messageContainer.innerText = "Waiting for tidal scripts to load...\n";
-while ((scripts = document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`))) {
-	// Block until all scripts are loaded
-	if (scripts.length !== 0) break;
-}
+export const loadTidalModules = async (targetCache: Record<string, object> = tidalModules, applyPlugins = true) => {
+	let scripts: NodeListOf<HTMLScriptElement>;
+	messageContainer.innerText = "Waiting for tidal scripts to load...\n";
+	while ((scripts = document.querySelectorAll<HTMLScriptElement>(`script[type="luna/quartz"]`))) {
+		// Block until all scripts are loaded
+		if (scripts.length !== 0) break;
+		await new Promise((r) => setTimeout(r, 10));
+	}
 
-// Theres usually only 1 script on page that needs injecting (https://desktop.tidal.com/) see native/injector
-// So dw about blocking for loop
-for (const script of scripts) {
-	const scriptPath = new URL(script.src).pathname;
+	const dynamicResolve = createDynamicResolve(targetCache);
 
-	const scriptContent = await fetchCode(scriptPath);
+	// Theres usually only 1 script on page that needs injecting (https://desktop.tidal.com/) see native/injector
+	// So dw about blocking for loop
+	for (const script of scripts) {
+		const scriptPath = new URL(script.src).pathname;
 
-	// Fetch, transform execute and store the module in moduleCache
-	// Hijack the Redux store & inject interceptors
-	tidalModules[scriptPath] = await quartz(
-		scriptContent,
-		{
-			// Quartz runs transform > dynamicResolve > resolve
-			plugins: [
+		const scriptContent = await fetchCode(scriptPath);
+
+		const plugins: QuartzPlugin[] = [];
+		if (applyPlugins) {
+			plugins.push(
 				{
 					transform({ code }) {
 						const actionData = findCreateActionFunction(code);
@@ -79,14 +83,35 @@ for (const script of scripts) {
 
 						return code;
 					},
-					dynamicResolve,
-					async resolve({ name, moduleId, config, accessor, store }) {
-						(store as any).exports = await dynamicResolve({ name, moduleId, config });
-						return `${accessor}.exports`;
-					},
 				},
-			],
-		},
-		scriptPath,
-	);
-}
+				...quartzPlugins,
+			);
+		}
+
+		// Fetch, transform execute and store the module in moduleCache
+		// Hijack the Redux store & inject interceptors
+		try {
+			targetCache[scriptPath] = await quartz(
+				scriptContent,
+				{
+					// Quartz runs transform > dynamicResolve > resolve
+					plugins: [
+						...plugins,
+						{
+							dynamicResolve,
+							async resolve({ name, moduleId, config, accessor, store }) {
+								if (modules[name] && Object.keys(modules[name]).length > 0) return `window.require("${name}")`;
+								if (dynamicResolve) (store as any).exports = await dynamicResolve({ name, moduleId, config });
+								return `${accessor}.exports`;
+							},
+						},
+					],
+				},
+				scriptPath,
+			);
+		} catch (err) {
+			if (applyPlugins) throw err;
+			console.warn("First run error (expected):", err);
+		}
+	}
+};

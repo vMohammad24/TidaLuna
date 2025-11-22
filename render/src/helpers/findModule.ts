@@ -7,14 +7,14 @@ export interface FoundProperty<T> {
 	path: (string | symbol)[];
 }
 
-export const findModuleProperty = memoize(<T>(selector: (key: unknown, value: unknown) => boolean): FoundProperty<T> | VoidLike => {
-	return recursiveSearch<T>(tidalModules, selector).next().value;
+export const findModuleProperty = memoize(<T>(selector: (key: unknown, value: unknown) => boolean, searchIn: AnyRecord = tidalModules): FoundProperty<T> | VoidLike => {
+	return recursiveSearch<T>(searchIn, selector).next().value;
 });
 
-export const findModuleByProperty = memoize(<T extends object>(selector: (key: unknown, value: unknown) => boolean): T | VoidLike => {
-	const foundProperty = recursiveSearch<T>(tidalModules, selector).next().value;
+export const findModuleByProperty = memoize(<T extends object>(selector: (key: unknown, value: unknown) => boolean, searchIn: AnyRecord = tidalModules): T | VoidLike => {
+	const foundProperty = recursiveSearch<T>(searchIn, selector).next().value;
 	if (foundProperty === undefined) return coreTrace.warn("findModuleByProperty", `Unable to find module using selector:`, selector);
-	let module: object = tidalModules;
+	let module: object = searchIn;
 	// Remove the final path part
 	foundProperty.path.pop();
 	for (const key of foundProperty.path) module = module[key as keyof typeof module];
@@ -42,7 +42,7 @@ export function* recursiveSearch<T>(
 				}
 			}
 			if (selector(key, prop)) yield { value: <T>prop, path: currentPath };
-		} catch {}
+		} catch { }
 	}
 }
 

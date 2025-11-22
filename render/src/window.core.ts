@@ -1,6 +1,6 @@
 import type { AnyFn } from "@inrixia/helpers";
 import type { LunaUnload } from "./helpers/unloadSet";
-import { modules } from "./modules";
+import { modules } from "./moduleRegistry";
 
 // Define getters for lib and ui to proxy to modules
 Object.defineProperty(window.luna, "lib", {
