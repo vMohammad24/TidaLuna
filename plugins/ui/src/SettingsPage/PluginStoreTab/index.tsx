@@ -6,6 +6,7 @@ import { ReactiveStore } from "@luna/core";
 
 import Stack from "@mui/material/Stack";
 
+import { TextField } from "@mui/material";
 import { InstallFromUrl } from "./InstallFromUrl";
 import { LunaStore } from "./LunaStore";
 
@@ -38,6 +39,7 @@ addToStores("https://github.com/DevonCasey/tidaluna-plugins/releases/download/la
 
 export const PluginStoreTab = React.memo(() => {
 	const [_storeUrls, setPluginStores] = useState<string[]>(obyStore.unwrap(storeUrls));
+	const [search, setSearch] = useState("");
 
 	useEffect(() => obyStore.on(storeUrls, () => setPluginStores([...obyStore.unwrap(storeUrls)])), []);
 	const onRemove = useCallback((storeUrl: string) => {
@@ -47,10 +49,11 @@ export const PluginStoreTab = React.memo(() => {
 
 	return (
 		<Stack spacing={2}>
+			<TextField label="Search store" variant="outlined" fullWidth value={search} onChange={(e) => setSearch(e.target.value)} />
 			<InstallFromUrl />
-			<LunaStore url={"http://127.0.0.1:3000"} onRemove={() => {}} />
+			<LunaStore url={"http://127.0.0.1:3000"} onRemove={() => { }} filter={search} />
 			{_storeUrls.map((store) => (
-				<LunaStore key={store} url={store} onRemove={() => onRemove(store)} />
+				<LunaStore key={store} url={store} onRemove={() => onRemove(store)} filter={search} />
 			))}
 		</Stack>
 	);

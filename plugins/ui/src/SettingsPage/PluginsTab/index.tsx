@@ -1,16 +1,44 @@
-import React from "react";
+import React, { useState } from "react";
 
 import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 
 import { LunaPlugin } from "@luna/core";
 import { LunaPluginSettings } from "./LunaPluginSettings";
 
 export const PluginsTab = React.memo(() => {
-	const plugins = [];
-	for (const pluginName in LunaPlugin.plugins) {
-		if (LunaPlugin.corePlugins.has(pluginName)) continue;
-		plugins.push(<LunaPluginSettings key={pluginName} plugin={LunaPlugin.plugins[pluginName]} />);
-	}
-	if (plugins.length === 0) return "You have no plugins installed!";
-	return <Stack spacing={2}>{plugins}</Stack>;
+	const [search, setSearch] = useState("");
+
+	const plugins = React.useMemo(() => {
+		const result = [];
+		for (const pluginName in LunaPlugin.plugins) {
+			if (LunaPlugin.corePlugins.has(pluginName)) continue;
+			const plugin = LunaPlugin.plugins[pluginName];
+			if (search) {
+				const lowerSearch = search.toLowerCase();
+				const authorName = typeof plugin.package?.author === "string" ? plugin.package.author : plugin.package?.author?.name;
+				if (
+					!plugin.name.toLowerCase().includes(lowerSearch) &&
+					!String(plugin.package?.description ?? "")
+						.toLowerCase()
+						.includes(lowerSearch) &&
+					!authorName?.toLowerCase().includes(lowerSearch)
+				)
+					continue;
+			}
+			result.push(<LunaPluginSettings key={pluginName} plugin={plugin} />);
+		}
+		return result;
+	}, [search]);
+
+	const hasPlugins = Object.keys(LunaPlugin.plugins).filter((p) => !LunaPlugin.corePlugins.has(p)).length > 0;
+
+	if (!hasPlugins) return "You have no plugins installed!";
+
+	return (
+		<Stack spacing={2}>
+			<TextField label="Search plugins" variant="outlined" fullWidth value={search} onChange={(e) => setSearch(e.target.value)} />
+			{plugins.length > 0 ? plugins : "No plugins found matching your search."}
+		</Stack>
+	);
 });

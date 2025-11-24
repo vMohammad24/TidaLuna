@@ -1,6 +1,6 @@
 import React from "react";
 
-import { type PluginPackage } from "@luna/core";
+import { LunaPlugin, type PluginPackage } from "@luna/core";
 
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
@@ -14,7 +14,7 @@ interface StorePackage extends PluginPackage {
 	plugins: string[];
 }
 
-export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove: () => void }) => {
+export const LunaStore = React.memo(({ url, onRemove, filter }: { url: string; onRemove: () => void; filter?: string }) => {
 	const [loading, setLoading] = React.useState(false);
 	const [loadError, setLoadError] = React.useState<string | undefined>(undefined);
 	const [pkg, setPackage] = React.useState<StorePackage | undefined>(undefined);
@@ -44,6 +44,56 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 
 	const isLocalDevStore = url === "http://127.0.0.1:3000";
 
+	const [plugins, setPlugins] = React.useState<{ plugin?: LunaPlugin; error?: string; id: string; url: string }[]>([]);
+	const [pluginsLoaded, setPluginsLoaded] = React.useState(false);
+
+	React.useEffect(() => {
+		if (!pkg) {
+			setPlugins([]);
+			setPluginsLoaded(false);
+			return;
+		}
+
+		let aborted = false;
+		setPluginsLoaded(false);
+		const promises = pkg.plugins.map(async (pluginPath) => {
+			const pluginUrl = `${url}/${isLocalDevStore ? pluginPath : pluginPath.replace(" ", ".")}`;
+			try {
+				const plugin = await LunaPlugin.fromStorage({ url: pluginUrl });
+				return { plugin, url: pluginUrl, id: pluginPath };
+			} catch (e: any) {
+				return { error: e.message || "Unknown error", url: pluginUrl, id: pluginPath };
+			}
+		});
+
+		Promise.all(promises).then((results) => {
+			if (aborted) return;
+			setPlugins(results);
+			setPluginsLoaded(true);
+		});
+
+		return () => {
+			aborted = true;
+		};
+	}, [pkg, url, isLocalDevStore]);
+
+	const filteredPlugins = React.useMemo(() => {
+		if (!filter) return plugins;
+		const lowerFilter = filter.toLowerCase();
+		return plugins.filter((p) => {
+			if (p.error) return false;
+			if (!p.plugin) return false;
+			const authorName = typeof p.plugin.package?.author === "string" ? p.plugin.package.author : p.plugin.package?.author?.name;
+			return (
+				p.plugin.name.toLowerCase().includes(lowerFilter) ||
+				String(p.plugin.package?.description ?? "")
+					.toLowerCase()
+					.includes(lowerFilter) ||
+				authorName?.toLowerCase().includes(lowerFilter)
+			);
+		});
+	}, [plugins, filter]);
+
 	if (pkg === undefined && !loading && !loadError) return null; // Don't render anything until initial load attempt
 	if (!isLocalDevStore && loading && !pkg) return <Typography>Loading store {url}...</Typography>; // Show loading indicator if still loading initially
 
@@ -54,9 +104,10 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 	const desc = pkg?.description;
 
 	const link = pkg?.homepage ?? pkg?.repository?.url ?? url;
-
 	// Don't show error for local dev store
 	if (loadError && isLocalDevStore) return null;
+
+	if (filter && filteredPlugins.length === 0 && pluginsLoaded) return null;
 
 	return (
 		<Stack
@@ -82,8 +133,10 @@ export const LunaStore = React.memo(({ url, onRemove }: { url: string; onRemove:
 				}
 			/>
 			<Grid columns={2} spacing={2} container>
-				{pkg?.plugins.map((plugin) => (
-					<Grid size={1} children={<LunaStorePlugin url={`${url}/${isLocalDevStore ? plugin : plugin.replace(" ", ".")}`} key={plugin} />} />
+				{filteredPlugins.map((p) => (
+					<Grid size={1} key={p.id}>
+						<LunaStorePlugin url={p.url} plugin={p.plugin} loadError={p.error} />
+					</Grid>
 				))}
 			</Grid>
 		</Stack>
