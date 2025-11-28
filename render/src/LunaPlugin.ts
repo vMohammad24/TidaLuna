@@ -255,19 +255,14 @@ export class LunaPlugin {
 	 * This will unload the plugin without disabling it!
 	 */
 	private async unload(): Promise<void> {
-		try {
-			this.loading._ = true;
-			// Unload dependants before unloading this plugin
-			for (const dependant of this.dependants) {
-				this.trace.log(`Unloading dependant ${dependant.name}`);
-				await dependant.unload();
-			}
-			await unloadSet(this.exports?.unloads);
-		} finally {
-			this.exports = undefined;
-			this.loading._ = false;
-			delete modules[this.name];
+		// Unload dependants before unloading this plugin
+		for (const dependant of this.dependants) {
+			this.trace.log(`Unloading dependant ${dependant.name}`);
+			await dependant.unload();
 		}
+		await unloadSet(this.exports?.unloads);
+		this.exports = undefined;
+		delete modules[this.name];
 	}
 	/**
 	 * Load the plugin if it is enabled
@@ -292,11 +287,16 @@ export class LunaPlugin {
 		}
 	}
 	public async disable() {
-		// Disable the reload loop
-		this.stopReloadLoop();
-		await this.unload();
-		this._enabled._ = false;
-		this.loadError._ = undefined;
+		try {
+			this.loading._ = true;
+			// Disable the reload loop
+			this.stopReloadLoop();
+			await this.unload();
+			this._enabled._ = false;
+			this.loadError._ = undefined;
+		} finally {
+			this.loading._ = false;
+		}
 	}
 	public async reload() {
 		// LoadExports will handle unloading etc and ensure code is live
