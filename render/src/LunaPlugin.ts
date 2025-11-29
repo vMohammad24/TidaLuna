@@ -130,6 +130,21 @@ export class LunaPlugin {
 		const keys = await LunaPlugin.pluginStorage.keys();
 		return Promise.all(keys.map(async (name) => LunaPlugin.fromName(name).catch(this.trace.err.withContext("loadStoredPlugins", name))));
 	}
+
+	/**
+	 * Reload all enabled non-core plugins
+	 */
+	public static async reloadAllNonCorePlugins(): Promise<void> {
+		const reloadPromises = [];
+		for (const pluginName in this.plugins) {
+			if (this.corePlugins.has(pluginName)) continue;
+			const plugin = this.plugins[pluginName];
+			if (plugin.enabled) {
+				reloadPromises.push(plugin.reload());
+			}
+		}
+		await Promise.all(reloadPromises);
+	}
 	// #endregion
 
 	// #region Tracer
@@ -166,7 +181,7 @@ export class LunaPlugin {
 		if (this._reloadTimeout) return;
 		const reloadLoop = async () => {
 			// Fail quietly
-			await this.loadExports().catch(() => {});
+			await this.loadExports().catch(() => { });
 			// Dont continue to loop if disabled or liveReload is false
 			if (!this.enabled || !this._liveReload._) return;
 			this._reloadTimeout = setTimeout(reloadLoop.bind(this), 1000);
@@ -256,13 +271,17 @@ export class LunaPlugin {
 	 */
 	private async unload(): Promise<void> {
 		// Unload dependants before unloading this plugin
-		for (const dependant of this.dependants) {
-			this.trace.log(`Unloading dependant ${dependant.name}`);
-			await dependant.unload();
+		try {
+			for (const dependant of this.dependants) {
+				this.trace.log(`Unloading dependant ${dependant.name}`);
+				await dependant.unload();
+			}
+			await unloadSet(this.exports?.unloads);
+			this.exports = undefined;
+			delete modules[this.name];
+		} catch (e) {
+			console.error(`Error unloading plugin ${this.name}:`, e);
 		}
-		await unloadSet(this.exports?.unloads);
-		this.exports = undefined;
-		delete modules[this.name];
 	}
 	/**
 	 * Load the plugin if it is enabled

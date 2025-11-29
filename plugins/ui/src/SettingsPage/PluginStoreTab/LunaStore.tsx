@@ -14,6 +14,13 @@ interface StorePackage extends PluginPackage {
 	plugins: string[];
 }
 
+interface StorePluginData {
+	package?: PluginPackage;
+	error?: string;
+	id: string;
+	url: string;
+}
+
 export const LunaStore = React.memo(({ url, onRemove, filter }: { url: string; onRemove: () => void; filter?: string }) => {
 	const [loading, setLoading] = React.useState(false);
 	const [loadError, setLoadError] = React.useState<string | undefined>(undefined);
@@ -44,7 +51,7 @@ export const LunaStore = React.memo(({ url, onRemove, filter }: { url: string; o
 
 	const isLocalDevStore = url === "http://127.0.0.1:3000";
 
-	const [plugins, setPlugins] = React.useState<{ plugin?: LunaPlugin; error?: string; id: string; url: string }[]>([]);
+	const [plugins, setPlugins] = React.useState<StorePluginData[]>([]);
 	const [pluginsLoaded, setPluginsLoaded] = React.useState(false);
 
 	React.useEffect(() => {
@@ -56,11 +63,11 @@ export const LunaStore = React.memo(({ url, onRemove, filter }: { url: string; o
 
 		let aborted = false;
 		setPluginsLoaded(false);
-		const promises = pkg.plugins.map(async (pluginPath) => {
+		const promises = pkg.plugins.map(async (pluginPath): Promise<StorePluginData> => {
 			const pluginUrl = `${url}/${isLocalDevStore ? pluginPath : pluginPath.replace(" ", ".")}`;
 			try {
-				const plugin = await LunaPlugin.fromStorage({ url: pluginUrl });
-				return { plugin, url: pluginUrl, id: pluginPath };
+				const packageData = await LunaPlugin.fetchPackage(pluginUrl);
+				return { package: packageData, url: pluginUrl, id: pluginPath };
 			} catch (e: any) {
 				return { error: e.message || "Unknown error", url: pluginUrl, id: pluginPath };
 			}
@@ -82,11 +89,11 @@ export const LunaStore = React.memo(({ url, onRemove, filter }: { url: string; o
 		const lowerFilter = filter.toLowerCase();
 		return plugins.filter((p) => {
 			if (p.error) return false;
-			if (!p.plugin) return false;
-			const authorName = typeof p.plugin.package?.author === "string" ? p.plugin.package.author : p.plugin.package?.author?.name;
+			if (!p.package) return false;
+			const authorName = typeof p.package.author === "string" ? p.package.author : p.package.author?.name;
 			return (
-				p.plugin.name.toLowerCase().includes(lowerFilter) ||
-				String(p.plugin.package?.description ?? "")
+				p.package.name.toLowerCase().includes(lowerFilter) ||
+				String(p.package.description ?? "")
 					.toLowerCase()
 					.includes(lowerFilter) ||
 				authorName?.toLowerCase().includes(lowerFilter)
@@ -135,7 +142,7 @@ export const LunaStore = React.memo(({ url, onRemove, filter }: { url: string; o
 			<Grid columns={2} spacing={2} container>
 				{filteredPlugins.map((p) => (
 					<Grid size={1} key={p.id}>
-						<LunaStorePlugin url={p.url} plugin={p.plugin} loadError={p.error} />
+						<LunaStorePlugin url={p.url} package={p.package} loadError={p.error} />
 					</Grid>
 				))}
 			</Grid>

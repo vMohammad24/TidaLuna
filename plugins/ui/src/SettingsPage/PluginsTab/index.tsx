@@ -15,15 +15,7 @@ export const PluginsTab = React.memo(() => {
 	const handleReloadAll = React.useCallback(async () => {
 		setReloading(true);
 		try {
-			const reloadPromises = [];
-			for (const pluginName in LunaPlugin.plugins) {
-				if (LunaPlugin.corePlugins.has(pluginName)) continue;
-				const plugin = LunaPlugin.plugins[pluginName];
-				if (plugin.enabled) {
-					reloadPromises.push(plugin.reload());
-				}
-			}
-			await Promise.all(reloadPromises);
+			await LunaPlugin.reloadAllNonCorePlugins();
 		} finally {
 			setReloading(false);
 		}

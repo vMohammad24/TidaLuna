@@ -1,23 +1,53 @@
-import { LunaPlugin } from "@luna/core";
+import { LunaPlugin, type PluginPackage } from "@luna/core";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { LunaPluginHeader } from "../PluginsTab/LunaPluginHeader";
 
 import ButtonBase from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
 
-export const LunaStorePlugin = React.memo(({ url, plugin, loadError }: { url: string; plugin?: LunaPlugin; loadError?: string }) => {
+export const LunaStorePlugin = React.memo(({ url, package: pkg, loadError }: { url: string; package?: PluginPackage; loadError?: string }) => {
 	const [isHovered, setIsHovered] = useState(false);
+	const [isInstalled, setIsInstalled] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
-	if (!plugin && !loadError) return null;
+	useEffect(() => {
+		if (!pkg) return;
+		const plugin = LunaPlugin.plugins[pkg.name];
+		setIsInstalled(plugin?.installed ?? false);
+	}, [pkg]);
 
-	const version = url.startsWith("http://127.0.0.1") ? `${plugin?.package?.version ?? ""} [DEV]` : plugin?.package?.version;
+	if (!pkg && !loadError) return null;
+
+	const version = url.startsWith("http://127.0.0.1") ? `${pkg?.version ?? ""} [DEV]` : pkg?.version;
+
+	const handleClick = async () => {
+		if (!pkg || isLoading) return;
+
+		setIsLoading(true);
+		try {
+			const plugin = await LunaPlugin.fromStorage({ url, package: pkg });
+
+			if (isInstalled) {
+				await plugin.uninstall();
+				setIsInstalled(false);
+			} else {
+				await plugin.install();
+				setIsInstalled(true);
+			}
+		} catch (error) {
+			console.error("Failed to install/uninstall plugin:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	return (
 		<ButtonBase
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
+			disabled={isLoading}
 			sx={{
 				position: "relative", // Needed for absolute positioning of children
 				borderRadius: 2,
@@ -27,20 +57,20 @@ export const LunaStorePlugin = React.memo(({ url, plugin, loadError }: { url: st
 				paddingTop: 1,
 				boxShadow: 5,
 				transition: "opacity 0.3s ease-in-out",
-				opacity: plugin?.installed && !isHovered ? 0.5 : 1, // Keep installed opacity logic
+				opacity: isInstalled && !isHovered ? 0.5 : 1, // Keep installed opacity logic
 				overflow: "hidden",
 				width: "100%",
 			}}
 			style={{ textAlign: "left" }}
-			onClick={() => (plugin?.installed ? plugin.uninstall() : plugin?.install())}
+			onClick={handleClick}
 		>
 			<LunaPluginHeader
 				sx={{ transition: "opacity 0.3s ease-in-out", opacity: isHovered ? 0.2 : 1, width: "100%" }}
-				name={plugin?.name ?? "Unknown Plugin"}
+				name={pkg?.name ?? "Unknown Plugin"}
 				version={version}
 				loadError={loadError}
-				author={plugin?.package?.author}
-				desc={plugin?.package?.description}
+				author={pkg?.author}
+				desc={pkg?.description}
 			/>
 			<Typography
 				sx={{
@@ -51,12 +81,12 @@ export const LunaStorePlugin = React.memo(({ url, plugin, loadError }: { url: st
 					opacity: isHovered ? 1 : 0,
 					transition: "opacity 0.3s ease-in-out",
 					fontWeight: "bold",
-					color: plugin?.installed ? "red" : "green",
+					color: isInstalled ? "red" : "green",
 					borderRadius: 2,
 					padding: 1,
 					pointerEvents: "none",
 				}}
-				children={plugin?.installed ? "Uninstall" : "Install"}
+				children={isLoading ? "Loading..." : isInstalled ? "Uninstall" : "Install"}
 			/>
 		</ButtonBase>
 	);
