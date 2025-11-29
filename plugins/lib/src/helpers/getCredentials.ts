@@ -12,4 +12,6 @@ type TidalCredentials = {
 
 export const getCredentials = findModuleProperty<() => Promise<TidalCredentials>>(
 	(key, value) => key === "getCredentials" && typeof value === "function"
-)!.value!;
+)?.value || (async () => {
+	throw new Error("Tidal credentials module not found");
+});
