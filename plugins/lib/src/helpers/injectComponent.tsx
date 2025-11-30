@@ -4,15 +4,17 @@ import React from "react";
 import { libTrace } from "../index.safe";
 
 export type ComponentMatcher = (props: any) => boolean;
-export type InjectionPosition = "start" | "end" | number;
+export type InjectionPosition = "start" | "end" | number | "replace" | "replaceChildren";
 
 export interface InjectionConfig {
 	/** Function to match the target element's props */
 	matcher: ComponentMatcher;
-	/** The React component to inject */
-	component: React.ReactNode;
-	/** Where to inject: 'start', 'end', or a specific index */
+	/** The React component to inject, or a function that receives props and returns a component */
+	component: React.ReactNode | ((props: any) => React.ReactNode);
+	/** Where to inject: 'start', 'end', 'replace' (entire element), 'replaceChildren' (just children), or a specific index */
 	position?: InjectionPosition;
+	/** Optional condition that must return true for the injection to apply. Receives the matched element's props. */
+	condition?: (props: any) => boolean;
 }
 
 const injections = new Set<InjectionConfig>();
@@ -34,22 +36,42 @@ export const enableComponentInjection = (unloads: LunaUnloads): boolean => {
 
 	jsxRuntime.jsxs = function (type: any, props: any, ...rest: any[]) {
 		if (props && injections.size > 0) {
+			let propsCloned = false;
+
 			for (const injection of injections) {
 				if (injection.matcher(props)) {
-					props = { ...props };
-
-					const children = Array.isArray(props.children) ? [...props.children] : props.children ? [props.children] : [];
-
-					const position = injection.position ?? "end";
-					if (position === "start") {
-						children.unshift(injection.component);
-					} else if (position === "end") {
-						children.push(injection.component);
-					} else if (typeof position === "number") {
-						children.splice(position, 0, injection.component);
+					if (injection.condition && !injection.condition(props)) {
+						continue;
 					}
 
-					props.children = children;
+					const component = typeof injection.component === "function" ? injection.component(props) : injection.component;
+
+					const position = injection.position ?? "end";
+
+					if (position === "replace") {
+						return component;
+					}
+
+					if (!propsCloned) {
+						props = { ...props };
+						propsCloned = true;
+					}
+
+					if (position === "replaceChildren") {
+						props.children = component;
+					} else {
+						const children = Array.isArray(props.children) ? [...props.children] : props.children ? [props.children] : [];
+
+						if (position === "start") {
+							children.unshift(component);
+						} else if (position === "end") {
+							children.push(component);
+						} else if (typeof position === "number") {
+							children.splice(position, 0, component);
+						}
+
+						props.children = children;
+					}
 				}
 			}
 		}
@@ -59,20 +81,41 @@ export const enableComponentInjection = (unloads: LunaUnloads): boolean => {
 
 	jsxRuntime.jsx = function (type: any, props: any, ...rest: any[]) {
 		if (props && injections.size > 0) {
+			let propsCloned = false;
+
 			for (const injection of injections) {
 				if (injection.matcher(props)) {
-					props = { ...props };
-					const existingChild = props.children;
-					const children = existingChild ? [existingChild] : [];
-
-					const position = injection.position ?? "end";
-					if (position === "start") {
-						children.unshift(injection.component);
-					} else {
-						children.push(injection.component);
+					if (injection.condition && !injection.condition(props)) {
+						continue;
 					}
 
-					props.children = children;
+					const component = typeof injection.component === "function" ? injection.component(props) : injection.component;
+
+					const position = injection.position ?? "end";
+
+					if (position === "replace") {
+						return component;
+					}
+
+					if (!propsCloned) {
+						props = { ...props };
+						propsCloned = true;
+					}
+
+					if (position === "replaceChildren") {
+						props.children = component;
+					} else {
+						const existingChild = props.children;
+						const children = existingChild ? [existingChild] : [];
+
+						if (position === "start") {
+							children.unshift(component);
+						} else {
+							children.push(component);
+						}
+
+						props.children = children;
+					}
 				}
 			}
 		}
@@ -103,11 +146,44 @@ export const enableComponentInjection = (unloads: LunaUnloads): boolean => {
  *
  * @example
  * ```tsx
- * // Inject by data-test attribute
+ * // Replace the entire component
+ * injectComponent(unloads, {
+ *   matcher: (props) => props['data-test'] === 'footer-player',
+ *   component: <MyCustomPlayer />,
+ *   position: 'replace'
+ * });
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Replace just the children (keeps parent element and props)
+ * injectComponent(unloads, {
+ *   matcher: (props) => props.className?.includes('moreContainer'),
+ *   component: <MyButtons />,
+ *   position: 'replaceChildren'
+ * });
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Inject at start
  * injectComponent(unloads, {
  *   matcher: (props) => props['data-test'] === 'footer-player',
  *   component: <MyComponent />,
  *   position: 'start'
+ * });
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Dynamic component based on props - re-evaluates on every render
+ * injectComponent(unloads, {
+ *   matcher: matchers.byClassName('moreContainer'),
+ *   component: (props) => {
+ *     // Access props.children, props.className, etc.
+ *     if (props.children?.length < 5) return null;
+ *     return <MyButton count={props.children.length} />;
+ *   }
  * });
  * ```
  */
@@ -159,7 +235,7 @@ export const matchers = {
 export const injectIntoContainer = (
 	unloads: LunaUnloads,
 	className: string,
-	component: React.ReactNode,
+	component: React.ReactNode | ((props: any) => React.ReactNode),
 	position?: InjectionPosition,
 ): void => {
 	injectComponent(unloads, {
