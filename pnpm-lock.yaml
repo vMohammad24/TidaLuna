@@ -86,6 +86,9 @@ importers:
       oby:
         specifier: ^15.1.2
         version: 15.1.2
+      redux:
+        specifier: ^5.0.1
+        version: 5.0.1
 
   plugins/lib.native:
     dependencies:
